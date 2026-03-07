@@ -1,7 +1,7 @@
 <Solution>
-    <Configurations>
-        <Platform Name="Any CPU" />
-    </Configurations>
+    <Folder Name="/Solution Items/">
+        <File Path="README.md" />
+    </Folder>
     <Folder Name="/src/">
         <Project Path="src/MealPlannerAPI.Domain/MealPlannerAPI.Domain.csproj" />
         <Project Path="src/MealPlannerAPI.Application/MealPlannerAPI.Application.csproj" />

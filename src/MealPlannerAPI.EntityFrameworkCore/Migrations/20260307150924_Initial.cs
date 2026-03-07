@@ -450,6 +450,28 @@ namespace MealPlannerAPI.Migrations
                     EntityVersion = table.Column<int>(type: "int", nullable: false),
                     LastPasswordChangeTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastSignInTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    DietaryRestrictions = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    CuisinePreferences = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    DefaultServingSize = table.Column<int>(type: "int", nullable: true, defaultValue: 4),
+                    WeeklyBudget = table.Column<decimal>(type: "decimal(18,2)", nullable: true, defaultValue: 0m),
+                    RecipesCreated = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    RecipesLiked = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    MealsPlanned = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    ShoppingListsGenerated = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    Followers = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    Following = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    Specialty = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ProfileVisibility = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true, defaultValue: "Public"),
+                    RecipesVisibility = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true, defaultValue: "Public"),
+                    ShoppingListVisibility = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true, defaultValue: "Private"),
+                    NotifyMealReminders = table.Column<bool>(type: "bit", nullable: true, defaultValue: true),
+                    NotifyRecipeUpdates = table.Column<bool>(type: "bit", nullable: true, defaultValue: true),
+                    NotifyCommunityActivity = table.Column<bool>(type: "bit", nullable: true, defaultValue: false),
+                    NotifyShoppingListAlerts = table.Column<bool>(type: "bit", nullable: true, defaultValue: true),
+                    MealPlanningDays = table.Column<int>(type: "int", nullable: true, defaultValue: 7),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -463,6 +485,102 @@ namespace MealPlannerAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppMealPlans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WeekStartDate = table.Column<DateTime>(type: "date", nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppMealPlans", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppRecipes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Cuisine = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Difficulty = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    CookingTimeMinutes = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    PrepTimeMinutes = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Servings = table.Column<int>(type: "int", nullable: false, defaultValue: 4),
+                    Rating = table.Column<decimal>(type: "decimal(3,2)", nullable: false, defaultValue: 0m),
+                    ReviewCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ImageUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Tags = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    InstructionsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppRecipes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppShoppingLists",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppShoppingLists", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppUserNotifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppUserNotifications", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -825,6 +943,77 @@ namespace MealPlannerAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppMealPlanEntries",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MealPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DayOfWeek = table.Column<DateTime>(type: "datetime2", maxLength: 16, nullable: false),
+                    MealName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    MealType = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ScheduledTime = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: true),
+                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppMealPlanEntries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppMealPlanEntries_AppMealPlans_MealPlanId",
+                        column: x => x.MealPlanId,
+                        principalTable: "AppMealPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppRecipeIngredients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppRecipeIngredients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppRecipeIngredients_AppRecipes_RecipeId",
+                        column: x => x.RecipeId,
+                        principalTable: "AppRecipes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppShoppingItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShoppingListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShoppingListName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppShoppingItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppShoppingItems_AppShoppingLists_ShoppingListId",
+                        column: x => x.ShoppingListId,
+                        principalTable: "AppShoppingLists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictAuthorizations",
                 columns: table => new
                 {
@@ -1153,6 +1342,72 @@ namespace MealPlannerAPI.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppMealPlanEntries_MealPlanId",
+                table: "AppMealPlanEntries",
+                column: "MealPlanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppMealPlanEntries_RecipeId",
+                table: "AppMealPlanEntries",
+                column: "RecipeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppMealPlans_UserId",
+                table: "AppMealPlans",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppMealPlans_UserId_WeekStartDate",
+                table: "AppMealPlans",
+                columns: new[] { "UserId", "WeekStartDate" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppRecipeIngredients_RecipeId",
+                table: "AppRecipeIngredients",
+                column: "RecipeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppRecipes_AuthorId",
+                table: "AppRecipes",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppRecipes_Cuisine",
+                table: "AppRecipes",
+                column: "Cuisine");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppRecipes_Rating",
+                table: "AppRecipes",
+                column: "Rating");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppShoppingItems_Category",
+                table: "AppShoppingItems",
+                column: "Category");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppShoppingItems_ShoppingListId",
+                table: "AppShoppingItems",
+                column: "ShoppingListId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppShoppingLists_UserId",
+                table: "AppShoppingLists",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppUserNotifications_UserId",
+                table: "AppUserNotifications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppUserNotifications_UserId_IsRead",
+                table: "AppUserNotifications",
+                columns: new[] { "UserId", "IsRead" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
                 table: "OpenIddictApplications",
                 column: "ClientId");
@@ -1274,6 +1529,18 @@ namespace MealPlannerAPI.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
+                name: "AppMealPlanEntries");
+
+            migrationBuilder.DropTable(
+                name: "AppRecipeIngredients");
+
+            migrationBuilder.DropTable(
+                name: "AppShoppingItems");
+
+            migrationBuilder.DropTable(
+                name: "AppUserNotifications");
+
+            migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
 
             migrationBuilder.DropTable(
@@ -1296,6 +1563,15 @@ namespace MealPlannerAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpUsers");
+
+            migrationBuilder.DropTable(
+                name: "AppMealPlans");
+
+            migrationBuilder.DropTable(
+                name: "AppRecipes");
+
+            migrationBuilder.DropTable(
+                name: "AppShoppingLists");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

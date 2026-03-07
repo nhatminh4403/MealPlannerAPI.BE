@@ -42,8 +42,9 @@ public class MealPlannerAPIEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<MealPlannerAPIDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
+            /* Remove "includeAllEntities: true" to create
+             * default repositories only for aggregate roots */
+            options.ReplaceDbContext<IIdentityDbContext>();
             options.AddDefaultRepositories(includeAllEntities: true);
         });
 
