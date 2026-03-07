@@ -1,0 +1,23 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/src/">
+        <Project Path="src/MealPlannerAPI.Domain/MealPlannerAPI.Domain.csproj" />
+        <Project Path="src/MealPlannerAPI.Application/MealPlannerAPI.Application.csproj" />
+        <Project Path="src/MealPlannerAPI.EntityFrameworkCore/MealPlannerAPI.EntityFrameworkCore.csproj" />
+        <Project Path="src/MealPlannerAPI.Domain.Shared/MealPlannerAPI.Domain.Shared.csproj" />
+        <Project Path="src/MealPlannerAPI.Application.Contracts/MealPlannerAPI.Application.Contracts.csproj" />
+        <Project Path="src/MealPlannerAPI.HttpApi/MealPlannerAPI.HttpApi.csproj" />
+        <Project Path="src/MealPlannerAPI.HttpApi.Client/MealPlannerAPI.HttpApi.Client.csproj" />
+        <Project Path="src/MealPlannerAPI.DbMigrator/MealPlannerAPI.DbMigrator.csproj" />
+        <Project Path="src/MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.csproj" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/MealPlannerAPI.Application.Tests/MealPlannerAPI.Application.Tests.csproj" />
+        <Project Path="test/MealPlannerAPI.EntityFrameworkCore.Tests/MealPlannerAPI.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/MealPlannerAPI.TestBase/MealPlannerAPI.TestBase.csproj" />
+        <Project Path="test/MealPlannerAPI.Domain.Tests/MealPlannerAPI.Domain.Tests.csproj" />
+        <Project Path="test/MealPlannerAPI.HttpApi.Client.ConsoleTestApp/MealPlannerAPI.HttpApi.Client.ConsoleTestApp.csproj" />
+    </Folder>
+</Solution>

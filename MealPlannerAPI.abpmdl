@@ -1,0 +1,109 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "5.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/07/2026 05:51:16 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "MealPlannerAPI.Application": {
+      "path": "src/MealPlannerAPI.Application/MealPlannerAPI.Application.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.Application.Tests": {
+      "path": "test/MealPlannerAPI.Application.Tests/MealPlannerAPI.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "MealPlannerAPI.Domain.Shared": {
+      "path": "src/MealPlannerAPI.Domain.Shared/MealPlannerAPI.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.Application.Contracts": {
+      "path": "src/MealPlannerAPI.Application.Contracts/MealPlannerAPI.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.HttpApi": {
+      "path": "src/MealPlannerAPI.HttpApi/MealPlannerAPI.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.HttpApi.Client": {
+      "path": "src/MealPlannerAPI.HttpApi.Client/MealPlannerAPI.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.EntityFrameworkCore.Tests": {
+      "path": "test/MealPlannerAPI.EntityFrameworkCore.Tests/MealPlannerAPI.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "MealPlannerAPI.EntityFrameworkCore": {
+      "path": "src/MealPlannerAPI.EntityFrameworkCore/MealPlannerAPI.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.TestBase": {
+      "path": "test/MealPlannerAPI.TestBase/MealPlannerAPI.TestBase.abppkg",
+      "folder": "test"
+    },
+    "MealPlannerAPI.Domain.Tests": {
+      "path": "test/MealPlannerAPI.Domain.Tests/MealPlannerAPI.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "MealPlannerAPI.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/MealPlannerAPI.HttpApi.Client.ConsoleTestApp/MealPlannerAPI.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "MealPlannerAPI.DbMigrator": {
+      "path": "src/MealPlannerAPI.DbMigrator/MealPlannerAPI.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.HttpApi.Host": {
+      "path": "src/MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "MealPlannerAPI.Domain": {
+      "path": "src/MealPlannerAPI.Domain/MealPlannerAPI.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
