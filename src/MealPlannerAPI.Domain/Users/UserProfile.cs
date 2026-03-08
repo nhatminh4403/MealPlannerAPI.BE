@@ -1,8 +1,5 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Identity;
 
 namespace MealPlannerAPI.Users
@@ -58,7 +55,7 @@ namespace MealPlannerAPI.Users
 
         protected UserProfile() { }
 
-        public UserProfile(Guid id, string userName, string email, Guid? tenantId = null) 
+        public UserProfile(Guid id, string userName, string email, Guid? tenantId = null)
             : base(id, userName, email, tenantId)
         {
         }

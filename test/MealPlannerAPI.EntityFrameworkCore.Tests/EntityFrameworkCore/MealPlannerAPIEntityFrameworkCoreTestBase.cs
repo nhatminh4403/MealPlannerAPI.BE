@@ -1,6 +1,4 @@
-﻿using Volo.Abp;
-
-namespace MealPlannerAPI.EntityFrameworkCore;
+﻿namespace MealPlannerAPI.EntityFrameworkCore;
 
 public abstract class MealPlannerAPIEntityFrameworkCoreTestBase : MealPlannerAPITestBase<MealPlannerAPIEntityFrameworkCoreTestModule>
 {

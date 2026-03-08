@@ -1,7 +1,5 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Volo.Abp.Domain.Entities;
 
 namespace MealPlannerAPI.MealPlans
@@ -24,14 +22,16 @@ namespace MealPlannerAPI.MealPlans
         public MealPlanEntry(Guid id,
                              Guid mealPlanId,
                              DateTime dayOfWeek,
+                             string mealName,
                              MealType mealType,
-                             Guid recipeId,
+                             Guid? recipeId,
                              string? scheduledTime)
             : base(id)
         {
             MealPlanId = mealPlanId;
             DayOfWeek = dayOfWeek;
             MealType = mealType;
+            MealName = mealName;
             RecipeId = recipeId;
             ScheduledTime = scheduledTime;
         }

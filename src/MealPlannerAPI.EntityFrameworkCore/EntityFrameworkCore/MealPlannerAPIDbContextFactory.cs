@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace MealPlannerAPI.EntityFrameworkCore;
 
@@ -13,12 +12,12 @@ public class MealPlannerAPIDbContextFactory : IDesignTimeDbContextFactory<MealPl
     public MealPlannerAPIDbContext CreateDbContext(string[] args)
     {
         var configuration = BuildConfiguration();
-        
+
         MealPlannerAPIEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<MealPlannerAPIDbContext>()
             .UseSqlServer(configuration.GetConnectionString("Default"));
-        
+
         return new MealPlannerAPIDbContext(builder.Options);
     }
 

@@ -1,5 +1,4 @@
-﻿using MealPlannerAPI.EntityFrameworkCore;
-using Xunit;
+﻿using Xunit;
 
 namespace MealPlannerAPI.EntityFrameworkCore;
 

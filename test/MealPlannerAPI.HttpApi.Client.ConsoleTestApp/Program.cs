@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
 using Volo.Abp;
 
 namespace MealPlannerAPI.HttpApi.Client.ConsoleTestApp;
@@ -12,11 +12,11 @@ class Program
     {
         using (var application = await AbpApplicationFactory.CreateAsync<MealPlannerAPIConsoleApiClientModule>(options =>
         {
-           var builder = new ConfigurationBuilder();
-           builder.AddJsonFile("appsettings.json", false);
-           builder.AddJsonFile("appsettings.secrets.json", true);
-           options.Services.ReplaceConfiguration(builder.Build());
-           options.UseAutofac();
+            var builder = new ConfigurationBuilder();
+            builder.AddJsonFile("appsettings.json", false);
+            builder.AddJsonFile("appsettings.secrets.json", true);
+            options.Services.ReplaceConfiguration(builder.Build());
+            options.UseAutofac();
         }))
         {
             await application.InitializeAsync();

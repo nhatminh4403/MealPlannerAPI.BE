@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Shouldly;
+using System;
 using System.Threading.Tasks;
-using Shouldly;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Xunit;
@@ -29,12 +29,12 @@ public class SampleRepositoryTests : MealPlannerAPIEntityFrameworkCoreTestBase
          */
         await WithUnitOfWorkAsync(async () =>
         {
-                //Act
-                var adminUser = await _appUserRepository
-                .FirstOrDefaultAsync(u => u.UserName == "admin");
+            //Act
+            var adminUser = await _appUserRepository
+            .FirstOrDefaultAsync(u => u.UserName == "admin");
 
-                //Assert
-                adminUser.ShouldNotBeNull();
+            //Assert
+            adminUser.ShouldNotBeNull();
         });
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MealPlannerAPI.Enums;
+﻿namespace MealPlannerAPI.Enums;
 
 public enum MealPlannerEnums
 {

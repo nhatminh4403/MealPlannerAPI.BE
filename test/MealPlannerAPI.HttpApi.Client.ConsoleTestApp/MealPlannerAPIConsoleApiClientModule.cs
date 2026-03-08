@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Polly;
+using System;
 using Volo.Abp.Autofac;
 using Volo.Abp.Http.Client;
 using Volo.Abp.Http.Client.IdentityModel;

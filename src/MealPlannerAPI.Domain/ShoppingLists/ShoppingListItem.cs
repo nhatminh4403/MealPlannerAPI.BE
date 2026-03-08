@@ -1,16 +1,11 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace MealPlannerAPI.ShoppingLists
 {
     public class ShoppingListItem : AuditedEntity<Guid>
     {
-        
-
         public Guid ShoppingListId { get; set; }
         public string ShoppingListName { get; set; } = null!;
         public bool IsCompleted { get; set; }

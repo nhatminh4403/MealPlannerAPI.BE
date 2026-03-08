@@ -1,7 +1,6 @@
 using MealPlannerAPI.Localization;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Localization;
-using Volo.Abp.MultiTenancy;
 
 namespace MealPlannerAPI.Permissions;
 

@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Localization;
-using MealPlannerAPI.Localization;
+﻿using MealPlannerAPI.Localization;
+using Microsoft.Extensions.Localization;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Ui.Branding;
 

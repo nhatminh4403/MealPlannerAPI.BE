@@ -1,18 +1,18 @@
 using MealPlannerAPI.Localization;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
-using Volo.Abp.Validation.Localization;
 using Volo.Abp.Modularity;
+using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
-using Volo.Abp.VirtualFileSystem;
-using Volo.Abp.OpenIddict;
-using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.Validation.Localization;
+using Volo.Abp.VirtualFileSystem;
 
 namespace MealPlannerAPI;
 
@@ -50,12 +50,12 @@ public class MealPlannerAPIDomainSharedModule : AbpModule
                 .AddVirtualJson("/Localization/MealPlannerAPI");
 
             options.DefaultResourceType = typeof(MealPlannerAPIResource);
-            
-            options.Languages.Add(new LanguageInfo("en", "en", "English")); 
-            options.Languages.Add(new LanguageInfo("vi", "vi-VN", "Vietnamese")); 
+
+            options.Languages.Add(new LanguageInfo("en", "en", "English"));
+            options.Languages.Add(new LanguageInfo("vi", "vi-VN", "Vietnamese"));
 
         });
-        
+
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("MealPlannerAPI", typeof(MealPlannerAPIResource));

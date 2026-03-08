@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using OpenIddict.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using OpenIddict.Abstractions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.OpenIddict;
@@ -36,10 +36,10 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
 
     private async Task CreateScopesAsync()
     {
-        await CreateScopesAsync(new OpenIddictScopeDescriptor 
+        await CreateScopesAsync(new OpenIddictScopeDescriptor
         {
-            Name = "MealPlannerAPI", 
-            DisplayName = "MealPlannerAPI API", 
+            Name = "MealPlannerAPI",
+            DisplayName = "MealPlannerAPI API",
             Resources = { "MealPlannerAPI" }
         });
     }
@@ -86,8 +86,8 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             );
         }
 
-        
-        
+
+
 
 
 
