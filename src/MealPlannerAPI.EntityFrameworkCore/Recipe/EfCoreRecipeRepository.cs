@@ -11,7 +11,7 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace MealPlannerAPI.Recipes
 {
-    public class EfCoreRecipeRepository : EfCoreRepository<MealPlannerAPIDbContext, Recipe, Guid>, IRecipeReposiotry
+    public class EfCoreRecipeRepository : EfCoreRepository<MealPlannerAPIDbContext, Recipe, Guid>, IRecipeRepository
     {
         public EfCoreRecipeRepository(IDbContextProvider<MealPlannerAPIDbContext> dbContextProvider) : base(dbContextProvider)
         {

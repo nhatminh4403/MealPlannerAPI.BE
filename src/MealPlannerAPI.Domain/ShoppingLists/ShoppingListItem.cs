@@ -1,5 +1,7 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
+using System.Collections.Generic;
+using System.Xml.Linq;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace MealPlannerAPI.ShoppingLists
@@ -26,6 +28,8 @@ namespace MealPlannerAPI.ShoppingLists
             Unit = unit;
             Category = category;
         }
+
+
 
     }
 }

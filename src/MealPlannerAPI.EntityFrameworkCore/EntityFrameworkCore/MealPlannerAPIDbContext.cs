@@ -194,6 +194,7 @@ public class MealPlannerAPIDbContext :
             b.ConfigureByConvention();
 
             b.Property(x => x.DayOfWeek)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(16);
 

@@ -6,7 +6,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace MealPlannerAPI.Recipes
 {
-    public interface IRecipeReposiotry : IRepository<Recipe, Guid>
+    public interface IRecipeRepository : IRepository<Recipe, Guid>
     {
         Task<List<Recipe>> GetListByCuisineAsync(string cuisine, CancellationToken cancellationToken = default);
         Task<List<Recipe>> GetListByAuthorAsync(Guid authorId, CancellationToken cancellationToken = default);

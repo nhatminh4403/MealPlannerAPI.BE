@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    [Migration("20260307150924_Initial")]
+    [Migration("20260308131146_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -97,9 +97,10 @@ namespace MealPlannerAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("DayOfWeek")
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("datetime2");
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<string>("MealName")
                         .IsRequired()

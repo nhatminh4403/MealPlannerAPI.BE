@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.Recipes;
+﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using Riok.Mapperly.Abstractions;
 using System;
@@ -17,19 +18,16 @@ public partial class RecipeToRecipeDtoMapper : MapperBase<Recipe, RecipeDto>
     [MapperIgnoreTarget(nameof(RecipeDto.Author))]
     [MapperIgnoreTarget(nameof(RecipeDto.Tags))]
     [MapperIgnoreTarget(nameof(RecipeDto.Instructions))]
+    [MapperIgnoreTarget(nameof(RecipeDto.Ingredients))]
+    [MapperIgnoreTarget(nameof(RecipeDto.TotalTimeMinutes))]
     public override partial RecipeDto Map(Recipe source);
 
     [MapperIgnoreTarget(nameof(RecipeDto.Author))]
     [MapperIgnoreTarget(nameof(RecipeDto.Tags))]
     [MapperIgnoreTarget(nameof(RecipeDto.Instructions))]
+    [MapperIgnoreTarget(nameof(RecipeDto.Ingredients))]
+    [MapperIgnoreTarget(nameof(RecipeDto.TotalTimeMinutes))]
     public override partial void Map(Recipe source, RecipeDto destination);
-
-    // Tags and Instructions are stored as JSON strings on the entity
-    // and deserialized to List<string> on the DTO — done manually after Map()
-    public List<string> DeserializeStringList(string? json)
-        => string.IsNullOrWhiteSpace(json)
-            ? new List<string>()
-            : JsonSerializer.Deserialize<List<string>>(json) ?? new();
 }
 
 // ── Recipe → RecipeSummaryDto ─────────────────────────────────────────────────
@@ -44,6 +42,20 @@ public partial class RecipeToRecipeSummaryDtoMapper : MapperBase<Recipe, RecipeS
     [MapperIgnoreTarget(nameof(RecipeSummaryDto.Tags))]
     [MapperIgnoreTarget(nameof(RecipeSummaryDto.TotalTimeMinutes))]
     public override partial void Map(Recipe source, RecipeSummaryDto destination);
+}
+
+
+// ── Recipe → TrendingRecipeDto ────────────────────────────────────────────────
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class RecipeToTrendingRecipeDtoMapper : MapperBase<Recipe, TrendingRecipeDto>
+{
+    [MapperIgnoreTarget(nameof(TrendingRecipeDto.TrendingScore))]
+    [MapperIgnoreTarget(nameof(TrendingRecipeDto.TrendingSince))]
+    public override partial TrendingRecipeDto Map(Recipe source);
+
+    [MapperIgnoreTarget(nameof(TrendingRecipeDto.TrendingScore))]
+    [MapperIgnoreTarget(nameof(TrendingRecipeDto.TrendingSince))]
+    public override partial void Map(Recipe source, TrendingRecipeDto destination);
 }
 
 // ── RecipeIngredient → RecipeIngredientDto ────────────────────────────────────
@@ -111,38 +123,5 @@ public partial class CreateUpdateRecipeDtoToRecipeMapper
     [MapperIgnoreTarget(nameof(Recipe.ConcurrencyStamp))]
     [MapperIgnoreTarget(nameof(Recipe.DeleterId))]
     public override partial void Map(CreateUpdateRecipeDto source, Recipe destination);
-
-    // Tags and Instructions are serialized to JSON strings on the entity
-    // — done manually after Map() in the app service
-    public string SerializeStringList(List<string> values)
-        => JsonSerializer.Serialize(values);
 }
-
-// ── CreateUpdateRecipeIngredientDto → RecipeIngredient ────────────────────────
-
-[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-public partial class CreateUpdateRecipeIngredientDtoToRecipeIngredientMapper
-    : MapperBase<CreateUpdateRecipeIngredientDto, RecipeIngredient>
-{
-    private readonly IGuidGenerator _guidGenerator;
-
-    public CreateUpdateRecipeIngredientDtoToRecipeIngredientMapper(IGuidGenerator guidGenerator)
-    {
-        _guidGenerator = guidGenerator;
-    }
-
-    [ObjectFactory]
-    private RecipeIngredient CreateRecipeIngredient()
-        => new RecipeIngredient(_guidGenerator.Create(), Guid.Empty, string.Empty, 0, string.Empty);
-
-    [MapperIgnoreTarget(nameof(RecipeIngredient.Id))]
-    [MapperIgnoreTarget(nameof(RecipeIngredient.Id))]
-    [MapperIgnoreTarget(nameof(RecipeIngredient.RecipeId))]
-    public override partial RecipeIngredient Map(CreateUpdateRecipeIngredientDto source);
-
-    [MapperIgnoreTarget(nameof(RecipeIngredient.Id))]
-    [MapperIgnoreTarget(nameof(RecipeIngredient.RecipeId))]
-    public override partial void Map(CreateUpdateRecipeIngredientDto source, RecipeIngredient destination);
-}
-
 

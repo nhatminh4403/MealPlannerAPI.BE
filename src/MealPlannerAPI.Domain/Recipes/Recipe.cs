@@ -1,6 +1,9 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace MealPlannerAPI.Recipes
@@ -60,5 +63,55 @@ namespace MealPlannerAPI.Recipes
             Description = description;
             AuthorId = authorId;
         }
+
+        public List<string> GetTags()
+        {
+            return string.IsNullOrWhiteSpace(Tags) ? new List<string>() : [.. Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)];
+        }
+
+        public void SetTags(IEnumerable<string> tags)
+        {
+            var list = new List<string>(tags);
+            if (list.Count > RecipeConsts.MaxTags)
+                throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyTags).WithData("max", RecipeConsts.MaxTags);
+
+            Tags = list.Count > 0 ? string.Join(',', list) : null;
+        }
+        public List<string> GetInstructions()
+        {
+            return JsonSerializer.Deserialize<List<string>>(InstructionsJson) ?? new List<string>();
+        }
+
+        public void SetInstructions(IEnumerable<string> steps)
+        {
+            InstructionsJson = JsonSerializer.Serialize(new List<string>(steps));
+        }
+        public RecipeIngredient AddIngredient(Guid id, string name, decimal quantity, string unit)
+        {
+            if (Ingredients.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                throw new BusinessException(MealPlannerAPIDomainErrorCodes.DuplicateIngredient);
+
+            if (Ingredients.Count >= RecipeConsts.MaxIngredients)
+                throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyIngredients)
+                                            .WithData("max", RecipeConsts.MaxIngredients);
+
+            var ingredient = new RecipeIngredient(id, Id, name, quantity, unit);
+            Ingredients.Add(ingredient);
+            return ingredient;
+        }
+
+        public void ReplaceIngredients(IEnumerable<(Guid Id, string Name, decimal Quantity, string Unit)> ingredients)
+        {
+            Ingredients.Clear();
+            foreach (var (id, name, quantity, unit) in ingredients)
+            {
+                AddIngredient(id, name, quantity, unit);
+            }
+        }
+        public int GetTotalTimeMinutes() => CookingTimeMinutes + PrepTimeMinutes;
+
+        public double CalculateTrendingScore()
+            => Math.Round(Rating * (1 + ReviewCount * 0.001), 1);
     }
+
 }

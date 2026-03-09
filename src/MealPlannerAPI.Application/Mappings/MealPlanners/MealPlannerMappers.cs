@@ -12,7 +12,9 @@ namespace MealPlannerAPI.Mappings.Recipes;
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class MealPlanToMealPlanDtoMapper : MapperBase<MealPlan, MealPlanDto>
 {
+    [MapperIgnoreTarget(nameof(MealPlanDto.Days))]
     public override partial MealPlanDto Map(MealPlan source);
+    [MapperIgnoreTarget(nameof(MealPlanDto.Days))]
     public override partial void Map(MealPlan source, MealPlanDto destination);
 }
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
@@ -60,7 +62,10 @@ public partial class CreateUpdateMealPlanDtoToMealPlanMapper : MapperBase<Create
 
 public partial class MealPlanEntryToMealPlanEntryDtoMapper : MapperBase<MealPlanEntry, MealPlanEntryDto>
 {
+
+    [MapperIgnoreTarget(nameof(MealPlanEntryDto.RecipeName))]
     public override partial MealPlanEntryDto Map(MealPlanEntry source);
+    [MapperIgnoreTarget(nameof(MealPlanEntryDto.RecipeName))]
     public override partial void Map(MealPlanEntry source, MealPlanEntryDto destination);
 
     public List<MealPlanEntryDto> MapList(ICollection<MealPlanEntry> source)
@@ -71,40 +76,41 @@ public partial class MealPlanEntryToMealPlanEntryDtoMapper : MapperBase<MealPlan
     public List<MealPlanDayDto> GroupIntoDays(ICollection<MealPlanEntry> entries)
     {
         return entries
-                .GroupBy(e => e.DayOfWeek)
-                .Select(g => new MealPlanDayDto
-                {
-                    DayOfWeek = g.Key,
-                    Meals = g.Select(Map).ToList()
-                })
-                .ToList();
+             .GroupBy(e => e.DayOfWeek)
+            .OrderBy(g => g.Key == DayOfWeek.Sunday ? 7 : (int)g.Key)
+            .Select(g => new MealPlanDayDto
+            {
+                DayOfWeek = g.Key,
+                Meals = g.OrderBy(e => e.MealType).Select(Map).ToList()
+            })
+            .ToList();
     }
-}
-[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-public partial class CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper : MapperBase<CreateUpdateMealPlanEntryDto, MealPlanEntry>
-{
-    private readonly IGuidGenerator _guidGenerator;
-
-    public CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper(IGuidGenerator guidGenerator)
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+    public partial class CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper : MapperBase<CreateUpdateMealPlanEntryDto, MealPlanEntry>
     {
-        _guidGenerator = guidGenerator;
+        private readonly IGuidGenerator _guidGenerator;
+
+        public CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper(IGuidGenerator guidGenerator)
+        {
+            _guidGenerator = guidGenerator;
+        }
+
+        [ObjectFactory]
+        private MealPlanEntry CreateMealPlanEntry()
+            => new MealPlanEntry(id: _guidGenerator.Create(),
+                                 mealPlanId: Guid.Empty,
+                                 dayOfWeek: default,
+                                 mealName: string.Empty,
+                                 mealType: default,
+                                 null,
+                                 null);
+
+        [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
+        [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]
+        public override partial MealPlanEntry Map(CreateUpdateMealPlanEntryDto source);
+
+        [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
+        [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]
+        public override partial void Map(CreateUpdateMealPlanEntryDto source, MealPlanEntry destination);
     }
-
-    [ObjectFactory]
-    private MealPlanEntry CreateMealPlanEntry()
-        => new MealPlanEntry(id: _guidGenerator.Create(),
-                             mealPlanId: Guid.Empty,
-                             dayOfWeek: default(DateTime),
-                             mealName: string.Empty,
-                             mealType: default,
-                             null,
-                             null);
-
-    [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
-    [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]
-    public override partial MealPlanEntry Map(CreateUpdateMealPlanEntryDto source);
-
-    [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
-    [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]
-    public override partial void Map(CreateUpdateMealPlanEntryDto source, MealPlanEntry destination);
 }

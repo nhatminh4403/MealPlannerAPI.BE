@@ -8,6 +8,6 @@ namespace MealPlannerAPI.MealPlans.Dtos
     {
         public Guid UserId { get; set; }
         public DateTime WeekStartDate { get; set; }
-        public List<MealPlanEntryDto> Entries { get; set; } = new List<MealPlanEntryDto>();
+        public List<MealPlanDayDto> Days { get; set; } = new List<MealPlanDayDto>();
     }
 }

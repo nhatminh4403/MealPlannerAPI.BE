@@ -6,8 +6,7 @@ namespace MealPlannerAPI.MealPlans.Dtos
 {
     public class CreateUpdateMealPlanEntryDto
     {
-        [Required, MaxLength(16)]
-        public string DayOfWeek { get; set; } = null!;
+        public DayOfWeek DayOfWeek { get; set; }
 
         [Required, MaxLength(256)]
         public string MealName { get; set; } = null!;

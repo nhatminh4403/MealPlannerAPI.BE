@@ -12,6 +12,7 @@ namespace MealPlannerAPI.ShoppingLists.Dtos
         [Range(0.001, double.MaxValue)]
         public decimal Quantity { get; set; }
 
+
         [Required, MaxLength(32)]
         public string Unit { get; set; } = null!;
 

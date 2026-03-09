@@ -8,7 +8,7 @@ namespace MealPlannerAPI.MealPlans
     {
         public Guid MealPlanId { get; set; }
 
-        public DateTime DayOfWeek { get; set; }   // "Monday" … "Sunday"
+        public DayOfWeek DayOfWeek { get; set; }   // "Monday" … "Sunday"
 
         public string MealName { get; set; } = null!;
 
@@ -21,7 +21,7 @@ namespace MealPlannerAPI.MealPlans
         protected MealPlanEntry() { }
         public MealPlanEntry(Guid id,
                              Guid mealPlanId,
-                             DateTime dayOfWeek,
+                             DayOfWeek dayOfWeek,
                              string mealName,
                              MealType mealType,
                              Guid? recipeId,

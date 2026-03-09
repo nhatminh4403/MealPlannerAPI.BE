@@ -94,9 +94,10 @@ namespace MealPlannerAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("DayOfWeek")
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("datetime2");
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<string>("MealName")
                         .IsRequired()

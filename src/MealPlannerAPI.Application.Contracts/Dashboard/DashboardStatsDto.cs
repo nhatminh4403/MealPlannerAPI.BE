@@ -7,16 +7,20 @@ namespace MealPlannerAPI.Dashboard
     {
         public int ThisWeekMeals { get; set; }
         public int RecipesSaved { get; set; }
-        public string CookingTime { get; set; } = null!;
+        public int TotalCookingMinutes { get; set; }
         public int TotalRecipes { get; set; }
         public int MealPlans { get; set; }
         public int RecipesShared { get; set; }
+        public int ShoppingLists { get; set; }
+
     }
 
     public class TrendingRecipeDto
     {
-        public int RecipeId { get; set; }
         public string Name { get; set; } = null!;
+        public string? ImageUrl { get; set; }
+        public double Rating { get; set; }
+        public int ReviewCount { get; set; }
         public double TrendingScore { get; set; }
         public string TrendingSince { get; set; } = null!;
     }

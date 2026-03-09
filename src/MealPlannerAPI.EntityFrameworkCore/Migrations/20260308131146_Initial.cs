@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -948,7 +948,7 @@ namespace MealPlannerAPI.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MealPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DayOfWeek = table.Column<DateTime>(type: "datetime2", maxLength: 16, nullable: false),
+                    DayOfWeek = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     MealName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     MealType = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     ScheduledTime = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: true),
