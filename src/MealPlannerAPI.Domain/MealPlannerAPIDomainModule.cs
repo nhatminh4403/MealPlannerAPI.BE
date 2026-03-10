@@ -40,7 +40,7 @@ public class MealPlannerAPIDomainModule : AbpModule
     {
         Configure<AbpMultiTenancyOptions>(options =>
         {
-            options.IsEnabled = MultiTenancyConsts.IsEnabled;
+            options.IsEnabled = !MultiTenancyConsts.IsEnabled;
         });
 
 

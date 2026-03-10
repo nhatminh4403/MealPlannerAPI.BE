@@ -1,6 +1,8 @@
 ﻿using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.HealthChecks;
 using MealPlannerAPI.MultiTenancy;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
@@ -15,6 +17,7 @@ using OpenIddict.Validation.AspNetCore;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
@@ -135,6 +138,28 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         {
             options.IsDynamicClaimsEnabled = true;
         });
+
+        context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddAbpJwtBearer(options =>
+            {
+                options.Authority = context.Services.GetConfiguration()["AuthServer:Authority"];
+                options.RequireHttpsMetadata = context.Services.GetConfiguration().GetValue<bool>("AuthServer:RequireHttpsMetadata");
+                options.Audience = "MealPlannerAPI";
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(token) &&
+                            context.HttpContext.Request.Path.StartsWithSegments("/signalr-hubs"))
+                        {
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
     }
 
     private void ConfigureUrls(IConfiguration configuration)
@@ -172,7 +197,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         });
     }
 
-
+    //private void Configure
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
@@ -238,8 +263,6 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     {
         context.Services.AddMealPlannerAPIHealthChecks();
     }
-
-
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();

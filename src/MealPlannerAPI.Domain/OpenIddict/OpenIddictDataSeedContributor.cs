@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OpenIddict.Abstractions;
+using OpenIddict.Core;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,14 +18,17 @@ namespace MealPlannerAPI.OpenIddict;
  */
 public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, IDataSeedContributor, ITransientDependency
 {
+    private readonly IOpenIddictApplicationManager _openIddictApplicationManager;
     public OpenIddictDataSeedContributor(
         IConfiguration configuration,
         IOpenIddictApplicationRepository openIddictApplicationRepository,
         IAbpApplicationManager applicationManager,
         IOpenIddictScopeRepository openIddictScopeRepository,
-        IOpenIddictScopeManager scopeManager)
+        IOpenIddictScopeManager scopeManager,
+        IOpenIddictApplicationManager iopeniddictApplicationManager)
         : base(configuration, openIddictApplicationRepository, applicationManager, openIddictScopeRepository, scopeManager)
     {
+        _openIddictApplicationManager = iopeniddictApplicationManager;
     }
 
     [UnitOfWork]
@@ -54,6 +58,26 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             OpenIddictConstants.Permissions.Scopes.Roles,
             "MealPlannerAPI"
         };
+
+        await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+        {
+            ClientId = "MealPlannerAPI_Web",
+            ClientType = OpenIddictConstants.ClientTypes.Public,
+            //ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
+            DisplayName = "MealPlanner API Web",
+            Permissions =
+            {
+                OpenIddictConstants.Permissions.Endpoints.Token,
+                OpenIddictConstants.Permissions.Endpoints.Revocation,
+                OpenIddictConstants.Permissions.GrantTypes.Password,
+                OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                OpenIddictConstants.Permissions.Scopes.Email,
+                OpenIddictConstants.Permissions.Scopes.Profile,
+                OpenIddictConstants.Permissions.Scopes.Roles,
+                OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
+            }
+        });
+
 
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");
 
