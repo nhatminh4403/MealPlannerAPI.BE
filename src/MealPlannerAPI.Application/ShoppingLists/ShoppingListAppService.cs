@@ -1,18 +1,16 @@
-﻿using MealPlannerAPI.Mappings.ShoppingLists;
+﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Mappings.ShoppingLists;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using MealPlannerAPI.ShoppingLists.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
-using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 
 namespace MealPlannerAPI.ShoppingLists
@@ -32,13 +30,15 @@ namespace MealPlannerAPI.ShoppingLists
         private readonly IRecipeRepository _recipeRepository;
         private readonly ShoppingListManager _shoppingListManager;
         private readonly ShoppingListToShoppingListDtoMapper _toShoppingListDtoMapper;
-        private readonly ShoppingItemToShoppingItemDtoMapper _toItemDtoMapper;
+        private readonly ShoppingItemToShoppingItemDtoMapper _toItemDtoMapper; 
+        private readonly IRecipeAppHubPublisher _hub;
         public ShoppingListAppService(IShoppingListRepository shoppingListRepository,
                                       IMealPlanRepository mealPlanRepository,
                                       IRecipeRepository recipeRepository,
                                       ShoppingListManager shoppingListManager,
                                       ShoppingListToShoppingListDtoMapper toShoppingListDtoMapper,
-                                      ShoppingItemToShoppingItemDtoMapper toItemDtoMapper) : base(repository: shoppingListRepository)
+                                      ShoppingItemToShoppingItemDtoMapper toItemDtoMapper,
+                                      IRecipeAppHubPublisher hub) : base(repository: shoppingListRepository)
         {
             _shoppingListRepository = shoppingListRepository;
             _mealPlanRepository = mealPlanRepository;
@@ -46,6 +46,7 @@ namespace MealPlannerAPI.ShoppingLists
             _shoppingListManager = shoppingListManager;
             _toShoppingListDtoMapper = toShoppingListDtoMapper;
             _toItemDtoMapper = toItemDtoMapper;
+            _hub = hub;
         }
 
         public async Task<ShoppingListItemDto> AddItemAsync(Guid shoppingListId, CreateUpdateShoppingListItemDto input)
@@ -59,6 +60,8 @@ namespace MealPlannerAPI.ShoppingLists
                                     input.Category);
 
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
+
+            await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
             return _toItemDtoMapper.Map(item);
         }
 
@@ -136,6 +139,7 @@ namespace MealPlannerAPI.ShoppingLists
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
             list.MarkAllCompleted();
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
+            await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
         }
 
         public async Task RemoveItemAsync(Guid shoppingListId, Guid itemId)
@@ -143,6 +147,8 @@ namespace MealPlannerAPI.ShoppingLists
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
             list.RemoveItem(itemId);
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
+            await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
+
         }
 
         public async Task<ShoppingListItemDto> ToggleItemAsync(Guid shoppingListId, Guid itemId)
@@ -153,7 +159,9 @@ namespace MealPlannerAPI.ShoppingLists
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
 
             var item = list.Items.First(i => i.Id == itemId);
-            return _toItemDtoMapper.Map(item);
+            var itemDto = _toItemDtoMapper.Map(item);
+            await _hub.NotifyShoppingItemToggledAsync(shoppingListId, itemDto);
+            return itemDto;
         }
 
         public async override Task<ShoppingListDto> UpdateAsync(Guid id, CreateUpdateShoppingListDto input)
@@ -165,7 +173,9 @@ namespace MealPlannerAPI.ShoppingLists
                 input.Items.Select(i => (GuidGenerator.Create(), i.Name, false, i.Quantity, i.Unit, i.Category)));
 
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
-            return MapToDto(list);
+            var dto = MapToDto(list);
+            await _hub.NotifyShoppingListUpdatedAsync(list.Id, dto);
+            return dto;
         }
 
         public async Task<ShoppingListItemDto> UpdateItemAsync(Guid shoppingListId, Guid itemId, CreateUpdateShoppingListItemDto input)
@@ -176,7 +186,8 @@ namespace MealPlannerAPI.ShoppingLists
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
 
             var item = list.Items.First(i => i.Id == itemId);
-            return _toItemDtoMapper.Map(item);
+            await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
+            return _toItemDtoMapper.Map(list.Items.First(i => i.Id == itemId));
         }
         private ShoppingListDto MapToDto(ShoppingList list)
         {

@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.Mappings.Recipes;
+﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
@@ -7,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -24,17 +24,24 @@ namespace MealPlannerAPI.Dashboard
         private readonly IShoppingListRepository _shoppingListRepository;
         private readonly RecipeToRecipeSummaryDtoMapper _toSummaryDtoMapper;
         private readonly RecipeToTrendingRecipeDtoMapper _toTrendingDtoMapper;
+        private readonly IRecipeAppHubPublisher _hub;
+        private readonly TrendingRecipeCache _trendingCache;
+
         public DashboardAppService(IRecipeRepository recipeRepository,
                                    IMealPlanRepository mealPlanRepository,
                                    IShoppingListRepository shoppingListRepository,
                                    RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
-                                   RecipeToTrendingRecipeDtoMapper toTrendingDtoMapper)
+                                   RecipeToTrendingRecipeDtoMapper toTrendingDtoMapper,
+                                   IRecipeAppHubPublisher hub,
+                                   TrendingRecipeCache trendingCache)
         {
             _recipeRepository = recipeRepository;
             _mealPlanRepository = mealPlanRepository;
             _shoppingListRepository = shoppingListRepository;
             _toSummaryDtoMapper = toSummaryDtoMapper;
             _toTrendingDtoMapper = toTrendingDtoMapper;
+            _hub = hub;
+            _trendingCache = trendingCache;
         }
         public async Task<DashboardDto> GetAsync()
         {
@@ -99,8 +106,8 @@ namespace MealPlannerAPI.Dashboard
                 MealPlans = mealPlansTotal,
                 ShoppingLists = shoppingListsCount
             };
-        }     
-        
+        }
+
 
         public async Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync()
         {
@@ -144,7 +151,34 @@ namespace MealPlannerAPI.Dashboard
 
             return new ListResultDto<RecipeSummaryDto>(summaries);
         }
+        public async Task InvalidateTrendingCacheAsync()
+        {
+            await _trendingCache.InvalidateAsync();
 
+            var items = await FetchTrendingFromDbAsync();
+            await _trendingCache.SetAsync(items);
+
+            await _hub.NotifyTrendingUpdatedAsync();
+        }
+        private async Task<List<TrendingRecipeDto>> FetchTrendingFromDbAsync()
+        {
+            var cutoff = DateTime.UtcNow.AddDays(-RecipeConsts.TrendingWindowDays);
+            var query = await _recipeRepository.GetQueryableAsync();
+
+            var recipes = await AsyncExecuter.ToListAsync(
+                query.Where(r => r.LastModificationTime >= cutoff || r.CreationTime >= cutoff)
+                     .OrderByDescending(r => r.Rating)
+                     .ThenByDescending(r => r.ReviewCount)
+                     .Take(RecipeConsts.TrendingMaxResults));
+
+            return recipes.Select(r =>
+            {
+                var dto = _toTrendingDtoMapper.Map(r);
+                dto.TrendingScore = r.CalculateTrendingScore();
+                dto.TrendingSince = FormatTrendingSince(r.LastModificationTime ?? r.CreationTime);
+                return dto;
+            }).ToList();
+        }
         /// <summary>
         /// Presentation-layer formatting of a relative time string.
         /// Lives here (not on the domain) because it is purely a display concern.

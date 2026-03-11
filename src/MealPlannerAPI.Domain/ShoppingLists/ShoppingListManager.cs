@@ -2,10 +2,8 @@
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Recipes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Volo.Abp.Domain.Services;
 
 namespace MealPlannerAPI.ShoppingLists

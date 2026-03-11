@@ -1,0 +1,24 @@
+﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.MealPlans.Dtos;
+using MealPlannerAPI.ShoppingLists.Dtos;
+using System;
+using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
+
+namespace MealPlannerAPI.Hubs
+{
+    public interface IMealPlannerAPIHubClient : ITransientDependency
+    {
+        Task TrendingUpdated();
+
+        Task StatsUpdated(DashboardStatsDto stats);
+
+        // ── Meal Plans ────────────────────────────────────────────────────────────
+        Task MealPlanUpdated(MealPlanDto mealPlan);
+
+        // ── Shopping Lists ────────────────────────────────────────────────────────
+        Task ShoppingListUpdated(ShoppingListDto shoppingList);
+
+        Task ShoppingItemToggled(Guid shoppingListId, ShoppingListItemDto item);
+    }
+}

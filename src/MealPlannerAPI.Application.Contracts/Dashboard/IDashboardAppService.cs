@@ -11,5 +11,6 @@ namespace MealPlannerAPI.Dashboard
         Task<DashboardStatsDto> GetStatsAsync();
 
         Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync();
+        Task InvalidateTrendingCacheAsync();
     }
 }

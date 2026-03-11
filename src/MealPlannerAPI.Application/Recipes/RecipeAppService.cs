@@ -1,19 +1,16 @@
-﻿using MealPlannerAPI.Mappings.Recipes;
+﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
 using MealPlannerAPI.Users;
+using Microsoft.AspNetCore.Authorization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities;
-using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
@@ -31,13 +28,16 @@ namespace MealPlannerAPI.Recipes
         private readonly RecipeToRecipeSummaryDtoMapper _toSummaryDtoMapper;
         private readonly RecipeIngredientToRecipeIngredientDtoMapper _toIngredientDtoMapper;
         private readonly CreateUpdateRecipeDtoToRecipeMapper _toRecipeMapper;
-
+        private readonly TrendingRecipeCache _trendingCache;
+        private readonly IRecipeAppHubPublisher _hub;
         public RecipeAppService(IRecipeRepository recipeRepository,
                                 IIdentityUserRepository identityUserRepository,
                                 RecipeToRecipeDtoMapper toRecipeDtoMapper,
                                 RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
                                 RecipeIngredientToRecipeIngredientDtoMapper toIngredientDtoMapper,
-                                CreateUpdateRecipeDtoToRecipeMapper toRecipeMapper) : base(recipeRepository)
+                                CreateUpdateRecipeDtoToRecipeMapper toRecipeMapper,
+                                TrendingRecipeCache trendingCache,
+                                IRecipeAppHubPublisher hub) : base(recipeRepository)
         {
             _recipeRepository = recipeRepository;
             _identityUserRepository = identityUserRepository;
@@ -45,6 +45,8 @@ namespace MealPlannerAPI.Recipes
             _toSummaryDtoMapper = toSummaryDtoMapper;
             _toIngredientDtoMapper = toIngredientDtoMapper;
             _toRecipeMapper = toRecipeMapper;
+            _trendingCache = trendingCache;
+            _hub = hub;
         }
 
         public async override Task<RecipeDto> CreateAsync(CreateUpdateRecipeDto input)
@@ -68,6 +70,8 @@ namespace MealPlannerAPI.Recipes
                 recipe.AddIngredient(GuidGenerator.Create(), i.Name, i.Quantity, i.Unit);
 
             await Repository.InsertAsync(recipe, autoSave: true);
+            await InvalidateTrendingAsync();
+
             return await MapToRecipeDtoAsync(recipe);
 
         }
@@ -78,13 +82,15 @@ namespace MealPlannerAPI.Recipes
             if (recipe != null)
             {
                 await Repository.DeleteAsync(recipe, autoSave: true);
+                await InvalidateTrendingAsync();
+
             }
             else
             {
                 throw new EntityNotFoundException(typeof(Recipe), id);
             }
         }
-
+        [AllowAnonymous]
         public async override Task<RecipeDto> GetAsync(Guid id)
         {
             var recipe = await _recipeRepository.GetAsync(id);
@@ -95,7 +101,7 @@ namespace MealPlannerAPI.Recipes
             }
             return await MapToRecipeDtoAsync(recipe);
         }
-
+        [AllowAnonymous]
         public async override Task<PagedResultDto<RecipeSummaryDto>> GetListAsync(GetRecipesInput input)
         {
             var query = await _recipeRepository.GetQueryableAsync();
@@ -134,6 +140,7 @@ namespace MealPlannerAPI.Recipes
         public async override Task<RecipeDto> UpdateAsync(Guid id, CreateUpdateRecipeDto input)
         {
             var recipe = await _recipeRepository.GetAsync(id);
+            var previousRating = recipe.Rating;
 
             _toRecipeMapper.Map(input, recipe);
 
@@ -143,22 +150,26 @@ namespace MealPlannerAPI.Recipes
                 input.Ingredients.Select(i => (GuidGenerator.Create(), i.Name, i.Quantity, i.Unit)));
 
             await Repository.UpdateAsync(recipe, autoSave: true);
+            if (recipe.Rating != previousRating)
+                await InvalidateTrendingAsync();
+
             return await MapToRecipeDtoAsync(recipe);
         }
+        [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId)
         {
             var recipe = await _recipeRepository.GetListByAuthorAsync(authorId);
             return new ListResultDto<RecipeSummaryDto>(recipe.Select(MapToSummaryDto).ToList());
 
         }
-
+        [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetByCuisineAsync(string cuisine)
         {
             var recipe = await _recipeRepository.GetListByCuisineAsync(cuisine);
             return new ListResultDto<RecipeSummaryDto>(recipe.Select(MapToSummaryDto).ToList());
         }
 
-
+        [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetTopRatedAsync(int count)
         {
             var recipe = await _recipeRepository.GetTopRatedAsync(count);
@@ -167,23 +178,28 @@ namespace MealPlannerAPI.Recipes
 
         private async Task<RecipeDto> MapToRecipeDtoAsync(Recipe recipe)
         {
-             var dto = _toRecipeDtoMapper.Map(recipe);
+            var dto = _toRecipeDtoMapper.Map(recipe);
 
-        dto.Tags = recipe.GetTags();
-        dto.Instructions = recipe.GetInstructions();
-        dto.Ingredients = _toIngredientDtoMapper.MapList(recipe.Ingredients);
+            dto.Tags = recipe.GetTags();
+            dto.Instructions = recipe.GetInstructions();
+            dto.Ingredients = _toIngredientDtoMapper.MapList(recipe.Ingredients);
 
-        var author = await _identityUserRepository.FindAsync(recipe.AuthorId);
-        dto.Author = new RecipeAuthorDto
-        {
-            Id = recipe.AuthorId,
-            Name = author?.Name ?? "Unknown",
-            AvatarUrl = (author as UserProfile)?.AvatarUrl
-        };
+            var author = await _identityUserRepository.FindAsync(recipe.AuthorId);
+            dto.Author = new RecipeAuthorDto
+            {
+                Id = recipe.AuthorId,
+                Name = author?.Name ?? "Unknown",
+                AvatarUrl = (author as UserProfile)?.AvatarUrl
+            };
 
-        return dto;
+            return dto;
         }
 
+        private async Task InvalidateTrendingAsync()
+        {
+            await _trendingCache.InvalidateAsync();
+            await _hub.NotifyTrendingUpdatedAsync();
+        }
         private RecipeSummaryDto MapToSummaryDto(Recipe recipe)
         {
             var dto = _toSummaryDtoMapper.Map(recipe);

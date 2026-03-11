@@ -1,5 +1,6 @@
 ﻿using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.HealthChecks;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.MultiTenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 //using Volo.Abp.AspNetCore.Authentication.JwtBearer;
@@ -27,6 +28,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
+using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
@@ -49,7 +51,9 @@ namespace MealPlannerAPI;
     typeof(MealPlannerAPIEntityFrameworkCoreModule),
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
-    typeof(AbpAspNetCoreSerilogModule)
+    typeof(AbpAspNetCoreSerilogModule),
+    typeof(AbpAspNetCoreSignalRModule)
+
     )]
 public class MealPlannerAPIHttpApiHostModule : AbpModule
 {
@@ -87,6 +91,8 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
+        var services = context.Services;
+
 
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
@@ -118,6 +124,8 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+        ConfigureSignalR(services);
+        ConfigureDistributedCacheOptions(context);
     }
 
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
@@ -258,7 +266,33 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             });
         });
     }
+    private void ConfigureSignalR(IServiceCollection services)
+    {
+        services.AddSignalR();
+        Configure<AbpSignalROptions>(options =>
+        {
+            options.Hubs.AddOrUpdate<MealPlannerAPIHub>();
+        });
+    }
 
+    private void ConfigureDistributedCacheOptions(ServiceConfigurationContext context)
+    {
+        var hostingEnvironment = context.Services.GetHostingEnvironment();
+
+        if (hostingEnvironment.IsDevelopment())
+        {
+            context.Services.AddDistributedMemoryCache();
+
+        }
+        else
+        {
+            context.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = context.Services.GetConfiguration().GetConnectionString("Redis");
+            });
+        }
+
+    }
     private void ConfigureHealthChecks(ServiceConfigurationContext context)
     {
         context.Services.AddMealPlannerAPIHealthChecks();
@@ -307,6 +341,11 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
         });
+        app.UseConfiguredEndpoints(endpoints =>
+        {
+            endpoints.MapHub<MealPlannerAPIHub>("/signalr-hubs/mealPlanner-api");
+        });
+
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();

@@ -1,11 +1,11 @@
-﻿using MealPlannerAPI.Mappings.Recipes;
+﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.MealPlans.Services;
 using MealPlannerAPI.Recipes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -36,13 +36,15 @@ namespace MealPlannerAPI.MealPlans
         private readonly MealPlanEntryToMealPlanEntryDtoMapper _toEntryDtoMapper;
         private readonly CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper _toEntryMapper;
         private readonly MealPlanManager _mealPlanManager;
+        private readonly IRecipeAppHubPublisher _hub;
         public MealPlanAppService(IMealPlanRepository mealPlanRepository,
                                   IRepository<MealPlanEntry, Guid> mealPlanEntryRepository,
                                   IRecipeRepository recipeRepository,
                                   MealPlanToMealPlanDtoMapper toMealPlanDtoMapper,
                                   MealPlanEntryToMealPlanEntryDtoMapper toEntryDtoMapper,
                                   CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper toEntryMapper,
-                                  MealPlanManager mealPlanManager) : base(mealPlanRepository)
+                                  MealPlanManager mealPlanManager,
+                                  IRecipeAppHubPublisher hub) : base(mealPlanRepository)
         {
             _mealPlanRepository = mealPlanRepository;
             _mealPlanEntryRepository = mealPlanEntryRepository;
@@ -51,6 +53,7 @@ namespace MealPlannerAPI.MealPlans
             _toEntryDtoMapper = toEntryDtoMapper;
             _toEntryMapper = toEntryMapper;
             _mealPlanManager = mealPlanManager;
+            _hub = hub;
         }
 
         public override async Task<MealPlanDto> GetAsync(Guid id)
@@ -113,6 +116,8 @@ namespace MealPlannerAPI.MealPlans
 
             mealPlan.RemoveEntry(entryId);
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
+            var dto = await MapToMealPlanDtoAsync(mealPlan);
+            await _hub.NotifyMealPlanUpdatedAsync(mealPlan.UserId, dto);
         }
 
         public async override Task<MealPlanDto> CreateAsync(CreateUpdateMealPlanDto input)
@@ -126,7 +131,9 @@ namespace MealPlannerAPI.MealPlans
                 mealPlan.AddEntry(GuidGenerator.Create(), e.DayOfWeek, e.MealName, e.MealType, e.ScheduledTime, e.RecipeId);
 
             await _mealPlanRepository.InsertAsync(mealPlan, autoSave: true);
-            return await MapToMealPlanDtoAsync(mealPlan);
+            var dto = await MapToMealPlanDtoAsync(mealPlan);
+            await _hub.NotifyMealPlanUpdatedAsync(CurrentUser.GetId(), dto);
+            return dto;
         }
 
         public async override Task<MealPlanDto> UpdateAsync(Guid id, CreateUpdateMealPlanDto input)
@@ -140,7 +147,9 @@ namespace MealPlannerAPI.MealPlans
                     e.DayOfWeek, e.MealName, e.MealType, e.ScheduledTime, e.RecipeId)));
 
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
-            return await MapToMealPlanDtoAsync(mealPlan);
+            var dto = await MapToMealPlanDtoAsync(mealPlan);
+            await _hub.NotifyMealPlanUpdatedAsync(mealPlan.UserId, dto);
+            return dto;
         }
 
         public override Task DeleteAsync(Guid id)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MealPlannerAPI.Recipes
+﻿namespace MealPlannerAPI.Recipes
 {
     public static class RecipeConsts
     {

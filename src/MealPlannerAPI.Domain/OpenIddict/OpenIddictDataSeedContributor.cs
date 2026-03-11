@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

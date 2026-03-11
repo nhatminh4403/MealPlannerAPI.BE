@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MealPlannerAPI.Users.Dtos
+﻿namespace MealPlannerAPI.Users.Dtos
 {
     public class UpdateAvatarDto
     {
