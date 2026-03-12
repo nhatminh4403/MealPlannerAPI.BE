@@ -38,7 +38,7 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
-
+using Microsoft.AspNetCore.SignalR;
 namespace MealPlannerAPI;
 
 [DependsOn(
@@ -124,6 +124,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+        ConfigureRouting(services);
         ConfigureSignalR(services);
         ConfigureDistributedCacheOptions(context);
     }
@@ -229,7 +230,13 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             options.ConventionalControllers.Create(typeof(MealPlannerAPIApplicationModule).Assembly);
         });
     }
-
+    private void ConfigureRouting(IServiceCollection services)
+    {
+        services.AddRouting(options =>
+        {
+            options.LowercaseUrls = true;
+        });
+    }
     private static void ConfigureSwagger(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddAbpSwaggerGenWithOidc(
@@ -268,10 +275,24 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     }
     private void ConfigureSignalR(IServiceCollection services)
     {
-        services.AddSignalR();
+        services.AddSignalR(options =>
+        {
+            options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+            options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+        });
+
         Configure<AbpSignalROptions>(options =>
         {
-            options.Hubs.AddOrUpdate<MealPlannerAPIHub>();
+            options.Hubs.AddOrUpdate(
+                typeof(MealPlannerAPIHub),
+                config =>
+                {
+                    config.RoutePattern = "/signalr-hubs/meal-planner";
+                    config.ConfigureActions.Add(connectionOptions =>
+                    {
+                        connectionOptions.LongPolling.PollTimeout = TimeSpan.FromSeconds(15);
+                    });
+                });
         });
     }
 
@@ -341,10 +362,10 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
         });
-        app.UseConfiguredEndpoints(endpoints =>
-        {
-            endpoints.MapHub<MealPlannerAPIHub>("/signalr-hubs/mealPlanner-api");
-        });
+        //app.UseConfiguredEndpoints(endpoints =>
+        // {
+        //     endpoints.MapHub<MealPlannerAPIHub>("/signalr-hubs/mealPlanner-api");
+        // });
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();

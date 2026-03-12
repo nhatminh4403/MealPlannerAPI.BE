@@ -24,7 +24,7 @@ namespace MealPlannerAPI.Dashboard
         private readonly IShoppingListRepository _shoppingListRepository;
         private readonly RecipeToRecipeSummaryDtoMapper _toSummaryDtoMapper;
         private readonly RecipeToTrendingRecipeDtoMapper _toTrendingDtoMapper;
-        private readonly IRecipeAppHubPublisher _hub;
+        private readonly IMealPlannerHubPublisher _hub;
         private readonly TrendingRecipeCache _trendingCache;
 
         public DashboardAppService(IRecipeRepository recipeRepository,
@@ -32,7 +32,7 @@ namespace MealPlannerAPI.Dashboard
                                    IShoppingListRepository shoppingListRepository,
                                    RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
                                    RecipeToTrendingRecipeDtoMapper toTrendingDtoMapper,
-                                   IRecipeAppHubPublisher hub,
+                                   IMealPlannerHubPublisher hub,
                                    TrendingRecipeCache trendingCache)
         {
             _recipeRepository = recipeRepository;
@@ -43,6 +43,7 @@ namespace MealPlannerAPI.Dashboard
             _hub = hub;
             _trendingCache = trendingCache;
         }
+
         public async Task<DashboardDto> GetAsync()
         {
             var stats = await GetStatsAsync();

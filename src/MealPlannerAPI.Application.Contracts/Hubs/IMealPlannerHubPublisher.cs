@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MealPlannerAPI.Hubs
 {
-    public interface IRecipeAppHubPublisher
+    public interface IMealPlannerHubPublisher
     {
         Task NotifyTrendingUpdatedAsync();
         Task NotifyStatsUpdatedAsync(Guid userId, DashboardStatsDto stats);

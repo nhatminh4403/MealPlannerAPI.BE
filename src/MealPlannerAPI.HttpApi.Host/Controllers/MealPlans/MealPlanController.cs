@@ -1,5 +1,6 @@
 ﻿using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.MealPlans.Services;
+using MealPlannerAPI.Routes;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace MealPlannerAPI.Controllers.MealPlans
 {
-    [Route("api/[controller]")]
+    [Route(APIRoute.APIApp + "[controller]")]
     [ApiController]
     public class MealPlanController : AbpControllerBase
     {

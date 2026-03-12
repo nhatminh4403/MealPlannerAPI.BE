@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
-
-namespace MealPlannerAPI.Controllers
+using MealPlannerAPI.Routes;
+namespace MealPlannerAPI.Controllers.Dashboard
 {
-    [Route("api/[controller]")]
+    [Route(APIRoute.APIApp + "[controller]")]
     [ApiController]
     public class DashboardController : AbpControllerBase
     {

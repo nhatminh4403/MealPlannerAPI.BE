@@ -2,7 +2,9 @@
 using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.MealPlans.Services;
+using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +38,7 @@ namespace MealPlannerAPI.MealPlans
         private readonly MealPlanEntryToMealPlanEntryDtoMapper _toEntryDtoMapper;
         private readonly CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper _toEntryMapper;
         private readonly MealPlanManager _mealPlanManager;
-        private readonly IRecipeAppHubPublisher _hub;
+        private readonly IMealPlannerHubPublisher _hub;
         public MealPlanAppService(IMealPlanRepository mealPlanRepository,
                                   IRepository<MealPlanEntry, Guid> mealPlanEntryRepository,
                                   IRecipeRepository recipeRepository,
@@ -44,7 +46,7 @@ namespace MealPlannerAPI.MealPlans
                                   MealPlanEntryToMealPlanEntryDtoMapper toEntryDtoMapper,
                                   CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper toEntryMapper,
                                   MealPlanManager mealPlanManager,
-                                  IRecipeAppHubPublisher hub) : base(mealPlanRepository)
+                                  IMealPlannerHubPublisher hub) : base(mealPlanRepository)
         {
             _mealPlanRepository = mealPlanRepository;
             _mealPlanEntryRepository = mealPlanEntryRepository;
@@ -54,8 +56,19 @@ namespace MealPlannerAPI.MealPlans
             _toEntryMapper = toEntryMapper;
             _mealPlanManager = mealPlanManager;
             _hub = hub;
+            ConfigurePolicies();
+        }
+        private void ConfigurePolicies()
+        {
+            GetPolicyName = null;
+            GetListPolicyName = MealPlannerAPIPermissions.MealPlans.Default;
+            CreatePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
+            UpdatePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
+            DeletePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
+
         }
 
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
         public override async Task<MealPlanDto> GetAsync(Guid id)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(id);
@@ -66,6 +79,7 @@ namespace MealPlannerAPI.MealPlans
             return await MapToMealPlanDtoAsync(mealPlan);
         }
 
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
         public async Task<MealPlanDto> GetCurrentWeekAsync()
         {
             var plan = await _mealPlanManager.GetOrCreateMealPlanAsync(CurrentUser.GetId(), DateTime.UtcNow);
@@ -73,6 +87,7 @@ namespace MealPlannerAPI.MealPlans
             return await MapToMealPlanDtoAsync(plan);
         }
 
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
         public async override Task<PagedResultDto<MealPlanDto>> GetListAsync(GetMealPlansInput input)
         {
             var query = await _mealPlanRepository.GetQueryableAsync();
@@ -95,7 +110,7 @@ namespace MealPlannerAPI.MealPlans
 
             return new PagedResultDto<MealPlanDto>(totalCount, dtos);
         }
-
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Create)]
         public async Task<MealPlanEntryDto> SetEntryAsync(Guid mealPlanId, CreateUpdateMealPlanEntryDto input)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
@@ -107,7 +122,7 @@ namespace MealPlannerAPI.MealPlans
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
             return await MapToEntryDtoAsync(entry);
         }
-
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Delete)]
         public async Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
@@ -119,7 +134,7 @@ namespace MealPlannerAPI.MealPlans
             var dto = await MapToMealPlanDtoAsync(mealPlan);
             await _hub.NotifyMealPlanUpdatedAsync(mealPlan.UserId, dto);
         }
-
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Create)]
         public async override Task<MealPlanDto> CreateAsync(CreateUpdateMealPlanDto input)
         {
             var mealPlan = new MealPlan(
@@ -135,7 +150,7 @@ namespace MealPlannerAPI.MealPlans
             await _hub.NotifyMealPlanUpdatedAsync(CurrentUser.GetId(), dto);
             return dto;
         }
-
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Update)]
         public async override Task<MealPlanDto> UpdateAsync(Guid id, CreateUpdateMealPlanDto input)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(id);
@@ -151,7 +166,7 @@ namespace MealPlannerAPI.MealPlans
             await _hub.NotifyMealPlanUpdatedAsync(mealPlan.UserId, dto);
             return dto;
         }
-
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Delete)]
         public override Task DeleteAsync(Guid id)
         {
             return base.DeleteAsync(id);

@@ -1,5 +1,6 @@
 ﻿using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
+using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
 using MealPlannerAPI.Users;
@@ -29,7 +30,7 @@ namespace MealPlannerAPI.Recipes
         private readonly RecipeIngredientToRecipeIngredientDtoMapper _toIngredientDtoMapper;
         private readonly CreateUpdateRecipeDtoToRecipeMapper _toRecipeMapper;
         private readonly TrendingRecipeCache _trendingCache;
-        private readonly IRecipeAppHubPublisher _hub;
+        private readonly IMealPlannerHubPublisher _hub;
         public RecipeAppService(IRecipeRepository recipeRepository,
                                 IIdentityUserRepository identityUserRepository,
                                 RecipeToRecipeDtoMapper toRecipeDtoMapper,
@@ -37,7 +38,7 @@ namespace MealPlannerAPI.Recipes
                                 RecipeIngredientToRecipeIngredientDtoMapper toIngredientDtoMapper,
                                 CreateUpdateRecipeDtoToRecipeMapper toRecipeMapper,
                                 TrendingRecipeCache trendingCache,
-                                IRecipeAppHubPublisher hub) : base(recipeRepository)
+                                IMealPlannerHubPublisher hub) : base(recipeRepository)
         {
             _recipeRepository = recipeRepository;
             _identityUserRepository = identityUserRepository;
@@ -47,8 +48,19 @@ namespace MealPlannerAPI.Recipes
             _toRecipeMapper = toRecipeMapper;
             _trendingCache = trendingCache;
             _hub = hub;
+            ConfigurePolicies();
         }
 
+        private void ConfigurePolicies()
+        {
+            GetPolicyName = null;
+            GetListPolicyName = MealPlannerAPIPermissions.Recipes.Default;
+            CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
+            UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
+            DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
+        }
+
+        [Authorize(MealPlannerAPIPermissions.Recipes.Create)]
         public async override Task<RecipeDto> CreateAsync(CreateUpdateRecipeDto input)
         {
             var recipe = new Recipe(
@@ -75,7 +87,7 @@ namespace MealPlannerAPI.Recipes
             return await MapToRecipeDtoAsync(recipe);
 
         }
-
+        [Authorize(MealPlannerAPIPermissions.Recipes.Delete)]
         public async override Task DeleteAsync(Guid id)
         {
             var recipe = await _recipeRepository.GetAsync(id);
@@ -136,7 +148,7 @@ namespace MealPlannerAPI.Recipes
                 recipes.Select(MapToSummaryDto).ToList());
         }
 
-
+        [Authorize(MealPlannerAPIPermissions.Recipes.Update)]
         public async override Task<RecipeDto> UpdateAsync(Guid id, CreateUpdateRecipeDto input)
         {
             var recipe = await _recipeRepository.GetAsync(id);

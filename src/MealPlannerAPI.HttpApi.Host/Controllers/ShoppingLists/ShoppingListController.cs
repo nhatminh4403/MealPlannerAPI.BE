@@ -1,5 +1,7 @@
-﻿using MealPlannerAPI.ShoppingLists.Dtos;
+﻿using MealPlannerAPI.Routes;
+using MealPlannerAPI.ShoppingLists.Dtos;
 using MealPlannerAPI.ShoppingLists.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +10,9 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace MealPlannerAPI.Controllers.ShoppingLists
 {
+    [ApiController]
+    [Authorize]
+    [Route(APIRoute.APIApp + "[controller]")]
     public class ShoppingListController : AbpControllerBase
     {
         private readonly IShoppingListAppService _shoppingListAppService;

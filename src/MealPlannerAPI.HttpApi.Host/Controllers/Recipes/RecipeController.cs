@@ -1,6 +1,7 @@
 ﻿using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
+using MealPlannerAPI.Routes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -10,7 +11,7 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace MealPlannerAPI.Controllers.Recipes
 {
-    [Route("api/[controller]")]
+    [Route(APIRoute.APIApp + "[controller]")]
     [ApiController]
     [Authorize]
     public class RecipeController : AbpControllerBase

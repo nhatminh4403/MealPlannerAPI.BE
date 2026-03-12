@@ -1,4 +1,5 @@
 ﻿using MealPlannerAPI.Notifications;
+using MealPlannerAPI.Routes;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace MealPlannerAPI.Controllers.Notifications
 {
-    [Route("api/[controller]")]
+    [Route(APIRoute.APIApp + "[controller]")]
     [ApiController]
     public class NotificationController : AbpControllerBase
     {

@@ -1,9 +1,11 @@
 ﻿using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.ShoppingLists;
 using MealPlannerAPI.MealPlans;
+using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using MealPlannerAPI.ShoppingLists.Services;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +18,7 @@ using Volo.Abp.Users;
 namespace MealPlannerAPI.ShoppingLists
 {
     [RemoteService(false)]
+    [Authorize(MealPlannerAPIPermissions.ShoppingLists.Default)]
     public class ShoppingListAppService :
                 CrudAppService<ShoppingList,
                                 ShoppingListDto,
@@ -30,15 +33,15 @@ namespace MealPlannerAPI.ShoppingLists
         private readonly IRecipeRepository _recipeRepository;
         private readonly ShoppingListManager _shoppingListManager;
         private readonly ShoppingListToShoppingListDtoMapper _toShoppingListDtoMapper;
-        private readonly ShoppingItemToShoppingItemDtoMapper _toItemDtoMapper; 
-        private readonly IRecipeAppHubPublisher _hub;
+        private readonly ShoppingItemToShoppingItemDtoMapper _toItemDtoMapper;
+        private readonly IMealPlannerHubPublisher _hub;
         public ShoppingListAppService(IShoppingListRepository shoppingListRepository,
                                       IMealPlanRepository mealPlanRepository,
                                       IRecipeRepository recipeRepository,
                                       ShoppingListManager shoppingListManager,
                                       ShoppingListToShoppingListDtoMapper toShoppingListDtoMapper,
                                       ShoppingItemToShoppingItemDtoMapper toItemDtoMapper,
-                                      IRecipeAppHubPublisher hub) : base(repository: shoppingListRepository)
+                                      IMealPlannerHubPublisher hub) : base(repository: shoppingListRepository)
         {
             _shoppingListRepository = shoppingListRepository;
             _mealPlanRepository = mealPlanRepository;
@@ -47,8 +50,20 @@ namespace MealPlannerAPI.ShoppingLists
             _toShoppingListDtoMapper = toShoppingListDtoMapper;
             _toItemDtoMapper = toItemDtoMapper;
             _hub = hub;
+
+            ConfigurePolicies();
         }
 
+
+        private void ConfigurePolicies()
+        {
+            GetPolicyName = null;
+            GetListPolicyName = MealPlannerAPIPermissions.ShoppingLists.Default;
+            CreatePolicyName = MealPlannerAPIPermissions.ShoppingLists.Create;
+            UpdatePolicyName = MealPlannerAPIPermissions.ShoppingLists.Update;
+            DeletePolicyName = MealPlannerAPIPermissions.ShoppingLists.Delete;
+        }
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task<ShoppingListItemDto> AddItemAsync(Guid shoppingListId, CreateUpdateShoppingListItemDto input)
         {
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
@@ -64,7 +79,7 @@ namespace MealPlannerAPI.ShoppingLists
             await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
             return _toItemDtoMapper.Map(item);
         }
-
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.Create)]
         public async override Task<ShoppingListDto> CreateAsync(CreateUpdateShoppingListDto input)
         {
             var list = new ShoppingList(GuidGenerator.Create(), CurrentUser.GetId(), input.Name);
@@ -81,6 +96,7 @@ namespace MealPlannerAPI.ShoppingLists
             return MapToDto(list);
         }
 
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.Delete)]
         public override Task DeleteAsync(Guid id)
         {
             var list = _shoppingListRepository.GetAsync(id);
@@ -88,7 +104,7 @@ namespace MealPlannerAPI.ShoppingLists
                 throw new EntityNotFoundException(typeof(ShoppingList), id);
             return Repository.DeleteAsync(id);
         }
-
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task<ShoppingListDto> GenerateFromMealPlanAsync(Guid mealPlanId)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
@@ -108,13 +124,14 @@ namespace MealPlannerAPI.ShoppingLists
             await _shoppingListRepository.InsertAsync(list, autoSave: true);
             return MapToDto(list);
         }
-
+        [AllowAnonymous]
         public async override Task<ShoppingListDto> GetAsync(Guid id)
         {
             var list = await _shoppingListRepository.GetAsync(id);
             return MapToDto(list);
         }
 
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async override Task<PagedResultDto<ShoppingListDto>> GetListAsync(GetShoppingListsInput input)
         {
             var query = await _shoppingListRepository.GetQueryableAsync();
@@ -133,7 +150,7 @@ namespace MealPlannerAPI.ShoppingLists
 
             return new PagedResultDto<ShoppingListDto>(totalCount, lists.Select(MapToDto).ToList());
         }
-
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task MarkAllCompletedAsync(Guid shoppingListId)
         {
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
@@ -141,7 +158,7 @@ namespace MealPlannerAPI.ShoppingLists
             await _shoppingListRepository.UpdateAsync(list, autoSave: true);
             await _hub.NotifyShoppingListUpdatedAsync(shoppingListId, MapToDto(list));
         }
-
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task RemoveItemAsync(Guid shoppingListId, Guid itemId)
         {
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
@@ -151,6 +168,7 @@ namespace MealPlannerAPI.ShoppingLists
 
         }
 
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task<ShoppingListItemDto> ToggleItemAsync(Guid shoppingListId, Guid itemId)
         {
             var list = await _shoppingListRepository.GetAsync(shoppingListId);
@@ -164,6 +182,7 @@ namespace MealPlannerAPI.ShoppingLists
             return itemDto;
         }
 
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.Update)]
         public async override Task<ShoppingListDto> UpdateAsync(Guid id, CreateUpdateShoppingListDto input)
         {
             var list = await _shoppingListRepository.GetAsync(id);
@@ -178,6 +197,7 @@ namespace MealPlannerAPI.ShoppingLists
             return dto;
         }
 
+        [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
         public async Task<ShoppingListItemDto> UpdateItemAsync(Guid shoppingListId, Guid itemId, CreateUpdateShoppingListItemDto input)
         {
             var list = await _shoppingListRepository.GetAsync(shoppingListId);

@@ -1,11 +1,10 @@
 ﻿using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.Recipes.Caching;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Caching;
-using Microsoft.Extensions.Caching.Distributed;
 namespace MealPlannerAPI.Recipes
 {
     public class TrendingRecipeCache

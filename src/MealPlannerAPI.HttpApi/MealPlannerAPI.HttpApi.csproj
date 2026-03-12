@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="10.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="10.2.0-rc.2" />
     <PackageReference Include="Volo.Abp.AspNetCore.SignalR" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="10.1.0" />

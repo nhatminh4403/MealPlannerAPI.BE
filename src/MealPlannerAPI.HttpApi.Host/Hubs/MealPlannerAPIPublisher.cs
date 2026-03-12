@@ -8,7 +8,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace MealPlannerAPI.Hubs
 {
-    public class MealPlannerAPIPublisher : IRecipeAppHubPublisher, ITransientDependency
+    public class MealPlannerAPIPublisher : IMealPlannerHubPublisher, ITransientDependency
     {
         private readonly IHubContext<MealPlannerAPIHub, IMealPlannerAPIHubClient> _hubContext;
 

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MealPlannerAPI.Permissions;
+using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp;
@@ -20,12 +22,13 @@ namespace MealPlannerAPI.Notifications
             _notificationRepository = notificationRepository;
             _toNotificationDtoMapper = toNotificationDtoMapper;
         }
+        [Authorize(MealPlannerAPIPermissions.Notifications.Delete)]
         public async Task DeleteAsync(Guid id)
         {
             var notification = await _notificationRepository.GetAsync(id);
             await _notificationRepository.DeleteAsync(notification, autoSave: true);
         }
-
+        [Authorize(MealPlannerAPIPermissions.Notifications.Delete)]
         public async Task DeleteAllReadAsync()
         {
             var query = await _notificationRepository.GetQueryableAsync();
@@ -35,6 +38,7 @@ namespace MealPlannerAPI.Notifications
             await _notificationRepository.DeleteManyAsync(read, autoSave: true);
         }
 
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task<UserNotificationDto> GetAsync(Guid id)
         {
             var notification = await _notificationRepository.GetAsync(id);
@@ -43,6 +47,7 @@ namespace MealPlannerAPI.Notifications
             return _toNotificationDtoMapper.Map(notification);
         }
 
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task<PagedResultDto<UserNotificationDto>> GetListAsync(GetNotificationsInput input)
         {
             var query = await _notificationRepository.GetQueryableAsync();
@@ -67,6 +72,7 @@ namespace MealPlannerAPI.Notifications
                 _toNotificationDtoMapper.MapList(notifications));
         }
 
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task<int> GetUnreadCountAsync()
         {
             var query = await _notificationRepository.GetQueryableAsync();
@@ -74,6 +80,7 @@ namespace MealPlannerAPI.Notifications
                 query.Where(n => n.UserId == CurrentUser.GetId() && !n.IsRead));
         }
 
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task MarkAllAsReadAsync()
         {
             var query = await _notificationRepository.GetQueryableAsync();
@@ -86,6 +93,7 @@ namespace MealPlannerAPI.Notifications
             await _notificationRepository.UpdateManyAsync(unread, autoSave: true);
         }
 
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task MarkAsReadAsync(Guid id)
         {
             var notification = await _notificationRepository.GetAsync(id);

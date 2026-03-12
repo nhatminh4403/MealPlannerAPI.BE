@@ -1,8 +1,5 @@
 ﻿namespace MealPlannerAPI.Enums;
 
-public enum MealPlannerEnums
-{
-}
 public enum DifficultyLevel
 {
     Easy = 0,

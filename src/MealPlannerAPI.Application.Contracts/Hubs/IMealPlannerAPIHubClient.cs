@@ -7,7 +7,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace MealPlannerAPI.Hubs
 {
-    public interface IMealPlannerAPIHubClient : ITransientDependency
+    public interface IMealPlannerAPIHubClient 
     {
         Task TrendingUpdated();
 
