@@ -1,11 +1,9 @@
-﻿using System;
-using Volo.Abp.Application.Dtos;
+﻿using Volo.Abp.Identity;
 
 namespace MealPlannerAPI.Users.Dtos
 {
-    public class ProfileDto : FullAuditedEntityDto<Guid>
+    public class ProfileDto : IdentityUserDto
     {
-        public Guid UserId { get; set; }
         public string? AvatarUrl { get; set; }
         public UserPreferencesDto Preferences { get; set; } = null!;
         public UserStatsDto Stats { get; set; } = null!;

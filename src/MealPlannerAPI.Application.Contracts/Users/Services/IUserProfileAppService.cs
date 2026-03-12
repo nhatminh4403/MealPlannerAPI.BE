@@ -1,35 +1,35 @@
 ﻿using MealPlannerAPI.Users.Dtos;
 using System;
 using System.Threading.Tasks;
+using Volo.Abp.Account;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+//using Volo.Abp.Identity;
 
 namespace MealPlannerAPI.Users.Services
 {
     public interface IUserProfileAppService : IApplicationService
     {
-        /// <summary>Get the full profile of the currently authenticated user.</summary>
-        Task<ProfileDto> GetCurrentUserProfileAsync();
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> GetCurrentUserProfileAsync();
 
-        /// <summary>Get a public-facing community view of any user by their id.</summary>
+        /// <param name="input">Extends ABP's UpdateProfileDto (UserName, Name, Surname, PhoneNumber).</param>
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input);
+
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input);
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input);
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateAvatarAsync(string avatarUrl);
+
+        /// <param name="input">ABP's ChangePasswordInput — CurrentPassword + NewPassword.</param>
+        Task ChangePasswordAsync(ChangePasswordInput input);
+
+        Task ChangeEmailAsync(ChangeEmailDto input);
+
+        // ── Community ─────────────────────────────────────────────────────────────
         Task<CommunityUserDto> GetCommunityProfileAsync(Guid userId);
-
-        /// <summary>Get a paged list of community users.</summary>
         Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input);
 
-        /// <summary>Update the current user's dietary and cuisine preferences.</summary>
-        Task<ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input);
-
-        /// <summary>Update the current user's privacy and notification settings.</summary>
-        Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input);
-
-        /// <summary>Update the current user's avatar URL.</summary>
-        Task<ProfileDto> UpdateAvatarAsync(string avatarUrl);
-
-        /// <summary>Follow a user by their id.</summary>
+        // ── Social ────────────────────────────────────────────────────────────────
         Task FollowAsync(Guid targetUserId);
-
-        /// <summary>Unfollow a user by their id.</summary>
         Task UnfollowAsync(Guid targetUserId);
     }
 }

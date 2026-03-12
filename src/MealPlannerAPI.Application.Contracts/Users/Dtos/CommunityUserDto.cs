@@ -5,7 +5,8 @@ namespace MealPlannerAPI.Users.Dtos
 {
     public class CommunityUserDto : EntityDto<Guid>
     {
-        public string Name { get; set; } = null!;
+        public string UserName { get; set; } = null!;
+        public string? Name { get; set; }
         public string? AvatarUrl { get; set; }
         public int RecipesCreated { get; set; }
         public int Followers { get; set; }

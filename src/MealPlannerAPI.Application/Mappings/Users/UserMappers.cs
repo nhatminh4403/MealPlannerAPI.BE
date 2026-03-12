@@ -1,32 +1,36 @@
 ﻿using MealPlannerAPI.Users;
 using MealPlannerAPI.Users.Dtos;
 using Riok.Mapperly.Abstractions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 using Volo.Abp.Mapperly;
 
 namespace MealPlannerAPI.Mappings.Users;
 
+// ── Shared factory ────────────────────────────────────────────────────────────
+// UserProfile inherits IdentityUser whose public constructors require arguments.
+// FormatterServices.GetUninitializedObject bypasses all constructors safely.
+// Mapperly's Map(source, destination) fills every mapped property immediately after.
+// Only used for the Map(source) → new instance overload.
+
 file static class UserProfileFactory
 {
     public static UserProfile CreateEmpty()
-        => (UserProfile)FormatterServices.GetUninitializedObject(typeof(UserProfile));
+    {
+        return (UserProfile)RuntimeHelpers.GetUninitializedObject(typeof(UserProfile));
+    }
 }
 
 // ── UserProfile → CommunityUserDto ───────────────────────────────────────────
+// CommunityUserDto.Id maps from UserProfile.Id (inherited from IdentityUser).
+// UserName maps by name convention. Name, AvatarUrl, RecipesCreated, Followers,
+// Following, Specialty all match by name — no explicit MapProperty needed.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-[MapExtraProperties]
 public partial class UserProfileToCommunityUserDtoMapper : MapperBase<UserProfile, CommunityUserDto>
 {
-    [MapProperty(nameof(UserProfile.Id), nameof(CommunityUserDto.Id))]
-    [MapProperty(nameof(UserProfile.Name), nameof(CommunityUserDto.Name))]
     public override partial CommunityUserDto Map(UserProfile source);
-
-    [MapProperty(nameof(UserProfile.Id), nameof(CommunityUserDto.Id))]
-    [MapProperty(nameof(UserProfile.Name), nameof(CommunityUserDto.Name))]
     public override partial void Map(UserProfile source, CommunityUserDto destination);
 
     public List<CommunityUserDto> MapList(IEnumerable<UserProfile> source)
@@ -34,6 +38,8 @@ public partial class UserProfileToCommunityUserDtoMapper : MapperBase<UserProfil
 }
 
 // ── UserProfile → UserPreferencesDto ─────────────────────────────────────────
+// DietaryRestrictions and CuisinePreferences are comma-separated strings on the
+// entity — deserialized to List<string> manually in the app service after Map().
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserProfileToUserPreferencesDtoMapper : MapperBase<UserProfile, UserPreferencesDto>
@@ -45,14 +51,10 @@ public partial class UserProfileToUserPreferencesDtoMapper : MapperBase<UserProf
     [MapperIgnoreTarget(nameof(UserPreferencesDto.DietaryRestrictions))]
     [MapperIgnoreTarget(nameof(UserPreferencesDto.CuisinePreferences))]
     public override partial void Map(UserProfile source, UserPreferencesDto destination);
-
-    public List<string> FromCommaSeparated(string? value)
-        => string.IsNullOrWhiteSpace(value)
-            ? new List<string>()
-            : value.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
 }
 
 // ── UserProfile → UserStatsDto ────────────────────────────────────────────────
+// All fields match by name convention.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserProfileToUserStatsDtoMapper : MapperBase<UserProfile, UserStatsDto>
@@ -62,6 +64,7 @@ public partial class UserProfileToUserStatsDtoMapper : MapperBase<UserProfile, U
 }
 
 // ── UserProfile → UserPrivacyDto ──────────────────────────────────────────────
+// ProfileVisibility, RecipesVisibility, ShoppingListVisibility match by name.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserProfileToUserPrivacyDtoMapper : MapperBase<UserProfile, UserPrivacyDto>
@@ -70,7 +73,8 @@ public partial class UserProfileToUserPrivacyDtoMapper : MapperBase<UserProfile,
     public override partial void Map(UserProfile source, UserPrivacyDto destination);
 }
 
-// ── UserProfile → UserNotificationPreferencesDto ──────────────────────────────
+// ── UserProfile → UserNotificationPreferencesDto ─────────────────────────────
+// Entity uses Notify* prefix; DTO drops it — explicit MapProperty required.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserProfileToUserNotificationPreferencesDtoMapper
@@ -90,6 +94,11 @@ public partial class UserProfileToUserNotificationPreferencesDtoMapper
 }
 
 // ── CreateUpdateUserPreferencesDto → UserProfile ──────────────────────────────
+// Only maps DefaultServingSize, WeeklyBudget, MealPlanningDays by name.
+// DietaryRestrictions and CuisinePreferences are comma-separated — set manually
+// in the app service via entity methods after Map().
+// All IdentityUser fields and unrelated UserProfile fields are ignored so
+// RequiredMappingStrategy.Target is satisfied without unintended side effects.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class CreateUpdateUserPreferencesDtoToUserProfileMapper
@@ -98,9 +107,31 @@ public partial class CreateUpdateUserPreferencesDtoToUserProfileMapper
     [ObjectFactory]
     private UserProfile CreateUserProfile() => UserProfileFactory.CreateEmpty();
 
+    // ── Ignored: DTO fields not mapped to UserProfile ──
+    [MapperIgnoreSource(nameof(CreateUpdateUserPreferencesDto.DietaryRestrictions))]
+    [MapperIgnoreSource(nameof(CreateUpdateUserPreferencesDto.CuisinePreferences))]
+    // ── Ignored: IdentityUser infrastructure fields ────
     [MapperIgnoreTarget(nameof(UserProfile.Id))]
     [MapperIgnoreTarget(nameof(UserProfile.UserName))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedUserName))]
     [MapperIgnoreTarget(nameof(UserProfile.Email))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedEmail))]
+    [MapperIgnoreTarget(nameof(UserProfile.EmailConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.PasswordHash))]
+    [MapperIgnoreTarget(nameof(UserProfile.SecurityStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.ConcurrencyStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumber))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumberConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.TwoFactorEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnd))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.AccessFailedCount))]
+    [MapperIgnoreTarget(nameof(UserProfile.IsActive))]
+    [MapperIgnoreTarget(nameof(UserProfile.Name))]
+    [MapperIgnoreTarget(nameof(UserProfile.Surname))]
+    [MapperIgnoreTarget(nameof(UserProfile.TenantId))]
+    [MapperIgnoreTarget(nameof(UserProfile.ExtraProperties))]
+    // ── Ignored: unrelated UserProfile fields ─────────
     [MapperIgnoreTarget(nameof(UserProfile.AvatarUrl))]
     [MapperIgnoreTarget(nameof(UserProfile.Specialty))]
     [MapperIgnoreTarget(nameof(UserProfile.RecipesCreated))]
@@ -127,9 +158,28 @@ public partial class CreateUpdateUserPreferencesDtoToUserProfileMapper
     [MapperIgnoreTarget(nameof(UserProfile.DeleterId))]
     public override partial UserProfile Map(CreateUpdateUserPreferencesDto source);
 
+    [MapperIgnoreSource(nameof(CreateUpdateUserPreferencesDto.DietaryRestrictions))]
+    [MapperIgnoreSource(nameof(CreateUpdateUserPreferencesDto.CuisinePreferences))]
     [MapperIgnoreTarget(nameof(UserProfile.Id))]
     [MapperIgnoreTarget(nameof(UserProfile.UserName))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedUserName))]
     [MapperIgnoreTarget(nameof(UserProfile.Email))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedEmail))]
+    [MapperIgnoreTarget(nameof(UserProfile.EmailConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.PasswordHash))]
+    [MapperIgnoreTarget(nameof(UserProfile.SecurityStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.ConcurrencyStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumber))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumberConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.TwoFactorEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnd))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.AccessFailedCount))]
+    [MapperIgnoreTarget(nameof(UserProfile.IsActive))]
+    [MapperIgnoreTarget(nameof(UserProfile.Name))]
+    [MapperIgnoreTarget(nameof(UserProfile.Surname))]
+    [MapperIgnoreTarget(nameof(UserProfile.TenantId))]
+    [MapperIgnoreTarget(nameof(UserProfile.ExtraProperties))]
     [MapperIgnoreTarget(nameof(UserProfile.AvatarUrl))]
     [MapperIgnoreTarget(nameof(UserProfile.Specialty))]
     [MapperIgnoreTarget(nameof(UserProfile.RecipesCreated))]
@@ -155,11 +205,12 @@ public partial class CreateUpdateUserPreferencesDtoToUserProfileMapper
     [MapperIgnoreTarget(nameof(UserProfile.DeletionTime))]
     [MapperIgnoreTarget(nameof(UserProfile.DeleterId))]
     public override partial void Map(CreateUpdateUserPreferencesDto source, UserProfile destination);
-
-    public string ToCommaSeparated(List<string> values) => string.Join(',', values);
 }
 
 // ── CreateUpdateUserSettingsDto → UserProfile ─────────────────────────────────
+// Maps ProfileVisibility, RecipesVisibility, ShoppingListVisibility by name.
+// Maps Notify* fields via explicit MapProperty (DTO has same Notify* prefix).
+// All IdentityUser and unrelated UserProfile fields are ignored.
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class CreateUpdateUserSettingsDtoToUserProfileMapper
@@ -172,9 +223,28 @@ public partial class CreateUpdateUserSettingsDtoToUserProfileMapper
     [MapProperty(nameof(CreateUpdateUserSettingsDto.NotifyRecipeUpdates), nameof(UserProfile.NotifyRecipeUpdates))]
     [MapProperty(nameof(CreateUpdateUserSettingsDto.NotifyCommunityActivity), nameof(UserProfile.NotifyCommunityActivity))]
     [MapProperty(nameof(CreateUpdateUserSettingsDto.NotifyShoppingListAlerts), nameof(UserProfile.NotifyShoppingListAlerts))]
+    // ── Ignored: IdentityUser infrastructure fields ────
     [MapperIgnoreTarget(nameof(UserProfile.Id))]
     [MapperIgnoreTarget(nameof(UserProfile.UserName))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedUserName))]
     [MapperIgnoreTarget(nameof(UserProfile.Email))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedEmail))]
+    [MapperIgnoreTarget(nameof(UserProfile.EmailConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.PasswordHash))]
+    [MapperIgnoreTarget(nameof(UserProfile.SecurityStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.ConcurrencyStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumber))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumberConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.TwoFactorEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnd))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.AccessFailedCount))]
+    [MapperIgnoreTarget(nameof(UserProfile.IsActive))]
+    [MapperIgnoreTarget(nameof(UserProfile.Name))]
+    [MapperIgnoreTarget(nameof(UserProfile.Surname))]
+    [MapperIgnoreTarget(nameof(UserProfile.TenantId))]
+    [MapperIgnoreTarget(nameof(UserProfile.ExtraProperties))]
+    // ── Ignored: unrelated UserProfile fields ─────────
     [MapperIgnoreTarget(nameof(UserProfile.AvatarUrl))]
     [MapperIgnoreTarget(nameof(UserProfile.Specialty))]
     [MapperIgnoreTarget(nameof(UserProfile.RecipesCreated))]
@@ -203,7 +273,24 @@ public partial class CreateUpdateUserSettingsDtoToUserProfileMapper
     [MapProperty(nameof(CreateUpdateUserSettingsDto.NotifyShoppingListAlerts), nameof(UserProfile.NotifyShoppingListAlerts))]
     [MapperIgnoreTarget(nameof(UserProfile.Id))]
     [MapperIgnoreTarget(nameof(UserProfile.UserName))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedUserName))]
     [MapperIgnoreTarget(nameof(UserProfile.Email))]
+    [MapperIgnoreTarget(nameof(UserProfile.NormalizedEmail))]
+    [MapperIgnoreTarget(nameof(UserProfile.EmailConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.PasswordHash))]
+    [MapperIgnoreTarget(nameof(UserProfile.SecurityStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.ConcurrencyStamp))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumber))]
+    [MapperIgnoreTarget(nameof(UserProfile.PhoneNumberConfirmed))]
+    [MapperIgnoreTarget(nameof(UserProfile.TwoFactorEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnd))]
+    [MapperIgnoreTarget(nameof(UserProfile.LockoutEnabled))]
+    [MapperIgnoreTarget(nameof(UserProfile.AccessFailedCount))]
+    [MapperIgnoreTarget(nameof(UserProfile.IsActive))]
+    [MapperIgnoreTarget(nameof(UserProfile.Name))]
+    [MapperIgnoreTarget(nameof(UserProfile.Surname))]
+    [MapperIgnoreTarget(nameof(UserProfile.TenantId))]
+    [MapperIgnoreTarget(nameof(UserProfile.ExtraProperties))]
     [MapperIgnoreTarget(nameof(UserProfile.AvatarUrl))]
     [MapperIgnoreTarget(nameof(UserProfile.Specialty))]
     [MapperIgnoreTarget(nameof(UserProfile.RecipesCreated))]

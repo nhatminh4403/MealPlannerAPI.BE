@@ -6,11 +6,11 @@ using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users.Dtos;
 using MealPlannerAPI.Users.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -19,11 +19,14 @@ using Volo.Abp.Users;
 
 namespace MealPlannerAPI.Users
 {
+    [Authorize]
+    [RemoteService(false)]
     public class UserProfileAppService : MealPlannerAPIAppService, IUserProfileAppService
     {
         private readonly IIdentityUserRepository _identityUserRepository;
-        private readonly IMealPlanRepository _mealPlanRepository;
-        private readonly IShoppingListRepository _shoppingListRepository;
+        private readonly IdentityUserManager _userManager;
+        private readonly IRepository<MealPlan, Guid> _mealPlanRepository;
+        private readonly IRepository<ShoppingList, Guid> _shoppingListRepository;
         private readonly UserProfileToCommunityUserDtoMapper _toCommunityDtoMapper;
         private readonly UserProfileToUserPreferencesDtoMapper _toPreferencesDtoMapper;
         private readonly UserProfileToUserStatsDtoMapper _toStatsDtoMapper;
@@ -31,7 +34,7 @@ namespace MealPlannerAPI.Users
         private readonly UserProfileToUserNotificationPreferencesDtoMapper _toNotifPrefDtoMapper;
         private readonly CreateUpdateUserPreferencesDtoToUserProfileMapper _toUserProfilePreferencesMapper;
         private readonly CreateUpdateUserSettingsDtoToUserProfileMapper _toUserProfileSettingsMapper;
-        private readonly IRecipeAppHubPublisher _hub;
+        private readonly IMealPlannerHubPublisher _hub;
 
         public UserProfileAppService(IIdentityUserRepository identityUserRepository,
                                      IMealPlanRepository mealPlanRepository,
@@ -43,7 +46,8 @@ namespace MealPlannerAPI.Users
                                      UserProfileToUserNotificationPreferencesDtoMapper toNotifPrefDtoMapper,
                                      CreateUpdateUserPreferencesDtoToUserProfileMapper toUserProfilePreferencesMapper,
                                      CreateUpdateUserSettingsDtoToUserProfileMapper toUserProfileSettingsMapper,
-                                     IRecipeAppHubPublisher hub)
+                                     IMealPlannerHubPublisher hub,
+                                     IdentityUserManager userManager)
         {
             _identityUserRepository = identityUserRepository;
             _mealPlanRepository = mealPlanRepository;
@@ -56,6 +60,7 @@ namespace MealPlannerAPI.Users
             _toUserProfilePreferencesMapper = toUserProfilePreferencesMapper;
             _toUserProfileSettingsMapper = toUserProfileSettingsMapper;
             _hub = hub;
+            _userManager = userManager;
         }
 
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
@@ -158,6 +163,45 @@ namespace MealPlannerAPI.Users
             await _hub.NotifyStatsUpdatedAsync(targetUser.Id, targetStats);
         }
 
+
+        public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input)
+        {
+            var user = await GetUserProfileAsync(CurrentUser.GetId());
+
+            user.Name = input.Name;
+            user.Surname = input.Surname;
+
+            // UserName and PhoneNumber go through the manager for normalisation + uniqueness
+            (await _userManager.SetUserNameAsync(user, input.UserName)).CheckErrors();
+            (await _userManager.SetPhoneNumberAsync(user, input.PhoneNumber)).CheckErrors();
+
+            await _identityUserRepository.UpdateAsync(user, autoSave: true);
+            return BuildUserProfileDto(user);
+        }
+
+        public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input)
+        {
+            var user = await GetUserProfileAsync(CurrentUser.GetId());
+
+            (await _userManager.ChangePasswordAsync(
+                user,
+                input.CurrentPassword,
+                input.NewPassword)).CheckErrors();
+        }
+
+        public async Task ChangeEmailAsync(ChangeEmailDto input)
+        {
+            var user = await GetUserProfileAsync(CurrentUser.GetId());
+
+            // GenerateChangeEmailTokenAsync + ChangeEmailAsync is the two-step ABP flow.
+            // For simplicity we use SetEmailAsync which skips the confirmation token.
+            // Swap to the two-step flow if email verification.
+            (await _userManager.SetEmailAsync(user, input.NewEmail)).CheckErrors();
+
+            await _identityUserRepository.UpdateAsync(user, autoSave: true);
+        }
+
+
         // ── Helpers ───────────────────────────────────────────────────────────────
 
         private async Task<UserProfile> GetUserProfileAsync(Guid userId)
@@ -190,11 +234,6 @@ namespace MealPlannerAPI.Users
                 }
             };
         }
-
-        /// <summary>
-        /// Builds a DashboardStatsDto for a given user to push via SignalR after
-        /// follow/unfollow — reuses the same stats shape the dashboard uses.
-        /// </summary>
         private async Task<DashboardStatsDto> BuildStatsAsync(UserProfile user)
         {
             var weekStart = MealPlan.GetWeekStart(DateTime.UtcNow);
@@ -223,5 +262,7 @@ namespace MealPlannerAPI.Users
                 ShoppingLists = shoppingListsCount
             };
         }
+
+
     }
 }
