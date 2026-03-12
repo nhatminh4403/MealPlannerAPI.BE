@@ -3,7 +3,7 @@ using MealPlannerAPI.HealthChecks;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.MultiTenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-//using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
@@ -38,7 +38,9 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
-using Microsoft.AspNetCore.SignalR;
+using System.IdentityModel.Tokens.Jwt;
+
+
 namespace MealPlannerAPI;
 
 [DependsOn(
@@ -52,13 +54,15 @@ namespace MealPlannerAPI;
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
-    typeof(AbpAspNetCoreSignalRModule)
+    typeof(AbpAspNetCoreSignalRModule),
+    typeof(AbpAspNetCoreAuthenticationJwtBearerModule)
 
     )]
 public class MealPlannerAPIHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
 
@@ -127,8 +131,37 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureRouting(services);
         ConfigureSignalR(services);
         ConfigureDistributedCacheOptions(context);
+        ConfigureJwtOption(services);
     }
+    private void ConfigureJwtOption(IServiceCollection services)
+    {
+        Configure<JwtBearerOptions>(options =>
+        {
+            options.MapInboundClaims = false;
+            options.TokenHandlers.Clear();
+        });
+        services.Configure<JwtBearerOptions>(
+            JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                var existingOnMessageReceived = options.Events?.OnMessageReceived;
+                options.Events ??= new JwtBearerEvents();
+                options.Events.OnMessageReceived = async context =>
+                {
+                    if (existingOnMessageReceived != null)
+                        await existingOnMessageReceived(context);
 
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        path.StartsWithSegments("/signalr-hubs"))
+                    {
+                        context.Token = accessToken;
+                    }
+                };
+            });
+    }
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
     {
         if (hostingEnvironment.IsProduction())
