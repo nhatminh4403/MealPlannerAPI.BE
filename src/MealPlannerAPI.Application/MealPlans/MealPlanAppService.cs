@@ -76,6 +76,22 @@ namespace MealPlannerAPI.MealPlans
             {
                 throw new EntityNotFoundException(typeof(MealPlan), id);
             }
+
+            
+
+            //var dailyNutrition = mealPlanEntries
+            //    .Where(e => e.Recipe.NutritionPerServing != null)
+            //    .GroupBy(e => e.DayOfWeek)
+            //    .ToDictionary(
+            //        g => g.Key,
+            //        g => new NutritionalInfoDto
+            //        {
+            //            Calories = g.Sum(e => e.Recipe.NutritionPerServing!.Calories),
+            //            ProteinGrams = g.Sum(e => e.Recipe.NutritionPerServing!.ProteinGrams),
+            //            CarbsGrams = g.Sum(e => e.Recipe.NutritionPerServing!.CarbsGrams),
+            //            FatGrams = g.Sum(e => e.Recipe.NutritionPerServing!.FatGrams),
+            //            FiberGrams = g.Sum(e => e.Recipe.NutritionPerServing!.FiberGrams),
+            //        });
             return await MapToMealPlanDtoAsync(mealPlan);
         }
 

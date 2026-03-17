@@ -43,8 +43,8 @@ public class MealPlannerAPIDomainModule : AbpModule
             options.IsEnabled = !MultiTenancyConsts.IsEnabled;
         });
 
-
-
+        var services = context.Services;
+    
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif

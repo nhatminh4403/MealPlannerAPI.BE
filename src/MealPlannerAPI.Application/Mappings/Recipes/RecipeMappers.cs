@@ -63,8 +63,10 @@ public partial class RecipeToTrendingRecipeDtoMapper : MapperBase<Recipe, Trendi
 public partial class RecipeIngredientToRecipeIngredientDtoMapper
     : MapperBase<RecipeIngredient, RecipeIngredientDto>
 {
+    [MapperIgnoreTarget(nameof(RecipeIngredientDto.Nutrition))] // ← add this
     public override partial RecipeIngredientDto Map(RecipeIngredient source);
 
+    [MapperIgnoreTarget(nameof(RecipeIngredientDto.Nutrition))] // ← add this
     public override partial void Map(RecipeIngredient source, RecipeIngredientDto destination);
 
     public List<RecipeIngredientDto> MapList(ICollection<RecipeIngredient> source)

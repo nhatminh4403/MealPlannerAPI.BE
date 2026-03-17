@@ -1,5 +1,6 @@
 ﻿using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
+using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
@@ -31,6 +32,7 @@ namespace MealPlannerAPI.Recipes
         private readonly CreateUpdateRecipeDtoToRecipeMapper _toRecipeMapper;
         private readonly TrendingRecipeCache _trendingCache;
         private readonly IMealPlannerHubPublisher _hub;
+        private readonly NutritionCalculator _nutritionCalculator;
         public RecipeAppService(IRecipeRepository recipeRepository,
                                 IIdentityUserRepository identityUserRepository,
                                 RecipeToRecipeDtoMapper toRecipeDtoMapper,
@@ -38,7 +40,8 @@ namespace MealPlannerAPI.Recipes
                                 RecipeIngredientToRecipeIngredientDtoMapper toIngredientDtoMapper,
                                 CreateUpdateRecipeDtoToRecipeMapper toRecipeMapper,
                                 TrendingRecipeCache trendingCache,
-                                IMealPlannerHubPublisher hub) : base(recipeRepository)
+                                IMealPlannerHubPublisher hub,
+                                NutritionCalculator nutritionCalculator) : base(recipeRepository)
         {
             _recipeRepository = recipeRepository;
             _identityUserRepository = identityUserRepository;
@@ -49,6 +52,7 @@ namespace MealPlannerAPI.Recipes
             _trendingCache = trendingCache;
             _hub = hub;
             ConfigurePolicies();
+            _nutritionCalculator = nutritionCalculator;
         }
 
         private void ConfigurePolicies()
@@ -111,7 +115,9 @@ namespace MealPlannerAPI.Recipes
                 throw new EntityNotFoundException(typeof(Recipe), id);
 
             }
-            return await MapToRecipeDtoAsync(recipe);
+            var dto = await MapToRecipeDtoAsync(recipe);
+            await _nutritionCalculator.EnrichAsync(recipe, dto);
+            return dto;
         }
         [AllowAnonymous]
         public async override Task<PagedResultDto<RecipeSummaryDto>> GetListAsync(GetRecipesInput input)

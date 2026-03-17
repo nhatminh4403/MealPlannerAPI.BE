@@ -1,6 +1,8 @@
+using MealPlannerAPI.Configurations;
 using MealPlannerAPI.Enums;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Notifications;
+using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users;
@@ -45,7 +47,7 @@ public class MealPlannerAPIDbContext :
     public DbSet<IdentityLinkUser> LinkUsers { get; set; }
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
     public DbSet<IdentitySession> Sessions { get; set; }
-
+    public DbSet<IngredientNutrition> IngredientNutritions { get; set; }
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
@@ -144,27 +146,7 @@ public class MealPlannerAPIDbContext :
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // ── RecipeIngredient ──────────────────────────────────────────────────
-        builder.Entity<RecipeIngredient>(b =>
-        {
-            b.ToTable("AppRecipeIngredients");
-            b.ConfigureByConvention();
-
-            b.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(128)
-                .IsUnicode(true);
-
-            b.Property(x => x.Quantity)
-                .HasColumnType("decimal(10,3)");
-
-            b.Property(x => x.Unit)
-                .IsRequired()
-                .HasMaxLength(32);
-
-            b.HasIndex(x => x.RecipeId);
-        });
-
+        builder.ConfigureDB();
         // ── MealPlan ──────────────────────────────────────────────────────────
         builder.Entity<MealPlan>(b =>
         {
@@ -399,5 +381,15 @@ public class MealPlannerAPIDbContext :
                 .HasDefaultValue(true)
                 .HasColumnName(nameof(UserProfile.NotifyShoppingListAlerts));
         });
+    }
+}
+
+
+public static class NutritionModelBuilderExtensions
+{
+    public static void ConfigureDB(this ModelBuilder builder)
+    {
+        builder.ApplyConfiguration(new IngredientNutritionConfiguration());
+        builder.ApplyConfiguration(new RecipeIngredientConfiguration());
     }
 }

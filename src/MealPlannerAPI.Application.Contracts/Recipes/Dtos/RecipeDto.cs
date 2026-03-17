@@ -1,4 +1,5 @@
 ﻿using MealPlannerAPI.Enums;
+using MealPlannerAPI.Nutritions;
 using System;
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
@@ -22,5 +23,6 @@ namespace MealPlannerAPI.Recipes.Dtos
         public List<string> Instructions { get; set; } = new();
         public RecipeAuthorDto Author { get; set; } = null!;
         public List<RecipeIngredientDto> Ingredients { get; set; } = new();
+        public NutritionalInfoDto? NutritionPerServing { get; set; }
     }
 }

@@ -40,15 +40,18 @@ namespace MealPlannerAPI.ShoppingLists
                 {
                     Id = GuidGenerator.Create(),
                     Name = g.Key,
-                    Quantity = g.Sum(x => x.Quantity),
-                    Unit = g.First().Unit,
+                    Quantity = g.Sum(x => x.QuantityGrams),
+                    Unit = g.First().DisplayQuantity,
                     Category = ShoppingItemCategory.Other,
                 });
 
             foreach (var item in aggregatedIngredients)
             {
                 var itemId = GuidGenerator.Create();
-                shoppingList.AddItem(itemId, item.Name, item.Quantity, false, item.Unit, item.Category);
+                if(item.Unit != null)
+                {
+                    shoppingList.AddItem(itemId, item.Name,(decimal)item.Quantity, false, item.Unit, item.Category);
+                }
             }
 
             return shoppingList;

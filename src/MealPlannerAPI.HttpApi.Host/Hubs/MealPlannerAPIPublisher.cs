@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-
+using Volo.Abp.AspNetCore.SignalR;
 namespace MealPlannerAPI.Hubs
 {
     public class MealPlannerAPIPublisher : IMealPlannerHubPublisher, ITransientDependency

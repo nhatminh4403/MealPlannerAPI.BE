@@ -2,8 +2,8 @@
 using MealPlannerAPI.HealthChecks;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.MultiTenancy;
+using MealPlannerAPI.Nutritions.ExternalData;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
@@ -15,12 +15,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
+using Polly;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
+using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
@@ -38,8 +41,7 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
-using System.IdentityModel.Tokens.Jwt;
-
+//using Microsoft.Extensions.Http.Polly;
 
 namespace MealPlannerAPI;
 
@@ -132,6 +134,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureSignalR(services);
         ConfigureDistributedCacheOptions(context);
         ConfigureJwtOption(services);
+        ConfigureHttpClient(services);
     }
     private void ConfigureJwtOption(IServiceCollection services)
     {
@@ -172,7 +175,11 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             });
         }
     }
-
+    private void ConfigureHttpClient(IServiceCollection services)
+    {
+        services.AddHttpClient<IUsdaFoodDataClient, UsdaFoodDataClient>()
+            .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(2, _ => TimeSpan.FromMilliseconds(500)));
+    }
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);

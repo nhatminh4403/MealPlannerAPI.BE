@@ -5,7 +5,8 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace MealPlannerAPI.Notifications
 {
-    internal class EfCoreUserNotificationRepository : EfCoreRepository<MealPlannerAPIDbContext, UserNotification, Guid>, IUserNotificationRepository
+    internal class EfCoreUserNotificationRepository 
+        : EfCoreRepository<MealPlannerAPIDbContext, UserNotification, Guid>, IUserNotificationRepository
     {
         public EfCoreUserNotificationRepository(IDbContextProvider<MealPlannerAPIDbContext> dbContextProvider) : base(dbContextProvider)
         {

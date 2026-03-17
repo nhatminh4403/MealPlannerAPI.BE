@@ -28,7 +28,7 @@ namespace MealPlannerAPI.ShoppingLists
         {
             var item = new ShoppingListItem(id: id,
                                             shoppingListId: Id,
-                                            shoppingListName: name,
+                                            name: name,
                                             isCompleted: isCompleted,
                                             quantity: quantity,
                                             unit: unit,
@@ -40,7 +40,7 @@ namespace MealPlannerAPI.ShoppingLists
         public void UpdateItem(Guid itemId, string name, decimal quantity, string unit, ShoppingItemCategory category)
         {
             var item = FindItem(itemId);
-            item.ShoppingListName = name;
+            item.Name = name;
             item.Quantity = quantity;
             item.Unit = unit;
             item.Category = category;
