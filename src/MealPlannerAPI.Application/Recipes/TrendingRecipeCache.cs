@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Caching;
+using Volo.Abp.DependencyInjection;
 namespace MealPlannerAPI.Recipes
 {
-    public class TrendingRecipeCache
+    public class TrendingRecipeCache : ISingletonDependency
     {
         private const string CacheKey = "trending-recipes";
         private static readonly TimeSpan Ttl = TimeSpan.FromMinutes(5);

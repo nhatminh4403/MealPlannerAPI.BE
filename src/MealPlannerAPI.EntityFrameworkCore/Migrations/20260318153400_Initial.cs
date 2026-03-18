@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -584,6 +584,24 @@ namespace MealPlannerAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IngredientNutritions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    NormalizedName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    CaloriesPer100g = table.Column<float>(type: "real", nullable: false),
+                    ProteinPer100g = table.Column<float>(type: "real", nullable: false),
+                    CarbsPer100g = table.Column<float>(type: "real", nullable: false),
+                    FatPer100g = table.Column<float>(type: "real", nullable: false),
+                    FiberPer100g = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IngredientNutritions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
                 columns: table => new
                 {
@@ -966,33 +984,12 @@ namespace MealPlannerAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppRecipeIngredients",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppRecipeIngredients", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AppRecipeIngredients_AppRecipes_RecipeId",
-                        column: x => x.RecipeId,
-                        principalTable: "AppRecipes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AppShoppingItems",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ShoppingListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ShoppingListName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
@@ -1011,6 +1008,34 @@ namespace MealPlannerAPI.Migrations
                         principalTable: "AppShoppingLists",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RecipeIngredients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    QuantityGrams = table.Column<float>(type: "real", nullable: false),
+                    DisplayQuantity = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    IngredientNutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecipeIngredients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RecipeIngredients_AppRecipes_RecipeId",
+                        column: x => x.RecipeId,
+                        principalTable: "AppRecipes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RecipeIngredients_IngredientNutritions_IngredientNutritionId",
+                        column: x => x.IngredientNutritionId,
+                        principalTable: "IngredientNutritions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -1363,11 +1388,6 @@ namespace MealPlannerAPI.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppRecipeIngredients_RecipeId",
-                table: "AppRecipeIngredients",
-                column: "RecipeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AppRecipes_AuthorId",
                 table: "AppRecipes",
                 column: "AuthorId");
@@ -1408,6 +1428,12 @@ namespace MealPlannerAPI.Migrations
                 columns: new[] { "UserId", "IsRead" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_IngredientNutritions_NormalizedName",
+                table: "IngredientNutritions",
+                column: "NormalizedName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
                 table: "OpenIddictApplications",
                 column: "ClientId");
@@ -1436,6 +1462,16 @@ namespace MealPlannerAPI.Migrations
                 name: "IX_OpenIddictTokens_ReferenceId",
                 table: "OpenIddictTokens",
                 column: "ReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecipeIngredients_IngredientNutritionId",
+                table: "RecipeIngredients",
+                column: "IngredientNutritionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecipeIngredients_RecipeId",
+                table: "RecipeIngredients",
+                column: "RecipeId");
         }
 
         /// <inheritdoc />
@@ -1532,9 +1568,6 @@ namespace MealPlannerAPI.Migrations
                 name: "AppMealPlanEntries");
 
             migrationBuilder.DropTable(
-                name: "AppRecipeIngredients");
-
-            migrationBuilder.DropTable(
                 name: "AppShoppingItems");
 
             migrationBuilder.DropTable(
@@ -1545,6 +1578,9 @@ namespace MealPlannerAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
+
+            migrationBuilder.DropTable(
+                name: "RecipeIngredients");
 
             migrationBuilder.DropTable(
                 name: "AbpBlobContainers");
@@ -1568,13 +1604,16 @@ namespace MealPlannerAPI.Migrations
                 name: "AppMealPlans");
 
             migrationBuilder.DropTable(
-                name: "AppRecipes");
-
-            migrationBuilder.DropTable(
                 name: "AppShoppingLists");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");
+
+            migrationBuilder.DropTable(
+                name: "AppRecipes");
+
+            migrationBuilder.DropTable(
+                name: "IngredientNutritions");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogs");

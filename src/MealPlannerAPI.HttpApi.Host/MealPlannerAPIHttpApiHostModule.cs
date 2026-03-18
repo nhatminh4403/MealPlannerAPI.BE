@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.EntityFrameworkCore;
+using MealPlannerAPI.SignalR;
+using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.HealthChecks;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.MultiTenancy;
@@ -46,6 +47,7 @@ using Volo.Abp.VirtualFileSystem;
 namespace MealPlannerAPI;
 
 [DependsOn(
+    typeof(MealPlannerAPISignalRModule),
     typeof(MealPlannerAPIHttpApiModule),
     typeof(AbpStudioClientAspNetCoreModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
@@ -135,6 +137,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureDistributedCacheOptions(context);
         ConfigureJwtOption(services);
         ConfigureHttpClient(services);
+        services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
     }
     private void ConfigureJwtOption(IServiceCollection services)
     {

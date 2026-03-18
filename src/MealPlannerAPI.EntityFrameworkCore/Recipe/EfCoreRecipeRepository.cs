@@ -21,20 +21,25 @@ namespace MealPlannerAPI.Recipes
         {
             var dbSet = await GetDbSetAsync();
 
-            var query = dbSet.AsQueryable();
+            var query = dbSet.AsQueryable().AsNoTracking();
 
             return await query.Where(r => r.AuthorId == authorId)
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<List<Recipe>> GetListByCuisineAsync(string cuisine, CancellationToken cancellationToken = default)
+        public async Task<List<Recipe>> GetListByCuisineAsync(string cuisine, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var dbSet = await GetDbSetAsync();
+            var query = dbSet.AsQueryable();
+            return await query.Where(r => r.Cuisine == cuisine).AsNoTracking().ToListAsync(cancellationToken);
         }
 
-        public Task<List<Recipe>> GetTopRatedAsync(int count, CancellationToken cancellationToken = default)
+        public async Task<List<Recipe>> GetTopRatedAsync(int count, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var dbSet = await GetDbSetAsync();
+            var query = dbSet.AsQueryable().AsNoTracking();
+            
+            return await query.OrderByDescending(r => r.Rating).Take(count).ToListAsync(cancellationToken);
         }
     }
 }

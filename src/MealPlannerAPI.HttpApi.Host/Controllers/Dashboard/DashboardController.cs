@@ -23,6 +23,7 @@ namespace MealPlannerAPI.Controllers.Dashboard
         /// Prefer the individual endpoints when you only need one section.
         /// </summary>
         [HttpGet]
+        [Authorize]
         public Task<DashboardDto> GetAsync()
             => _dashboardAppService.GetAsync();
 

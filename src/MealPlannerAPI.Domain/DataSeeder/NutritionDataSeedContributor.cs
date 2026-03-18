@@ -16,7 +16,7 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IIngredientNutritionRepository _ingredientNutritionRepository;
         private readonly IRecipeRepository _recipeRepository;
         private readonly IGuidGenerator _guidGenerator;
-
+        public int Order => 1;
         public NutritionDataSeedContributor(IIngredientNutritionRepository ingredientNutritionRepository,
                                             IRecipeRepository recipeRepository,
                                             IGuidGenerator guidGenerator)
@@ -147,6 +147,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Grilled Chicken with Broccoli",
+                cuisine: "American",
                 description: "A clean high-protein meal with grilled chicken breast and steamed broccoli.",
                 servings: 2,
                 prepMinutes: 10,
@@ -164,6 +165,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Salmon with Brown Rice",
+                cuisine: "Japanese",
                 description: "Omega-3 rich salmon fillet served over nutty brown rice.",
                 servings: 2,
                 prepMinutes: 10,
@@ -181,6 +183,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Pasta Pomodoro",
+                cuisine: "Italian",
                 description: "Classic Italian pasta with a simple fresh tomato sauce.",
                 servings: 4,
                 prepMinutes: 10,
@@ -199,6 +202,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Spinach and Cheese Omelette",
+                cuisine: "French",
                 description: "Fluffy omelette loaded with wilted spinach and melted cheddar.",
                 servings: 1,
                 prepMinutes: 5,
@@ -216,6 +220,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Sweet Potato & Black Bean Bowl",
+                cuisine: "Mexican",
                 description: "Hearty plant-based bowl with roasted sweet potato and spiced black beans.",
                 servings: 2,
                 prepMinutes: 10,
@@ -234,6 +239,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Chicken Fried Rice",
+                cuisine: "Chinese",
                 description: "Classic homemade fried rice with chicken breast, eggs, and onions.",
                 servings: 2,
                 prepMinutes: 10,
@@ -252,6 +258,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Banana Peanut Butter Oatmeal",
+                cuisine: "Breakfast",
                 description: "A hearty breakfast bowl of oats topped with fresh banana and peanut butter.",
                 servings: 1,
                 prepMinutes: 5,
@@ -270,6 +277,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Ground Beef and Potato Bake",
+                cuisine: "Continental",
                 description: "A comforting casserole with layers of potato, seasoned ground beef, and cheesy goodness.",
                 servings: 4,
                 prepMinutes: 15,
@@ -289,6 +297,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Greek Yogurt Parfait",
+                cuisine: "Breakfast",
                 description: "A quick and healthy snack or breakfast with Greek yogurt and honey.",
                 servings: 1,
                 prepMinutes: 5,
@@ -306,6 +315,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Peanut Butter Banana Toast",
+                cuisine: "Breakfast",
                 description: "Simple and delicious toast topped with peanut butter and sliced bananas.",
                 servings: 1,
                 prepMinutes: 5,
@@ -322,6 +332,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Beef and Bell Pepper Stir Fry",
+                cuisine: "Asian",
                 description: "A quick stir fry with ground beef, vibrant bell peppers, and savory garlic.",
                 servings: 2,
                 prepMinutes: 10,
@@ -341,6 +352,7 @@ namespace MealPlannerAPI.DataSeeder
             Recipe.CreateSeed(
                 _guidGenerator.Create(),
                 name: "Chicken and Spinach Salad",
+                cuisine: "American",
                 description: "A light salad featuring grilled chicken, fresh spinach, and sweet cherry tomatoes.",
                 servings: 2,
                 prepMinutes: 15,
@@ -355,14 +367,14 @@ namespace MealPlannerAPI.DataSeeder
             );
 
         private Recipe BuildAvocadoToast(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Avocado Toast", "Trendy and nutritious avocado squash on toast.", 1, 5, 0, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Avocado Toast", "Australian", "Trendy and nutritious avocado squash on toast.", 1, 5, 0, new[] {
                 Ing(_guidGenerator, "Bread (White)", 70, "2 slices", l),
                 Ing(_guidGenerator, "Avocado", 100, "1/2 avocado", l),
                 Ing(_guidGenerator, "Egg", 50, "1 egg", l),
                 Ing(_guidGenerator, "Olive Oil", 5, "1 tsp", l) });
 
         private Recipe BuildMushroomOmelette(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Mushroom Omelette", "Savory mushroom and cheese omelette.", 1, 5, 10, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Mushroom Omelette", "Breakfast", "Savory mushroom and cheese omelette.", 1, 5, 10, new[] {
                 Ing(_guidGenerator, "Egg", 150, "3 eggs", l),
                 Ing(_guidGenerator, "Mushrooms", 100, "1 cup sliced", l),
                 Ing(_guidGenerator, "Cheddar Cheese", 30, "1/4 cup", l),
@@ -370,7 +382,7 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Onion", 20, "1/4 onion", l) });
 
         private Recipe BuildTofuStirFry(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Tofu Stir Fry", "Quick and healthy vegetarian stir fry.", 2, 10, 15, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Tofu Stir Fry", "Asian", "Quick and healthy vegetarian stir fry.", 2, 10, 15, new[] {
                 Ing(_guidGenerator, "Tofu", 200, "200g", l),
                 Ing(_guidGenerator, "Soy Sauce", 30, "2 tbsp", l),
                 Ing(_guidGenerator, "Bell Pepper", 100, "1 large", l),
@@ -379,14 +391,14 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "White Rice (Dry)", 120, "120g", l) });
 
         private Recipe BuildPorkChopSweetPotato(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Pork Chop with Sweet Potato", "Pan-seared pork chop with baked sweet potato.", 2, 10, 30, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Pork Chop with Sweet Potato", "American", "Pan-seared pork chop with baked sweet potato.", 2, 10, 30, new[] {
                 Ing(_guidGenerator, "Pork Chop", 300, "2 chops", l),
                 Ing(_guidGenerator, "Sweet Potato", 300, "2 medium", l),
                 Ing(_guidGenerator, "Olive Oil", 15, "1 tbsp", l),
                 Ing(_guidGenerator, "Garlic", 5, "2 cloves", l) });
 
         private Recipe BuildLentilSoup(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Hearty Lentil Soup", "A warm, comforting lentil and veggie soup.", 4, 15, 45, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Hearty Lentil Soup", "Mediterranean", "A warm, comforting lentil and veggie soup.", 4, 15, 45, new[] {
                 Ing(_guidGenerator, "Lentils (Dry)", 200, "1 cup", l),
                 Ing(_guidGenerator, "Carrot", 150, "2 medium", l),
                 Ing(_guidGenerator, "Onion", 100, "1 large", l),
@@ -395,7 +407,7 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Garlic", 10, "4 cloves", l) });
 
         private Recipe BuildGreekSalad(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Greek Salad", "Crisp cucumber and tomato salad with cheese.", 2, 10, 0, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Greek Salad", "Greek", "Crisp cucumber and tomato salad with cheese.", 2, 10, 0, new[] {
                 Ing(_guidGenerator, "Cucumber", 200, "1 large", l),
                 Ing(_guidGenerator, "Tomato", 200, "2 large", l),
                 Ing(_guidGenerator, "Onion", 50, "1/2 medium", l),
@@ -403,32 +415,32 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Cheddar Cheese", 50, "50g", l) });
 
         private Recipe BuildAppleAlmondSnack(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Apple & Almond Snack", "Simple raw snack.", 1, 2, 0, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Apple & Almond Snack", "Snack", "Simple raw snack.", 1, 2, 0, new[] {
                 Ing(_guidGenerator, "Apple", 150, "1 medium", l),
                 Ing(_guidGenerator, "Almonds", 30, "1 small handful", l) });
 
         private Recipe BuildChickenRiceBowl(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Chicken Rice Bowl", "Lean chicken and avocado over rice.", 2, 10, 20, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Chicken Rice Bowl", "Asian", "Lean chicken and avocado over rice.", 2, 10, 20, new[] {
                 Ing(_guidGenerator, "Chicken Breast", 250, "250g", l),
                 Ing(_guidGenerator, "White Rice (Dry)", 120, "120g", l),
                 Ing(_guidGenerator, "Avocado", 100, "1/2 avocado", l),
                 Ing(_guidGenerator, "Soy Sauce", 15, "1 tbsp", l) });
 
         private Recipe BuildBeefBurgerSalad(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Beef Burger Patty Salad", "Keto-friendly burger patties on lettuce.", 2, 10, 15, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Beef Burger Patty Salad", "American", "Keto-friendly burger patties on lettuce.", 2, 10, 15, new[] {
                 Ing(_guidGenerator, "Ground Beef", 300, "300g", l),
                 Ing(_guidGenerator, "Lettuce", 100, "4 leaves", l),
                 Ing(_guidGenerator, "Tomato", 100, "1 medium", l),
                 Ing(_guidGenerator, "Onion", 50, "1/2 medium", l) });
 
         private Recipe BuildPeanutButterAppleToast(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Peanut Butter Apple Toast", "Sweet and crunchy toast.", 1, 5, 2, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Peanut Butter Apple Toast", "Breakfast", "Sweet and crunchy toast.", 1, 5, 2, new[] {
                 Ing(_guidGenerator, "Bread (White)", 35, "1 slice", l),
                 Ing(_guidGenerator, "Peanut Butter", 15, "1 tbsp", l),
                 Ing(_guidGenerator, "Apple", 75, "1/2 apple", l) });
 
         private Recipe BuildVeggieFriedRice(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Vegetable Fried Rice", "Quick fried rice loaded with veggies.", 2, 10, 15, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Vegetable Fried Rice", "Asian", "Quick fried rice loaded with veggies.", 2, 10, 15, new[] {
                 Ing(_guidGenerator, "White Rice (Dry)", 120, "120g", l),
                 Ing(_guidGenerator, "Carrot", 100, "1 medium", l),
                 Ing(_guidGenerator, "Broccoli", 100, "1 cup", l),
@@ -436,7 +448,7 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Soy Sauce", 30, "2 tbsp", l) });
 
         private Recipe BuildMushroomPasta(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Mushroom Pasta", "Garlicky mushroom pasta with spinach.", 2, 10, 20, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Mushroom Pasta", "Italian", "Garlicky mushroom pasta with spinach.", 2, 10, 20, new[] {
                 Ing(_guidGenerator, "Pasta (Dry)", 160, "160g", l),
                 Ing(_guidGenerator, "Mushrooms", 200, "2 cups", l),
                 Ing(_guidGenerator, "Garlic", 10, "4 cloves", l),
@@ -444,7 +456,7 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Spinach", 100, "2 handfuls", l) });
 
         private Recipe BuildSpicyTofuScramble(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Spicy Tofu Scramble", "Vegan scramble with veggies.", 2, 10, 15, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Spicy Tofu Scramble", "American", "Vegan scramble with veggies.", 2, 10, 15, new[] {
                 Ing(_guidGenerator, "Tofu", 300, "1 block", l),
                 Ing(_guidGenerator, "Onion", 50, "1/2 medium", l),
                 Ing(_guidGenerator, "Tomato", 100, "1 medium", l),
@@ -452,14 +464,14 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Olive Oil", 15, "1 tbsp", l) });
 
         private Recipe BuildGarlicButterPorkChops(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Garlic Butter Pork Chops", "Rich and tender pork chops with potatoes.", 2, 10, 25, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Garlic Butter Pork Chops", "American", "Rich and tender pork chops with potatoes.", 2, 10, 25, new[] {
                 Ing(_guidGenerator, "Pork Chop", 300, "2 chops", l),
                 Ing(_guidGenerator, "Garlic", 10, "4 cloves", l),
                 Ing(_guidGenerator, "Butter", 20, "2 tbsp", l),
                 Ing(_guidGenerator, "Potato", 300, "2 medium", l) });
 
         private Recipe BuildBreakfastBurritoBowl(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Breakfast Burrito Bowl", "Deconstructed burrito for breakfast.", 2, 10, 15, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Breakfast Burrito Bowl", "Mexican", "Deconstructed burrito for breakfast.", 2, 10, 15, new[] {
                 Ing(_guidGenerator, "Black Beans (Cooked)", 150, "1/2 can", l),
                 Ing(_guidGenerator, "Egg", 100, "2 eggs", l),
                 Ing(_guidGenerator, "Avocado", 100, "1/2 avocado", l),
@@ -467,20 +479,20 @@ namespace MealPlannerAPI.DataSeeder
                 Ing(_guidGenerator, "Brown Rice (Dry)", 100, "100g", l) });
 
         private Recipe BuildChickenMushroomSaute(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Chicken & Mushroom Sauté", "Simple pan-fried chicken and mushrooms.", 2, 10, 20, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Chicken & Mushroom Sauté", "French", "Simple pan-fried chicken and mushrooms.", 2, 10, 20, new[] {
                 Ing(_guidGenerator, "Chicken Breast", 250, "250g", l),
                 Ing(_guidGenerator, "Mushrooms", 200, "2 cups", l),
                 Ing(_guidGenerator, "Onion", 100, "1 medium", l),
                 Ing(_guidGenerator, "Olive Oil", 15, "1 tbsp", l) });
 
         private Recipe BuildCarrotLentilMash(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Carrot & Lentil Mash", "Soft comforting mash.", 2, 10, 30, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Carrot & Lentil Mash", "British", "Soft comforting mash.", 2, 10, 30, new[] {
                 Ing(_guidGenerator, "Carrot", 200, "2 large", l),
                 Ing(_guidGenerator, "Lentils (Dry)", 100, "1/2 cup", l),
                 Ing(_guidGenerator, "Butter", 20, "2 tbsp", l) });
 
         private Recipe BuildYogurtAlmonds(Dictionary<string, Guid> l) =>
-            Recipe.CreateSeed(_guidGenerator.Create(), "Yogurt with Almonds", "Protein-rich yogurt snack.", 1, 2, 0, new[] {
+            Recipe.CreateSeed(_guidGenerator.Create(), "Yogurt with Almonds", "Snack", "Protein-rich yogurt snack.", 1, 2, 0, new[] {
                 Ing(_guidGenerator, "Greek Yogurt", 200, "200g", l),
                 Ing(_guidGenerator, "Almonds", 30, "1 handful", l),
                 Ing(_guidGenerator, "Honey", 15, "1 tbsp", l) });

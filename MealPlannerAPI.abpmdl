@@ -104,6 +104,10 @@
     "MealPlannerAPI.Domain": {
       "path": "src/MealPlannerAPI.Domain/MealPlannerAPI.Domain.abppkg",
       "folder": "src"
+    },
+    "MealPlannerAPI.SignalR": {
+      "path": "src/MealPlannerAPI.SignalR/MealPlannerAPI.SignalR.abppkg",
+      "folder": "src"
     }
   }
 }

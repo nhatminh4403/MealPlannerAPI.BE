@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Enums;
+using MealPlannerAPI.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,17 +27,15 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
     public Guid AuthorId { get; set; }
     public ICollection<RecipeIngredient> Ingredients { get; set; } = new List<RecipeIngredient>();
     protected Recipe() { }
-    public Recipe(
-        Guid id,
-        string name,
-        string cuisine,
-        DifficultyLevel difficulty,
-        int cookingTimeMinutes,
-        int prepTimeMinutes,
-        int servings,
-        string description,
-        Guid authorId)
-        : base(id)
+    public Recipe(Guid id,
+                  string name,
+                  string cuisine,
+                  DifficultyLevel difficulty,
+                  int cookingTimeMinutes,
+                  int prepTimeMinutes,
+                  int servings,
+                  string description,
+                  Guid authorId) : base(id)
     {
         Name = name;
         Cuisine = cuisine;
@@ -92,6 +90,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
 
     public static Recipe CreateSeed(Guid id,
                                     string name,
+                                    string cuisine,
                                     string description,
                                     int servings,
                                     int prepMinutes,
@@ -102,6 +101,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
         {
             Id = id,
             Name = name,
+            Cuisine = cuisine,
             Description = description,
             Servings = servings,
             PrepTimeMinutes = prepMinutes,

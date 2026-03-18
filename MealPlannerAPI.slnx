@@ -12,6 +12,7 @@
         <Project Path="src/MealPlannerAPI.HttpApi.Client/MealPlannerAPI.HttpApi.Client.csproj" />
         <Project Path="src/MealPlannerAPI.DbMigrator/MealPlannerAPI.DbMigrator.csproj" />
         <Project Path="src/MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.csproj" />
+        <Project Path="src/MealPlannerAPI.SignalR/MealPlannerAPI.SignalR.csproj" />
     </Folder>
     <Folder Name="/test/">
         <Project Path="test/MealPlannerAPI.Application.Tests/MealPlannerAPI.Application.Tests.csproj" />

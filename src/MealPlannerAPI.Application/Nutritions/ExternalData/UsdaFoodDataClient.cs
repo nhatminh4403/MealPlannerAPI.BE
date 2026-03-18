@@ -24,7 +24,9 @@ namespace MealPlannerAPI.Nutritions.ExternalData
         private const int NutrientCarbs = 1005;
         private const int NutrientFat = 1004;
         private const int NutrientFiber = 1079;
-        public UsdaFoodDataClient(HttpClient http, ILogger<UsdaFoodDataClient> logger, IConfiguration configuration,)
+        public UsdaFoodDataClient(HttpClient http,
+                                  ILogger<UsdaFoodDataClient> logger,
+                                  IConfiguration configuration)
         {
             _http = http;
             _logger = logger;

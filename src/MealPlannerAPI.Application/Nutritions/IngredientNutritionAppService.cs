@@ -59,14 +59,13 @@ namespace MealPlannerAPI.Nutritions
                 );
         }
 
-        public async Task<IngredientNutritionSearchResultDto> SearchAsync(string query, bool includeOff = false)
+        public async Task<IngredientNutritionSearchResultDto> SearchAsync(string query, bool includeExternal = false)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return new IngredientNutritionSearchResultDto();
 
             var normalized = query.Trim().ToLowerInvariant();
 
-            // Always search our DB first
             var dbMatches = await _ingredientNutritionRepository.GetListAsync(
                 x => x.NormalizedName.Contains(normalized));
 
@@ -79,30 +78,29 @@ namespace MealPlannerAPI.Nutritions
                     .ToList(),
             };
 
-            // Only call OFF when the user explicitly requests it
-            // (frontend sends includeOff=true when user clicks "Search more")
-            if (includeOff)
+            // Only call USDA when user explicitly clicks "Search USDA"
+            if (includeExternal)
             {
-                var offResults = await _offClient.SearchAsync(query, maxResults: 6);
+                var usdaResults = await _usdaClient.SearchAsync(query, maxResults: 6);
 
-                // Exclude names already in our DB
                 var existingNames = result.DbResults
                     .Select(x => x.Name.ToLowerInvariant())
                     .ToHashSet();
 
-                result.OffCandidates = offResults
+                result.ExternalCandidates = usdaResults
                     .Where(r => !existingNames.Contains(r.Name.ToLowerInvariant()))
-                    .Select(r => new OpenFoodFactsCandidateDto
+                    .Select(r => new ExternalFoodCandidateDto
                     {
                         Name = r.Name,
-                        Brand = r.Brand,
+                        Brand = r.BrandOwner,
                         CaloriesPer100g = r.CaloriesPer100g,
                         ProteinPer100g = r.ProteinPer100g,
                         CarbsPer100g = r.CarbsPer100g,
                         FatPer100g = r.FatPer100g,
                         FiberPer100g = r.FiberPer100g,
                         CompletenessScore = r.CompletenessScore,
-                        OffId = r.OffId,
+                        ExternalId = r.FdcId,
+                        Source = "USDA",
                     })
                     .ToList();
             }

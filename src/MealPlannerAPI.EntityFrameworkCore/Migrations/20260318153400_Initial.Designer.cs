@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    [Migration("20260308131146_Initial")]
+    [Migration("20260318153400_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace MealPlannerAPI.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("_Abp_DatabaseProvider", EfCoreDatabaseProvider.SqlServer)
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -184,6 +184,44 @@ namespace MealPlannerAPI.Migrations
                     b.ToTable("AppUserNotifications", (string)null);
                 });
 
+            modelBuilder.Entity("MealPlannerAPI.Nutritions.IngredientNutrition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<float>("CaloriesPer100g")
+                        .HasColumnType("real");
+
+                    b.Property<float>("CarbsPer100g")
+                        .HasColumnType("real");
+
+                    b.Property<float>("FatPer100g")
+                        .HasColumnType("real");
+
+                    b.Property<float>("FiberPer100g")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<float>("ProteinPer100g")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique();
+
+                    b.ToTable("IngredientNutritions", (string)null);
+                });
+
             modelBuilder.Entity("MealPlannerAPI.Recipes.Recipe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -309,28 +347,31 @@ namespace MealPlannerAPI.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("DisplayQuantity")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid?>("IngredientNutritionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .IsUnicode(true)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(10,3)");
+                    b.Property<float>("QuantityGrams")
+                        .HasColumnType("real");
 
                     b.Property<Guid>("RecipeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("IngredientNutritionId");
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("AppRecipeIngredients", (string)null);
+                    b.ToTable("RecipeIngredients", (string)null);
                 });
 
             modelBuilder.Entity("MealPlannerAPI.ShoppingLists.ShoppingList", b =>
@@ -427,17 +468,17 @@ namespace MealPlannerAPI.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(10,3)");
 
                     b.Property<Guid>("ShoppingListId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ShoppingListName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -2567,6 +2608,11 @@ namespace MealPlannerAPI.Migrations
 
             modelBuilder.Entity("MealPlannerAPI.Recipes.RecipeIngredient", b =>
                 {
+                    b.HasOne("MealPlannerAPI.Nutritions.IngredientNutrition", null)
+                        .WithMany()
+                        .HasForeignKey("IngredientNutritionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("MealPlannerAPI.Recipes.Recipe", null)
                         .WithMany("Ingredients")
                         .HasForeignKey("RecipeId")

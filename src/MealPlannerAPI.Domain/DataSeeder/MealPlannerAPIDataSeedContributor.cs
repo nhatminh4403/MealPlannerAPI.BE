@@ -18,7 +18,7 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IShoppingListRepository _shoppingListRepository;
         private readonly IRecipeRepository _recipeRepository;
         private readonly IUserNotificationRepository _notificationRepository;
-
+        public int Order => 2;
         public MealPlannerAPIDataSeedContributor(IMealPlanRepository mealPlanRepository,
                                                  IShoppingListRepository shoppingListRepository,
                                                  IRecipeRepository recipeRepository,
@@ -40,7 +40,11 @@ namespace MealPlannerAPI.DataSeeder
             var userId = Guid.NewGuid();
 
             // 1. Get Existing Recipes to use for Meal Plan
-            var existingRecipes = await _recipeRepository.GetListAsync(skipCount: 0, maxResultCount: 2);
+            //var existingRecipes = await _recipeRepository.GetListAsync(skipCount: 0, maxResultCount: 2);
+            var existingRecipes = await _recipeRepository.GetPagedListAsync(
+      skipCount: 0,
+      maxResultCount: 2,
+      sorting: nameof(Recipe.CreationTime));
             Guid? recipe1Id = existingRecipes.Count > 0 ? existingRecipes[0].Id : null;
             Guid? recipe2Id = existingRecipes.Count > 1 ? existingRecipes[1].Id : null;
 

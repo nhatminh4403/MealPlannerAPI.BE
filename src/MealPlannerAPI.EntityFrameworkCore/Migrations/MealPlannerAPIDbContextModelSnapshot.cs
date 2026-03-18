@@ -465,17 +465,17 @@ namespace MealPlannerAPI.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(10,3)");
 
                     b.Property<Guid>("ShoppingListId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ShoppingListName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Unit")
                         .IsRequired()

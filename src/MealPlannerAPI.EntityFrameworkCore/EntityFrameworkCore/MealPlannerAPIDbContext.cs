@@ -226,7 +226,7 @@ public class MealPlannerAPIDbContext :
             b.ToTable("AppShoppingItems");
             b.ConfigureByConvention();
 
-            b.Property(x => x.ShoppingListName)
+            b.Property(x => x.Name)
                 .IsRequired()
                 .HasMaxLength(256)
                 .IsUnicode(true);

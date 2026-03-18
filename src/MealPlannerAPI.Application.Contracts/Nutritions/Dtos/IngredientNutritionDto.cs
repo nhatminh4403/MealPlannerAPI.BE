@@ -26,10 +26,10 @@ public class IngredientNutritionSearchResultDto
     /// Candidates from OpenFoodFacts — not yet persisted.
     /// Frontend shows these only when DB results are empty or user clicks "Search more".
     /// </summary>
-    public List<OpenFoodFactsCandidateDto> OffCandidates { get; set; } = [];
+    public List<ExternalFoodCandidateDto> ExternalCandidates { get; set; } = [];
 }
 
-public class OpenFoodFactsCandidateDto
+public class ExternalFoodCandidateDto
 {
     public string Name { get; set; } = default!;
     public string? Brand { get; set; }
@@ -39,7 +39,13 @@ public class OpenFoodFactsCandidateDto
     public float FatPer100g { get; set; }
     public float FiberPer100g { get; set; }
     public int CompletenessScore { get; set; }
-    public string? OffId { get; set; }
+
+    /// <summary>USDA fdcId — stored in SourceExternalId for traceability.</summary>
+    public string? ExternalId { get; set; }
+
+    /// <summary>"USDA" — for display in the frontend dropdown header.</summary>
+    public string Source { get; set; } = default!;
+
 }
 
 public class CreateIngredientNutritionDto
@@ -51,6 +57,6 @@ public class CreateIngredientNutritionDto
     public float FatPer100g { get; set; }
     public float FiberPer100g { get; set; }
 
-    /// <summary>If saving from OFF result — for traceability.</summary>
-    public string? SourceOffId { get; set; }
+    /// <summary>USDA fdcId if saving from a USDA result.</summary>
+    public string? SourceExternalId { get; set; }
 }
