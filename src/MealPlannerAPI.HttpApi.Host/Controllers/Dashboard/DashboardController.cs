@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

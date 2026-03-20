@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Scriban" Version="6.6.0" />
   </ItemGroup>
 
 </Project>

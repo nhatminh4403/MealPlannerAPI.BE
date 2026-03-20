@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Routes;
+using MealPlannerAPI.Routes;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using MealPlannerAPI.ShoppingLists.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +12,7 @@ namespace MealPlannerAPI.Controllers.ShoppingLists
 {
     [ApiController]
     [Authorize]
-    [Route(APIRoute.APIApp + "[controller]")]
+    [Route(APIRoute.APIApp + "shopping-lists")]
     public class ShoppingListController : AbpControllerBase
     {
         private readonly IShoppingListAppService _shoppingListAppService;

@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Nutritions;
+using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Nutritions.Dtos;
 using MealPlannerAPI.Routes;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +9,7 @@ using Volo.Abp.Application.Dtos;
 
 namespace MealPlannerAPI.Controllers.Nutritions
 {
-    [Route(APIRoute.APIApp + "[controller]")]
+    [Route(APIRoute.APIApp + "nutritions")]
     [ApiController]
     [Authorize]
     public class IngredientNutritionController : ControllerBase

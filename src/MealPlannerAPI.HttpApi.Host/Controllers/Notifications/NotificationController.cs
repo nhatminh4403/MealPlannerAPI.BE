@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Notifications;
+using MealPlannerAPI.Notifications;
 using MealPlannerAPI.Routes;
 using Microsoft.AspNetCore.Mvc;
 using System;

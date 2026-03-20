@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Routes;
+using MealPlannerAPI.Routes;
 using MealPlannerAPI.Users.Dtos;
 using MealPlannerAPI.Users.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +12,7 @@ using Volo.Abp.AspNetCore.Mvc;
 namespace MealPlannerAPI.Controllers.Users
 {
     [ApiController]
-    [Route(APIRoute.APIApp + "[controller]")]
+    [Route(APIRoute.APIApp + "user")]
     [Authorize]
     public class UserProfileController : AbpControllerBase
     {
