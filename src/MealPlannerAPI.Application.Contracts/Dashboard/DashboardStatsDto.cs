@@ -1,5 +1,7 @@
-﻿using MealPlannerAPI.Recipes.Dtos;
+using MealPlannerAPI.Recipes.Dtos;
+using System;
 using System.Collections.Generic;
+using Volo.Abp.Application.Dtos;
 
 namespace MealPlannerAPI.Dashboard
 {
@@ -15,8 +17,9 @@ namespace MealPlannerAPI.Dashboard
 
     }
 
-    public class TrendingRecipeDto
+    public class TrendingRecipeDto : EntityDto<Guid>
     {
+        // public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string? ImageUrl { get; set; }
         public double Rating { get; set; }

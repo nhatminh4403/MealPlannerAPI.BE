@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Permissions;
@@ -115,6 +115,7 @@ namespace MealPlannerAPI.Recipes
                 throw new EntityNotFoundException(typeof(Recipe), id);
 
             }
+            
             var dto = await MapToRecipeDtoAsync(recipe);
             await _nutritionCalculator.EnrichAsync(recipe, dto);
             return dto;
