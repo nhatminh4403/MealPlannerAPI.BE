@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    [Migration("20260318153400_Initial")]
+    [Migration("20260320113408_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

@@ -17,6 +17,16 @@ namespace MealPlannerAPI.Recipes
         {
         }
 
+        public async override Task<Recipe> GetAsync(Guid id, bool includeDetails = true, CancellationToken cancellationToken = default)
+        {
+            var dbSet = await GetDbSetAsync();
+
+            return await dbSet?
+                .Include(r => r.Ingredients)?
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken);
+        }
+
         public async Task<List<Recipe>> GetListByAuthorAsync(Guid authorId, CancellationToken cancellationToken = default)
         {
             var dbSet = await GetDbSetAsync();
@@ -41,5 +51,6 @@ namespace MealPlannerAPI.Recipes
             
             return await query.OrderByDescending(r => r.Rating).Take(count).ToListAsync(cancellationToken);
         }
+
     }
 }

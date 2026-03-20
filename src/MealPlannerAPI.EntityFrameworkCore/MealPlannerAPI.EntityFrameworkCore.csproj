@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Scriban" Version="6.6.0" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.PermissionManagement.EntityFrameworkCore" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.SettingManagement.EntityFrameworkCore" Version="10.1.1" />
