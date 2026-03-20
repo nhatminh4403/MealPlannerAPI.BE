@@ -57,14 +57,15 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             OpenIddictConstants.Permissions.Scopes.Roles,
             "MealPlannerAPI"
         };
-
-        await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_App") == null)
         {
-            ClientId = "MealPlannerAPI_Web",
-            ClientType = OpenIddictConstants.ClientTypes.Public,
-            //ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
-            DisplayName = "MealPlanner API Web",
-            Permissions =
+            await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+            {
+                ClientId = "MealPlannerAPI_Web",
+                ClientType = OpenIddictConstants.ClientTypes.Public,
+                //ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
+                DisplayName = "MealPlanner API Web",
+                Permissions =
             {
                 OpenIddictConstants.Permissions.Endpoints.Token,
                 OpenIddictConstants.Permissions.Endpoints.Revocation,
@@ -75,7 +76,9 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
                 OpenIddictConstants.Permissions.Scopes.Roles,
                 OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
             }
-        });
+            });
+
+        }
 
 
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");

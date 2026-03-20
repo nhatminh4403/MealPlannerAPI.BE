@@ -95,7 +95,9 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                                     int servings,
                                     int prepMinutes,
                                     int cookMinutes,
-                                    IEnumerable<(string Name, float Grams, string Display, Guid? NutritionId)> ingredients)
+                                    DifficultyLevel difficulty, 
+                                    IEnumerable<(string Name, float Grams, string Display, Guid? NutritionId)> ingredients,
+                                    IEnumerable<string>? instructions = null)
     {
         var recipe = new Recipe
         {
@@ -106,6 +108,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
             Servings = servings,
             PrepTimeMinutes = prepMinutes,
             CookingTimeMinutes = cookMinutes,
+            Difficulty = difficulty,
         };
 
         foreach (var (iName, grams, display, nutritionId) in ingredients)
@@ -118,7 +121,11 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                displayQuantity: display,
                ingredientNutritionId: nutritionId));
         }
+        if(instructions != null)
+        {
+            recipe.SetInstructions(instructions);
 
+        }
         return recipe;
     }
 }
