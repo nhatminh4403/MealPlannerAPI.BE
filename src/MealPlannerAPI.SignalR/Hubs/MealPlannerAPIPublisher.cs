@@ -1,11 +1,13 @@
-﻿using MealPlannerAPI.Dashboard;
+﻿//.SignalR project
+using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.MealPlans.Dtos;
+using MealPlannerAPI.Notifications;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.AspNetCore.SignalR;
+using Volo.Abp.DependencyInjection;
 namespace MealPlannerAPI.Hubs
 {
     public class MealPlannerAPIPublisher : IMealPlannerHubPublisher, ITransientDependency
@@ -60,6 +62,19 @@ namespace MealPlannerAPI.Hubs
             return _hubContext.Clients
                         .Group(MealPlannerAPIHub.ShoppingListGroup(shoppingListId))
                         .ShoppingItemToggled(shoppingListId, item);
+        }
+        public Task NotifyNotificationReceivedAsync(Guid userId, UserNotificationDto notification)
+        {
+            return _hubContext.Clients
+                .Group(MealPlannerAPIHub.UserGroup(userId))
+                .NotificationReceived(notification);
+        }
+
+        public Task NotifyUnreadCountChangedAsync(Guid userId, int count)
+        {
+            return _hubContext.Clients
+                .Group(MealPlannerAPIHub.UserGroup(userId))
+                .UnreadCountChanged(count);
         }
     }
 }

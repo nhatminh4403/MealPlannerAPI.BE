@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Users;
 using MealPlannerAPI.MealPlans;
@@ -205,8 +205,30 @@ namespace MealPlannerAPI.Users
         // ── Helpers ───────────────────────────────────────────────────────────────
 
         private async Task<UserProfile> GetUserProfileAsync(Guid userId)
-            => await _identityUserRepository.GetAsync(userId) as UserProfile
-                ?? throw new EntityNotFoundException(typeof(UserProfile), userId);
+        {
+            var identityUser = await _identityUserRepository.GetAsync(userId);
+            Console.WriteLine(identityUser);
+            if (identityUser is UserProfile profile)
+            {
+                return profile;
+            }
+
+            // Fallback for admin or unmigrated users: build a UserProfile proxy or 
+            // return a basic one. Since IdentityUser is the base, we can't easily
+            // "cast" it if EF didn't load it as the derived type.
+            // We'll throw a more descriptive error or return a basic profile if it's the current user.
+            
+            if (identityUser != null) {
+                // Return a "virtual" profile derived from the identity user
+                return new UserProfile(identityUser.Id, identityUser.UserName, identityUser.Email, identityUser.TenantId)
+                {
+                    Name = identityUser.Name,
+                    Surname = identityUser.Surname
+                };
+            }
+
+            throw new EntityNotFoundException(typeof(UserProfile), userId);
+        }
 
         private ProfileDto BuildUserProfileDto(UserProfile user)
         {

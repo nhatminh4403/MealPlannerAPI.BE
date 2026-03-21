@@ -29,10 +29,6 @@ namespace MealPlannerAPI.Controllers.Notifications
         public Task<PagedResultDto<UserNotificationDto>> GetListAsync([FromQuery] GetNotificationsInput input)
             => _notificationAppService.GetListAsync(input);
 
-        /// <summary>Get the count of unread notifications for the current user.</summary>
-        [HttpGet("unread-count")]
-        public Task<int> GetUnreadCountAsync()
-            => _notificationAppService.GetUnreadCountAsync();
 
         /// <summary>Mark a single notification as read.</summary>
         [HttpPatch("{id:guid}/read")]
@@ -40,7 +36,7 @@ namespace MealPlannerAPI.Controllers.Notifications
             => _notificationAppService.MarkAsReadAsync(id);
         /// <summary> Mark a single notification as unread</summary>
         [HttpPatch("{id:guid}/unread")]
-        public Task MarkAsUnreadAsynx(Guid id)
+        public Task MarkAsUnreadAsync(Guid id)
         {
             return _notificationAppService.MarkAsUnreadAsync(id);
         }

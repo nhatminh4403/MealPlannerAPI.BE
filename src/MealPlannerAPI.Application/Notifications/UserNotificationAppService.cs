@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.Permissions;
+﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
@@ -8,6 +9,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
+using static MealPlannerAPI.Permissions.MealPlannerAPIPermissions;
 
 namespace MealPlannerAPI.Notifications
 {
@@ -16,16 +18,20 @@ namespace MealPlannerAPI.Notifications
     {
         private readonly IRepository<UserNotification, Guid> _notificationRepository;
         private readonly UserNotificationToUserNotificationDtoMapper _toNotificationDtoMapper;
+        private readonly IMealPlannerHubPublisher _hubPublisher;
 
-        public UserNotificationAppService(IRepository<UserNotification, Guid> notificationRepository, UserNotificationToUserNotificationDtoMapper toNotificationDtoMapper)
+        public UserNotificationAppService(IRepository<UserNotification, Guid> notificationRepository, UserNotificationToUserNotificationDtoMapper toNotificationDtoMapper, IMealPlannerHubPublisher hubPublisher)
         {
             _notificationRepository = notificationRepository;
             _toNotificationDtoMapper = toNotificationDtoMapper;
+            _hubPublisher = hubPublisher;
         }
         [Authorize(MealPlannerAPIPermissions.Notifications.Delete)]
         public async Task DeleteAsync(Guid id)
         {
             var notification = await _notificationRepository.GetAsync(id);
+            if (notification.UserId != CurrentUser.GetId())
+                throw new AbpAuthorizationException("You are not authorized to delete this notification.");
             await _notificationRepository.DeleteAsync(notification, autoSave: true);
         }
         [Authorize(MealPlannerAPIPermissions.Notifications.Delete)]
@@ -79,6 +85,12 @@ namespace MealPlannerAPI.Notifications
             return await AsyncExecuter.CountAsync(
                 query.Where(n => n.UserId == CurrentUser.GetId() && !n.IsRead));
         }
+        private async Task<int> GetOrComputeUnreadCountAsync(Guid userId)
+        {
+            var query = await _notificationRepository.GetQueryableAsync();
+            return await AsyncExecuter.CountAsync(
+                query.Where(n => n.UserId == CurrentUser.GetId() && n.IsRead));
+        }
 
         [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task MarkAllAsReadAsync()
@@ -91,24 +103,33 @@ namespace MealPlannerAPI.Notifications
                 notification.IsRead = true;
 
             await _notificationRepository.UpdateManyAsync(unread, autoSave: true);
+            await _hubPublisher.NotifyUnreadCountChangedAsync(CurrentUser.GetId(), 0);
         }
 
         [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task MarkAsReadAsync(Guid id)
         {
             var notification = await _notificationRepository.GetAsync(id);
+            if (notification.UserId != CurrentUser.GetId())
+                throw new AbpAuthorizationException("You are not authorized to access this notification.");
             notification.IsRead = true;
             await _notificationRepository.UpdateAsync(notification, autoSave: true);
+
+            var newCount = await GetUnreadCountAsync();
+            await _hubPublisher.NotifyUnreadCountChangedAsync(CurrentUser.GetId(), newCount);
         }
         [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
         public async Task MarkAsUnreadAsync(Guid id)
         {
-            var noti = await _notificationRepository.GetAsync(id);
-            if(noti.IsRead == true)
-            {
-                noti.IsRead = false;
-                await _notificationRepository.UpdateAsync(noti, autoSave: true);
-            }
+            var notification = await _notificationRepository.GetAsync(id);
+            if (notification.UserId != CurrentUser.GetId())
+                throw new AbpAuthorizationException("You are not authorized to access this notification.");
+
+            notification.IsRead = false;
+            await _notificationRepository.UpdateAsync(notification, autoSave: true);
+
+            var count = await GetOrComputeUnreadCountAsync(notification.UserId);
+            await _hubPublisher.NotifyUnreadCountChangedAsync(notification.UserId, count);
         }
     }
 }
