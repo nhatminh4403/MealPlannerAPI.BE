@@ -11,7 +11,7 @@ namespace MealPlannerAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<IngredientNutrition> builder)
         {
-            builder.ToTable("AppIngredientNutritions");
+            builder.ToTable("IngredientNutritions");
 
             builder.HasKey(x => x.Id);
 
