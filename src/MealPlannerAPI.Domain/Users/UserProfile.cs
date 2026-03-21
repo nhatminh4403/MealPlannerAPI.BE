@@ -7,8 +7,6 @@ namespace MealPlannerAPI.Users
 {
     public class UserProfile : IdentityUser
     {
-        public Guid UserId { get; set; }
-
         public string? AvatarUrl { get; set; }
 
         // ── Preferences ──────────────────────────────────────────────

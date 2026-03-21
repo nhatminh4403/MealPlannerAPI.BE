@@ -38,8 +38,16 @@ namespace MealPlannerAPI.Controllers.Notifications
         [HttpPatch("{id:guid}/read")]
         public Task MarkAsReadAsync(Guid id)
             => _notificationAppService.MarkAsReadAsync(id);
+        /// <summary> Mark a single notification as unread</summary>
+        [HttpPatch("{id:guid}/unread")]
+        public Task MarkAsUnreadAsynx(Guid id)
+        {
+            return _notificationAppService.MarkAsUnreadAsync(id);
+        }
 
         /// <summary>Mark all of the current user's notifications as read.</summary>
+        
+
         [HttpPatch("read-all")]
         public Task MarkAllAsReadAsync()
             => _notificationAppService.MarkAllAsReadAsync();

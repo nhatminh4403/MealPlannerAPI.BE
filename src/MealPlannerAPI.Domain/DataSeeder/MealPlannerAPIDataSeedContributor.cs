@@ -9,6 +9,7 @@ using MealPlannerAPI.Enums;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Identity;
 
 namespace MealPlannerAPI.DataSeeder
 {
@@ -18,16 +19,19 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IShoppingListRepository _shoppingListRepository;
         private readonly IRecipeRepository _recipeRepository;
         private readonly IUserNotificationRepository _notificationRepository;
+        private readonly IIdentityUserRepository _identityUserRepository;
         public int Order => 2;
         public MealPlannerAPIDataSeedContributor(IMealPlanRepository mealPlanRepository,
                                                  IShoppingListRepository shoppingListRepository,
                                                  IRecipeRepository recipeRepository,
-                                                 IUserNotificationRepository notificationRepository)
+                                                 IUserNotificationRepository notificationRepository,
+                                                 IIdentityUserRepository identityUserRepository)
         {
             _mealPlanRepository = mealPlanRepository;
             _shoppingListRepository = shoppingListRepository;
             _recipeRepository = recipeRepository;
             _notificationRepository = notificationRepository;
+            _identityUserRepository = identityUserRepository;
         }
 
         public async Task SeedAsync(DataSeedContext context)
@@ -38,7 +42,7 @@ namespace MealPlannerAPI.DataSeeder
             }
 
             var userId = Guid.NewGuid();
-
+            var adminId = await _identityUserRepository.FindByNormalizedUserNameAsync("ADMIN");
             // 1. Get Existing Recipes to use for Meal Plan
             //var existingRecipes = await _recipeRepository.GetListAsync(skipCount: 0, maxResultCount: 2);
             var existingRecipes = await _recipeRepository.GetPagedListAsync(
@@ -51,7 +55,7 @@ namespace MealPlannerAPI.DataSeeder
             // 2. Seed Meal Plan
             var mealPlanId = Guid.NewGuid();
             var nextMonday = MealPlan.GetWeekStart(DateTime.UtcNow.AddDays(7));
-            var mealPlan = new MealPlan(id: mealPlanId, userId: userId, weekStartDate: nextMonday);
+            var mealPlan = new MealPlan(id: mealPlanId, userId: adminId.Id, weekStartDate: nextMonday);
 
             mealPlan.AddEntry(
                 id: Guid.NewGuid(),
@@ -75,7 +79,7 @@ namespace MealPlannerAPI.DataSeeder
             if (await _shoppingListRepository.GetCountAsync() == 0)
             {
                 var shoppingListId = Guid.NewGuid();
-                var shoppingList = new ShoppingList(id: shoppingListId, userId: userId, name: "Weekly Groceries");
+                var shoppingList = new ShoppingList(id: shoppingListId, userId: adminId.Id, name: "Weekly Groceries");
 
                 shoppingList.AddItem(
                     id: Guid.NewGuid(),
@@ -109,7 +113,7 @@ namespace MealPlannerAPI.DataSeeder
             {
                 var notification1 = new UserNotification(
                     id: Guid.NewGuid(),
-                    userId: userId,
+                    userId: adminId.Id,
                     type: NotificationType.MealReminder,
                     title: "Upcoming Meal",
                     message: "Don't forget to prepare your planned meal for dinner today!",
@@ -117,7 +121,7 @@ namespace MealPlannerAPI.DataSeeder
 
                 var notification2 = new UserNotification(
                     id: Guid.NewGuid(),
-                    userId: userId,
+                    userId: adminId.Id,
                     type: NotificationType.ShoppingListAlert,
                     title: "Shopping List Reminder",
                     message: "You have uncompleted items in your Weekly Groceries list.",

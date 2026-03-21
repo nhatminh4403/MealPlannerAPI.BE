@@ -18,6 +18,7 @@ namespace MealPlannerAPI.Notifications
 
         /// <summary>Mark a single notification as read.</summary>
         Task MarkAsReadAsync(Guid id);
+        Task MarkAsUnreadAsync(Guid id);
 
         /// <summary>Mark all notifications as read for the current user.</summary>
         Task MarkAllAsReadAsync();

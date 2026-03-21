@@ -100,5 +100,15 @@ namespace MealPlannerAPI.Notifications
             notification.IsRead = true;
             await _notificationRepository.UpdateAsync(notification, autoSave: true);
         }
+        [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
+        public async Task MarkAsUnreadAsync(Guid id)
+        {
+            var noti = await _notificationRepository.GetAsync(id);
+            if(noti.IsRead == true)
+            {
+                noti.IsRead = false;
+                await _notificationRepository.UpdateAsync(noti, autoSave: true);
+            }
+        }
     }
 }
