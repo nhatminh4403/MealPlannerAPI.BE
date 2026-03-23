@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.Notifications;
 using MealPlannerAPI.ShoppingLists.Dtos;
@@ -8,7 +8,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace MealPlannerAPI.Hubs
 {
-    public interface IMealPlannerHubPublisher 
+    public interface IMealPlannerHubPublisher : ITransientDependency
     {
         Task NotifyTrendingUpdatedAsync();
         Task NotifyStatsUpdatedAsync(Guid userId, DashboardStatsDto stats);

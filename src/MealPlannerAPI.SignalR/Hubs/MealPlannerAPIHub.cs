@@ -1,4 +1,4 @@
-﻿//.SignalR project
+//.SignalR project
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace MealPlannerAPI.Hubs
 {
     [Authorize]
     [HubRoute("/signalr-hubs/meal-planner")]
+    [EnableRateLimiting("SignalR")]
     public class MealPlannerAPIHub : AbpHub<IMealPlannerAPIHubClient>
     {
         public static string UserGroup(Guid userId) => $"user:{userId}";

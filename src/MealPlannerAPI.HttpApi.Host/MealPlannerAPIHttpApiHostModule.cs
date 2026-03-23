@@ -42,6 +42,9 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Http;
 //using Microsoft.Extensions.Http.Polly;
 
 namespace MealPlannerAPI;
@@ -137,7 +140,35 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureDistributedCacheOptions(context);
         ConfigureJwtOption(services);
         ConfigureHttpClient(services);
-        services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
+        // services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
+        ConfigureRateLimiter(services);
+    }
+    private void ConfigureRateLimiter(IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 50,
+                        QueueLimit = 100, // Queueing prevents immediate 429s on bursts
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        Window = TimeSpan.FromSeconds(10)
+                    }));
+            
+            options.AddFixedWindowLimiter("SignalR", configureOptions: signalrOptions =>
+            {
+                signalrOptions.AutoReplenishment = true;
+                signalrOptions.PermitLimit = 100;
+                signalrOptions.QueueLimit = 100;
+                signalrOptions.Window = TimeSpan.FromSeconds(10);
+            });
+
+            options.RejectionStatusCode = StatusCodes.Status503ServiceUnavailable;
+        });
     }
     private void ConfigureJwtOption(IServiceCollection services)
     {
@@ -381,6 +412,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+        app.UseRateLimiter();
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
