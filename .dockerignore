@@ -1,0 +1,69 @@
+# Docker ignore file - excludes files from Docker build context
+# This speeds up builds by reducing context size
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*~
+
+# Node modules (will be restored during build)
+**/node_modules/
+**/wwwroot/libs/
+
+# Test results
+**/TestResults/
+**/*.trx
+
+# Package files
+*.nupkg
+*.snupkg
+packages/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Documentation
+*.md
+docs/
+
+# Logs
+*.log
+logs/
+
+# Environment files (use .env for runtime, not build)
+.env
+.env.*
+
+# NPM/Yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+
+# ABP
+**/Logs/
+**/App_Data/

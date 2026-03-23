@@ -279,22 +279,47 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
             );
         });
     }
-
-    //private void Configure
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
-        if (hostingEnvironment.IsDevelopment())
-        {
-            Configure<AbpVirtualFileSystemOptions>(options =>
-            {
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainSharedModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain.Shared"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationContractsModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application.Contracts"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application"));
-            });
-        }
+
+        Configure<AbpVirtualFileSystemOptions>(options => {
+            if (hostingEnvironment.IsDevelopment()) {
+                void ReplaceIfExists<TModule>(string path)
+                {
+                    var fullPath = Path.Combine(hostingEnvironment.ContentRootPath, path);
+                    if (Directory.Exists(fullPath))
+                    {
+                        options.FileSets.ReplaceEmbeddedByPhysical<TModule>(fullPath);
+                    }
+                }
+
+
+                ReplaceIfExists<MealPlannerAPIApplicationModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application");
+                ReplaceIfExists<MealPlannerAPIApplicationContractsModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application.Contract");
+                ReplaceIfExists<MealPlannerAPIDomainModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain");
+                ReplaceIfExists<MealPlannerAPIDomainSharedModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain.Shared");
+
+                ReplaceIfExists<MealPlannerAPIHttpApiModule>($"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi");
+                if (Directory.Exists(hostingEnvironment.ContentRootPath))
+                {
+                    options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIHttpApiHostModule>(hostingEnvironment.ContentRootPath);
+                }
+            }
+        });
+
+        //if (hostingEnvironment.IsDevelopment())
+        //{
+
+        //    Configure<AbpVirtualFileSystemOptions>(options =>
+        //    {
+        //        options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainSharedModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain.Shared"));
+        //        options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain"));
+        //        options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationContractsModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application.Contracts"));
+        //        options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application"));
+        //    });
+        //}
     }
 
     private void ConfigureConventionalControllers()

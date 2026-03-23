@@ -1,0 +1,46 @@
+services:
+  # 1. Database 
+  db:
+    image: mcr.microsoft.com/mssql/rhel/server:2025-latest
+    container_name: db-local
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Nhatminh03
+    ports:
+      - "1433:1433"
+    networks:
+      - mealplanner-api-network
+
+  # 2. Migrator
+  migrator:
+    build:
+      context: .
+      dockerfile: src/MealPlannerAPI.DbMigrator/Dockerfile
+    container_name: mealplanner-api-migrator
+    environment:
+      - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
+    depends_on:
+      - db
+    networks:
+      - mealplanner-api-network
+
+  # 3. The API Host
+  web:
+    build:
+      context: .
+      dockerfile: src/MealPlannerAPI.HttpApi.Host/Dockerfile
+    container_name: meal-planner-api-host
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:81
+      - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
+    ports:
+      - "44339:81"
+    depends_on:
+      - migrator
+    networks:
+      - mealplanner-api-network
+
+networks:
+  mealplanner-api-network:
+    driver: bridge
