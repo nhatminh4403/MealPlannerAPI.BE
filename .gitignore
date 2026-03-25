@@ -272,3 +272,4 @@ src/MealPlannerAPI.Blazor.Server.Tiered/Logs/*
 # IdentityServer temp files
 tempkey.rsa
 tempkey.jwk
+/src/MealPlannerAPI.HttpApi.Host/appsettings.Development.json
