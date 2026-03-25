@@ -25,10 +25,14 @@ public static class HealthChecksBuilderExtensions
         {
             healthCheckUrl = "/health-status";
         }
+        //var alternateHealthUICheckUrl = configuration["App:AlternateHealthUiCheckUrl"];
 
         var healthChecksUiBuilder = services.AddHealthChecksUI(settings =>
         {
-            settings.AddHealthCheckEndpoint("MealPlannerAPI Health Status", configuration["App:HealthUiCheckUrl"] ?? healthCheckUrl);
+            settings.AddHealthCheckEndpoint("MealPlannerAPI Health Status", 
+                configuration["App:HealthUiCheckUrl"] 
+                ?? configuration["App:DockerHealthUiCheckUrl"] 
+                ?? healthCheckUrl);
         });
 
         // Set your HealthCheck UI Storage here

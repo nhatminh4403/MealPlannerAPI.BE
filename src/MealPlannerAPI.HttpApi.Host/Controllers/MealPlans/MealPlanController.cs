@@ -1,6 +1,7 @@
 using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.MealPlans.Services;
 using MealPlannerAPI.Routes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace MealPlannerAPI.Controllers.MealPlans
 {
     [Route(APIRoute.APIApp + "meal-plans")]
     [ApiController]
+    [Authorize]
     public class MealPlanController : AbpControllerBase
     {
         private readonly IMealPlanAppService _mealPlanAppService;
@@ -28,6 +30,7 @@ namespace MealPlannerAPI.Controllers.MealPlans
 
         /// <summary>Get the current user's meal plans, optionally filtered by week start date.</summary>
         [HttpGet]
+        //[AllowAnonymous]
         public Task<PagedResultDto<MealPlanDto>> GetListAsync([FromQuery] GetMealPlansInput input)
             => _mealPlanAppService.GetListAsync(input);
 
@@ -66,5 +69,13 @@ namespace MealPlannerAPI.Controllers.MealPlans
         [HttpDelete("{mealPlanId:guid}/entries/{entryId:guid}")]
         public Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
             => _mealPlanAppService.DeleteEntryAsync(mealPlanId, entryId);
+
+        /// <summary>
+        /// Auto-generate a full week meal plan based on user preferences and available recipes.
+        /// Optionally supply overrides for cuisine, dietary restrictions, difficulty, and time.
+        /// </summary>
+        [HttpPost("auto-generate")]
+        public Task<MealPlanDto> AutoGenerateAsync([FromBody] AutoGenerateMealPlanDto input)
+            => _mealPlanAppService.AutoGenerateAsync(input);
     }
 }

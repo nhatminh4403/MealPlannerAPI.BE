@@ -8,7 +8,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace MealPlannerAPI.Hubs
 {
-    public interface IMealPlannerHubPublisher : ITransientDependency
+    public interface IMealPlannerHubPublisher
     {
         Task NotifyTrendingUpdatedAsync();
         Task NotifyStatsUpdatedAsync(Guid userId, DashboardStatsDto stats);

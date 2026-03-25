@@ -60,6 +60,7 @@ public class MealPlannerAPIDbContext :
     public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
     
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<MealPlanEntry> MealPlanEntries { get; set; }
     public MealPlannerAPIDbContext(DbContextOptions<MealPlannerAPIDbContext> options)
         : base(options)
     {

@@ -1,4 +1,4 @@
-﻿using MealPlannerAPI.MealPlans.Dtos;
+using MealPlannerAPI.MealPlans.Dtos;
 using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
@@ -22,5 +22,8 @@ namespace MealPlannerAPI.MealPlans.Services
 
         /// Remove a single entry from a meal plan.
         Task DeleteEntryAsync(Guid mealPlanId, Guid entryId);
+
+        /// Auto-generate a meal plan based on user preferences and available recipes.
+        Task<MealPlanDto> AutoGenerateAsync(AutoGenerateMealPlanDto input);
     }
 }

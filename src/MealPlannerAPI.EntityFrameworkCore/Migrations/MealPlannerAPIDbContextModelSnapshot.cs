@@ -91,7 +91,6 @@ namespace MealPlannerAPI.Migrations
             modelBuilder.Entity("MealPlannerAPI.MealPlans.MealPlanEntry", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DayOfWeek")

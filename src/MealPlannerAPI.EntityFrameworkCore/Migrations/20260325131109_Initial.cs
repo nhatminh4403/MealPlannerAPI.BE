@@ -451,7 +451,6 @@ namespace MealPlannerAPI.Migrations
                     LastPasswordChangeTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastSignInTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     AvatarUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     DietaryRestrictions = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     CuisinePreferences = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),

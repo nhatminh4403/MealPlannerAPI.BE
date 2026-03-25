@@ -1,9 +1,11 @@
-﻿using MealPlannerAPI.Hubs;
+using MealPlannerAPI.Enums;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.MealPlans.Dtos;
 using MealPlannerAPI.MealPlans.Services;
 using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes;
+using MealPlannerAPI.Users;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using static MealPlannerAPI.Mappings.Recipes.MealPlanEntryToMealPlanEntryDtoMapper;
 
@@ -34,6 +37,7 @@ namespace MealPlannerAPI.MealPlans
         private readonly IMealPlanRepository _mealPlanRepository;
         private readonly IRepository<MealPlanEntry, Guid> _mealPlanEntryRepository;
         private readonly IRecipeRepository _recipeRepository;
+        private readonly IIdentityUserRepository _identityUserRepository;
         private readonly MealPlanToMealPlanDtoMapper _toMealPlanDtoMapper;
         private readonly MealPlanEntryToMealPlanEntryDtoMapper _toEntryDtoMapper;
         private readonly CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper _toEntryMapper;
@@ -42,6 +46,7 @@ namespace MealPlannerAPI.MealPlans
         public MealPlanAppService(IMealPlanRepository mealPlanRepository,
                                   IRepository<MealPlanEntry, Guid> mealPlanEntryRepository,
                                   IRecipeRepository recipeRepository,
+                                  IIdentityUserRepository identityUserRepository,
                                   MealPlanToMealPlanDtoMapper toMealPlanDtoMapper,
                                   MealPlanEntryToMealPlanEntryDtoMapper toEntryDtoMapper,
                                   CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper toEntryMapper,
@@ -51,6 +56,7 @@ namespace MealPlannerAPI.MealPlans
             _mealPlanRepository = mealPlanRepository;
             _mealPlanEntryRepository = mealPlanEntryRepository;
             _recipeRepository = recipeRepository;
+            _identityUserRepository = identityUserRepository;
             _toMealPlanDtoMapper = toMealPlanDtoMapper;
             _toEntryDtoMapper = toEntryDtoMapper;
             _toEntryMapper = toEntryMapper;
@@ -61,7 +67,6 @@ namespace MealPlannerAPI.MealPlans
         private void ConfigurePolicies()
         {
             GetPolicyName = null;
-            GetListPolicyName = MealPlannerAPIPermissions.MealPlans.Default;
             CreatePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
             UpdatePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
             DeletePolicyName = MealPlannerAPIPermissions.MealPlans.Create;
@@ -77,7 +82,7 @@ namespace MealPlannerAPI.MealPlans
                 throw new EntityNotFoundException(typeof(MealPlan), id);
             }
 
-            
+
 
             //var dailyNutrition = mealPlanEntries
             //    .Where(e => e.Recipe.NutritionPerServing != null)
@@ -103,12 +108,18 @@ namespace MealPlannerAPI.MealPlans
             return await MapToMealPlanDtoAsync(plan);
         }
 
-        [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
+        //[Authorize()]
+        //[AllowAnonymous]
         public async override Task<PagedResultDto<MealPlanDto>> GetListAsync(GetMealPlansInput input)
         {
             var query = await _mealPlanRepository.GetQueryableAsync();
 
-            query = query.Where(mp => mp.UserId == CurrentUser.GetId());
+            // Safely assign nullable Id (will be null for anonymous requests)
+            var currentUserId = CurrentUser.Id;
+
+            // Update the LINQ expression to account for a possible null currentUserId
+            query = query.Where(mp => mp.UserId == input.UserId ||
+                                      (currentUserId.HasValue && mp.UserId == currentUserId.Value));
 
             if (input.WeekStartDate.HasValue)
                 query = query.Where(mp => mp.WeekStartDate == input.WeekStartDate.Value);
@@ -186,6 +197,114 @@ namespace MealPlannerAPI.MealPlans
         public override Task DeleteAsync(Guid id)
         {
             return base.DeleteAsync(id);
+        }
+
+        // ── Auto-generate ─────────────────────────────────────────────────────────
+
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Create)]
+        public async Task<MealPlanDto> AutoGenerateAsync(AutoGenerateMealPlanDto input)
+        {
+            var userId = CurrentUser.GetId();
+
+            // ── 1. Resolve user preferences ───────────────────────────────────
+            var cuisines = input.CuisinePreferences ?? new();
+            var restrictions = input.DietaryRestrictions ?? new();
+
+            if (cuisines.Count == 0 || restrictions.Count == 0)
+            {
+                var identity = await _identityUserRepository.FindAsync(userId);
+                if (identity is UserProfile profile)
+                {
+                    if (cuisines.Count == 0)
+                        cuisines = profile.GetCuisinePreferences();
+                    if (restrictions.Count == 0)
+                        restrictions = profile.GetDietaryRestrictions();
+                }
+            }
+
+            // ── 2. Build candidate recipe pool ────────────────────────────────
+            var recipeQuery = await _recipeRepository.GetQueryableAsync();
+
+            // Filter by cuisine (if any preferences set)
+            if (cuisines.Count > 0)
+                recipeQuery = recipeQuery.Where(r => cuisines.Contains(r.Cuisine));
+
+            // Filter by dietary tags (if any restrictions set)
+            if (restrictions.Count > 0)
+                recipeQuery = recipeQuery.Where(r =>
+                    r.Tags != null && restrictions.Any(tag => r.Tags.Contains(tag)));
+
+            // Filter by max total time
+            if (input.MaxTotalTimeMinutes.HasValue)
+                recipeQuery = recipeQuery.Where(r =>
+                    r.CookingTimeMinutes + r.PrepTimeMinutes <= input.MaxTotalTimeMinutes.Value);
+
+            // Filter by max difficulty
+            if (input.MaxDifficulty.HasValue)
+                recipeQuery = recipeQuery.Where(r =>
+                    (int)r.Difficulty <= input.MaxDifficulty.Value);
+
+            var candidates = await AsyncExecuter.ToListAsync(recipeQuery);
+
+            // Fall back to ALL recipes when no matches
+            if (candidates.Count == 0)
+                candidates = await AsyncExecuter.ToListAsync(
+                    await _recipeRepository.GetQueryableAsync());
+
+            if (candidates.Count == 0)
+                throw new BusinessException("MealPlan:NoRecipes")
+                    .WithData("message", "No recipes found to build a plan.");
+
+            // ── 3. Determine meal types per day ───────────────────────────────
+            var mealTypes = (input.MealTypes?.Count > 0
+                ? input.MealTypes.Select(m => (MealType)m).ToList()
+                : new List<MealType> { MealType.Breakfast, MealType.Lunch, MealType.Dinner });
+
+            // ── 4. Build the meal plan ─────────────────────────────────────────
+            var weekStart = input.WeekStartDate.HasValue
+                ? MealPlan.GetWeekStart(input.WeekStartDate.Value)
+                : MealPlan.GetWeekStart(DateTime.UtcNow);
+
+            var mealPlan = await _mealPlanManager.GetOrCreateMealPlanAsync(userId, weekStart);
+
+            // Clear any existing entries for a clean generation
+            mealPlan.ReplaceEntries(Enumerable.Empty<(Guid, DayOfWeek, string, MealType, string?, Guid?)>());
+
+            var rng = new Random();
+            var daysOfWeek = new[]
+            {
+                DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+            };
+
+            var scheduledTimes = new Dictionary<MealType, string>
+            {
+                [MealType.Breakfast] = "07:00",
+                [MealType.Lunch] = "12:00",
+                [MealType.Dinner] = "18:00",
+                [MealType.Snack] = "15:00"
+            };
+
+            foreach (var day in daysOfWeek)
+            {
+                foreach (var mt in mealTypes)
+                {
+                    var recipe = candidates[rng.Next(candidates.Count)];
+                    mealPlan.AddEntry(
+                        GuidGenerator.Create(),
+                        day,
+                        mt.ToString(),
+                        mt,
+                        scheduledTimes.GetValueOrDefault(mt),
+                        recipe.Id);
+                }
+            }
+
+            await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
+
+            var dto = await MapToMealPlanDtoAsync(mealPlan);
+            await _hub.NotifyMealPlanUpdatedAsync(userId, dto);
+            return dto;
         }
         private async Task<MealPlanDto> MapToMealPlanDtoAsync(MealPlan mealPlan)
         {
