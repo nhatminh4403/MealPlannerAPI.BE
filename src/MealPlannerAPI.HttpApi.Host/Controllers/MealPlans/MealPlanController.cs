@@ -30,7 +30,7 @@ namespace MealPlannerAPI.Controllers.MealPlans
 
         /// <summary>Get the current user's meal plans, optionally filtered by week start date.</summary>
         [HttpGet]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         public Task<PagedResultDto<MealPlanDto>> GetListAsync([FromQuery] GetMealPlansInput input)
             => _mealPlanAppService.GetListAsync(input);
 
@@ -67,8 +67,16 @@ namespace MealPlannerAPI.Controllers.MealPlans
 
         /// <summary>Remove a single meal entry from a plan.</summary>
         [HttpDelete("{mealPlanId:guid}/entries/{entryId:guid}")]
-        public Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
-            => _mealPlanAppService.DeleteEntryAsync(mealPlanId, entryId);
+        public async Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
+        {
+            if (
+                mealPlanId == Guid.Empty || mealPlanId == Guid.Empty ||
+                (string.IsNullOrEmpty(mealPlanId.ToString()) && string.IsNullOrEmpty(entryId.ToString())))
+            {
+                Console.WriteLine($"Checking parameters {mealPlanId}, {entryId}");
+            }
+            await _mealPlanAppService.DeleteEntryAsync(mealPlanId, entryId);
+        }
 
         /// <summary>
         /// Auto-generate a full week meal plan based on user preferences and available recipes.

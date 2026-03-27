@@ -7,6 +7,7 @@ using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,7 @@ namespace MealPlannerAPI.MealPlans
         private readonly CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper _toEntryMapper;
         private readonly MealPlanManager _mealPlanManager;
         private readonly IMealPlannerHubPublisher _hub;
+        private readonly ILogger<MealPlanAppService> _logger;
         public MealPlanAppService(IMealPlanRepository mealPlanRepository,
                                   IRepository<MealPlanEntry, Guid> mealPlanEntryRepository,
                                   IRecipeRepository recipeRepository,
@@ -51,7 +53,8 @@ namespace MealPlannerAPI.MealPlans
                                   MealPlanEntryToMealPlanEntryDtoMapper toEntryDtoMapper,
                                   CreateUpdateMealPlanEntryDtoToMealPlanEntryMapper toEntryMapper,
                                   MealPlanManager mealPlanManager,
-                                  IMealPlannerHubPublisher hub) : base(mealPlanRepository)
+                                  IMealPlannerHubPublisher hub,
+                                  ILogger<MealPlanAppService> logger) : base(mealPlanRepository)
         {
             _mealPlanRepository = mealPlanRepository;
             _mealPlanEntryRepository = mealPlanEntryRepository;
@@ -63,6 +66,7 @@ namespace MealPlannerAPI.MealPlans
             _mealPlanManager = mealPlanManager;
             _hub = hub;
             ConfigurePolicies();
+            _logger = logger;
         }
         private void ConfigurePolicies()
         {
@@ -113,21 +117,21 @@ namespace MealPlannerAPI.MealPlans
         public async override Task<PagedResultDto<MealPlanDto>> GetListAsync(GetMealPlansInput input)
         {
             var query = await _mealPlanRepository.GetQueryableAsync();
-
+   
             // Safely assign nullable Id (will be null for anonymous requests)
             var currentUserId = CurrentUser.Id;
 
             // Update the LINQ expression to account for a possible null currentUserId
-            query = query.Where(mp => mp.UserId == input.UserId ||
-                                      (currentUserId.HasValue && mp.UserId == currentUserId.Value));
+            query = query.Where(mp => (currentUserId.HasValue && mp.UserId == currentUserId.Value) || mp.UserId == input.UserId);
 
             if (input.WeekStartDate.HasValue)
                 query = query.Where(mp => mp.WeekStartDate == input.WeekStartDate.Value);
-
+            
             var totalCount = await AsyncExecuter.CountAsync(query);
 
             var mealPlans = await AsyncExecuter.ToListAsync(
                 query.OrderByDescending(mp => mp.WeekStartDate)
+                    //.Include()
                      .Skip(input.SkipCount)
                      .Take(input.MaxResultCount));
 
@@ -153,9 +157,13 @@ namespace MealPlannerAPI.MealPlans
         public async Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
-            if (mealPlan == null)
-                throw new EntityNotFoundException(typeof(MealPlan), mealPlanId);
+            if (mealPlan == null )
+            {
+                _logger.LogDebug($"Can't find mealplan {mealPlanId} or {entryId}");
 
+                throw new EntityNotFoundException(typeof(MealPlan), mealPlanId);
+            }
+            Console.WriteLine($"Entries loaded: {mealPlan.Entries?.Count ?? -1}");
             mealPlan.RemoveEntry(entryId);
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
             var dto = await MapToMealPlanDtoAsync(mealPlan);

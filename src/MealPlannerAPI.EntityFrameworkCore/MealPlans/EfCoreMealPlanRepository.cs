@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,9 +22,15 @@ namespace MealPlannerAPI.MealPlans
             var dbSet = await GetDbSetAsync();
 
             return await dbSet?
-                .Include(r => r.Entries)?
-                .AsNoTracking()
+                .Include(r => r.Entries)
                 .FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken);
+        }
+
+        public async override Task<IQueryable<MealPlan>> GetQueryableAsync()
+        {
+            var dbSet = await GetDbSetAsync();
+
+            return dbSet.Include(r => r.Entries).AsQueryable();
         }
     }
 }
