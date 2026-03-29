@@ -11,7 +11,7 @@ using Volo.Abp.AspNetCore.Mvc;
 namespace MealPlannerAPI.Controllers.ShoppingLists
 {
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [Route(APIRoute.APIApp + "shopping-lists")]
     public class ShoppingListController : AbpControllerBase
     {

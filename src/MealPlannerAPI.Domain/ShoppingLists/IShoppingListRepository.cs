@@ -6,6 +6,5 @@ namespace MealPlannerAPI.ShoppingLists
 {
     public interface IShoppingListRepository : IRepository<ShoppingList, Guid>
     {
-        Task<ShoppingList> GetShoppingListWithItems(Guid id);
     }
 }

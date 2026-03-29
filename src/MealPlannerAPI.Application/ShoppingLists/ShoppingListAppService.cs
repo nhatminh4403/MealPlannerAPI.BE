@@ -132,11 +132,15 @@ namespace MealPlannerAPI.ShoppingLists
         }
 
         [Authorize(MealPlannerAPIPermissions.ShoppingLists.ManageItems)]
+        //[AllowAnonymous]
         public async override Task<PagedResultDto<ShoppingListDto>> GetListAsync(GetShoppingListsInput input)
         {
             var query = await _shoppingListRepository.GetQueryableAsync();
 
-            query = query.Where(sl => sl.UserId == CurrentUser.GetId());
+            var currentUserId = CurrentUser.Id;
+
+            query = query.Where(sl => (currentUserId.HasValue && sl.UserId == currentUserId.Value) || sl.UserId == input.UserId);
+
 
             if (input.ShowCompleted == false)
                 query = query.Where(sl => sl.Items.Any(i => !i.IsCompleted));

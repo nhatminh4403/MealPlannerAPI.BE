@@ -29,10 +29,14 @@ public static class HealthChecksBuilderExtensions
 
         var healthChecksUiBuilder = services.AddHealthChecksUI(settings =>
         {
+            
             settings.AddHealthCheckEndpoint("MealPlannerAPI Health Status", 
                 configuration["App:HealthUiCheckUrl"] 
                 ?? configuration["App:DockerHealthUiCheckUrl"] 
                 ?? healthCheckUrl);
+
+            settings.SetEvaluationTimeInSeconds(60);
+            settings.SetMinimumSecondsBetweenFailureNotifications(240);
         });
 
         // Set your HealthCheck UI Storage here
