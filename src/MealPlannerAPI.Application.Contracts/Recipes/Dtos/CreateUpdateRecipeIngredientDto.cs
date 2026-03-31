@@ -12,6 +12,7 @@ namespace MealPlannerAPI.Recipes.Dtos
         public decimal Quantity { get; set; }
 
         [Required, MaxLength(32)]
-        public string Unit { get; set; } = null!;
+        public string Unit { get; set; } = null!; 
+        public Guid? NutritionId { get; set; }
     }
 }

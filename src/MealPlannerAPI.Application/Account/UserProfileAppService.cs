@@ -1,7 +1,9 @@
 using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Enums;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Users;
 using MealPlannerAPI.MealPlans;
+using MealPlannerAPI.Notifications;
 using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users.Dtos;
 using MealPlannerAPI.Users.Services;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -25,8 +28,8 @@ namespace MealPlannerAPI.Users
     {
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly IdentityUserManager _userManager;
-        private readonly IRepository<MealPlan, Guid> _mealPlanRepository;
-        private readonly IRepository<ShoppingList, Guid> _shoppingListRepository;
+        private readonly IMealPlanRepository _mealPlanRepository;
+        private readonly IShoppingListRepository _shoppingListRepository;
         private readonly UserProfileToCommunityUserDtoMapper _toCommunityDtoMapper;
         private readonly UserProfileToUserPreferencesDtoMapper _toPreferencesDtoMapper;
         private readonly UserProfileToUserStatsDtoMapper _toStatsDtoMapper;
@@ -35,7 +38,7 @@ namespace MealPlannerAPI.Users
         private readonly CreateUpdateUserPreferencesDtoToUserProfileMapper _toUserProfilePreferencesMapper;
         private readonly CreateUpdateUserSettingsDtoToUserProfileMapper _toUserProfileSettingsMapper;
         private readonly IMealPlannerHubPublisher _hub;
-
+        private readonly IUserNotificationAppService _notificationService;
         public UserProfileAppService(IIdentityUserRepository identityUserRepository,
                                      IMealPlanRepository mealPlanRepository,
                                      IShoppingListRepository shoppingListRepository,
@@ -47,7 +50,8 @@ namespace MealPlannerAPI.Users
                                      CreateUpdateUserPreferencesDtoToUserProfileMapper toUserProfilePreferencesMapper,
                                      CreateUpdateUserSettingsDtoToUserProfileMapper toUserProfileSettingsMapper,
                                      IMealPlannerHubPublisher hub,
-                                     IdentityUserManager userManager)
+                                     IdentityUserManager userManager,
+                                     IUserNotificationAppService notificationService)
         {
             _identityUserRepository = identityUserRepository;
             _mealPlanRepository = mealPlanRepository;
@@ -61,12 +65,21 @@ namespace MealPlannerAPI.Users
             _toUserProfileSettingsMapper = toUserProfileSettingsMapper;
             _hub = hub;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
-        public async Task<ProfileDto> GetCurrentUserProfileAsync()
+        public async Task<ProfileDto> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default)
         {
-            var user = await GetUserProfileAsync(CurrentUser.GetId());
-            return BuildUserProfileDto(user);
+            try
+            {
+                var user = await GetUserProfileAsync(CurrentUser.GetId(), cancellationToken);
+                return BuildUserProfileDto(user);
+            }
+            catch (OperationCanceledException)
+            {
+                // Client navigated away — not a real error
+                throw new UserFriendlyException("Request was cancelled.");
+            }
         }
 
         [AllowAnonymous]
@@ -77,8 +90,8 @@ namespace MealPlannerAPI.Users
         }
 
         [AllowAnonymous]
-        public async Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(
-            PagedAndSortedResultRequestDto input)
+        public async Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input,
+                                                                                  CancellationToken cancellationToken = default)
         {
             var totalCount = await _identityUserRepository.GetCountAsync();
 
@@ -96,7 +109,8 @@ namespace MealPlannerAPI.Users
 
         // ── Write ─────────────────────────────────────────────────────────────────
 
-        public async Task<ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input)
+        public async Task<ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input,
+                                                             CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -108,7 +122,7 @@ namespace MealPlannerAPI.Users
             return BuildUserProfileDto(user);
         }
 
-        public async Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input)
+        public async Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
             _toUserProfileSettingsMapper.Map(input, user);
@@ -143,6 +157,9 @@ namespace MealPlannerAPI.Users
 
             await _hub.NotifyStatsUpdatedAsync(currentUser.Id, currentStats);
             await _hub.NotifyStatsUpdatedAsync(targetUser.Id, targetStats);
+
+            await NotificationFactory.NewFollower(_notificationService, targetUserId, currentUser.UserName, currentUser.AvatarUrl);
+
         }
 
         public async Task UnfollowAsync(Guid targetUserId)
@@ -164,7 +181,7 @@ namespace MealPlannerAPI.Users
         }
 
 
-        public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input)
+        public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -179,7 +196,7 @@ namespace MealPlannerAPI.Users
             return BuildUserProfileDto(user);
         }
 
-        public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input)
+        public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input, CancellationToken cancellation = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -189,7 +206,7 @@ namespace MealPlannerAPI.Users
                 input.NewPassword)).CheckErrors();
         }
 
-        public async Task ChangeEmailAsync(ChangeEmailDto input)
+        public async Task ChangeEmailAsync(ChangeEmailDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -204,9 +221,12 @@ namespace MealPlannerAPI.Users
 
         // ── Helpers ───────────────────────────────────────────────────────────────
 
-        private async Task<UserProfile> GetUserProfileAsync(Guid userId)
+        private async Task<UserProfile> GetUserProfileAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var identityUser = await _identityUserRepository.GetAsync(userId);
+            var identityUser = await _identityUserRepository.GetAsync(
+                userId,
+                includeDetails: true,
+                cancellationToken: cancellationToken);
             Console.WriteLine(identityUser);
             if (identityUser is UserProfile profile)
             {
@@ -217,8 +237,9 @@ namespace MealPlannerAPI.Users
             // return a basic one. Since IdentityUser is the base, we can't easily
             // "cast" it if EF didn't load it as the derived type.
             // We'll throw a more descriptive error or return a basic profile if it's the current user.
-            
-            if (identityUser != null) {
+
+            if (identityUser != null)
+            {
                 // Return a "virtual" profile derived from the identity user
                 return new UserProfile(identityUser.Id, identityUser.UserName, identityUser.Email, identityUser.TenantId)
                 {

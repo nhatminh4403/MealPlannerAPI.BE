@@ -1,9 +1,12 @@
+//using MealPlannerAPI.MealPlans.BackgroundJobs;
 using MealPlannerAPI.MultiTenancy;
+using MealPlannerAPI.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.Caching;
 using Volo.Abp.Emailing;
@@ -32,21 +35,25 @@ namespace MealPlannerAPI;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
+    typeof(AbpBackgroundWorkersModule),
     typeof(BlobStoringDatabaseDomainModule)
     )]
 public class MealPlannerAPIDomainModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        var configuration = context.Services.GetConfiguration();
+
         Configure<AbpMultiTenancyOptions>(options =>
         {
             options.IsEnabled = !MultiTenancyConsts.IsEnabled;
         });
 
         var services = context.Services;
-    
+
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
+
     }
 }

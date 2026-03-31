@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MealPlannerAPI.Enums;
+using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -28,5 +29,6 @@ namespace MealPlannerAPI.Notifications
 
         /// <summary>Delete all read notifications for the current user.</summary>
         Task DeleteAllReadAsync();
+        Task SendAsync(Guid userId, NotificationType type, string title, string message, string? avatarUrl = null, bool preventDuplicateToday = false);
     }
 }

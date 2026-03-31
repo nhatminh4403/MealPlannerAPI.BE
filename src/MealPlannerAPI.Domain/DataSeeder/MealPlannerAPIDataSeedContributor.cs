@@ -50,7 +50,10 @@ namespace MealPlannerAPI.DataSeeder
       maxResultCount: 2,
       sorting: nameof(Recipe.CreationTime));
             Guid? recipe1Id = existingRecipes.Count > 0 ? existingRecipes[0].Id : null;
+            var recipe1Name = existingRecipes.Count > 0 ? existingRecipes[0].Name : null;
             Guid? recipe2Id = existingRecipes.Count > 1 ? existingRecipes[1].Id : null;
+            var recipe2Name = existingRecipes.Count > 1 ? existingRecipes[1].Name : null;
+
 
             // 2. Seed Meal Plan
             var mealPlanId = Guid.NewGuid();
@@ -62,6 +65,7 @@ namespace MealPlannerAPI.DataSeeder
                 dayOfWeek: DayOfWeek.Monday,
                 mealName: "Monday Dinner",
                 mealType: MealType.Dinner,
+                recipeName: recipe1Name,
                 scheduledTime: "19:00",
                 recipeId: recipe1Id);
 
@@ -70,6 +74,7 @@ namespace MealPlannerAPI.DataSeeder
                 dayOfWeek: DayOfWeek.Tuesday,
                 mealName: "Tuesday Lunch",
                 mealType: MealType.Lunch,
+                recipeName: recipe2Name,
                 scheduledTime: "12:30",
                 recipeId: recipe2Id);
 

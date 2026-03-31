@@ -1,5 +1,6 @@
 ﻿using MealPlannerAPI.Users.Dtos;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Account;
 using Volo.Abp.Application.Dtos;
@@ -10,23 +11,22 @@ namespace MealPlannerAPI.Users.Services
 {
     public interface IUserProfileAppService : IApplicationService
     {
-        Task<MealPlannerAPI.Users.Dtos.ProfileDto> GetCurrentUserProfileAsync();
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default);
 
         /// <param name="input">Extends ABP's UpdateProfileDto (UserName, Name, Surname, PhoneNumber).</param>
-        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input);
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default);
 
-        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input);
-        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input);
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input, CancellationToken cancellationToken = default);
+        Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input, CancellationToken cancellationToken = default);
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateAvatarAsync(string avatarUrl);
 
-        /// <param name="input">ABP's ChangePasswordInput — CurrentPassword + NewPassword.</param>
-        Task ChangePasswordAsync(ChangePasswordInput input);
+        Task ChangePasswordAsync(ChangePasswordInput input, CancellationToken cancellationToken = default);
 
-        Task ChangeEmailAsync(ChangeEmailDto input);
+        Task ChangeEmailAsync(ChangeEmailDto input, CancellationToken cancellationToken = default);
 
         // ── Community ─────────────────────────────────────────────────────────────
         Task<CommunityUserDto> GetCommunityProfileAsync(Guid userId);
-        Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input);
+        Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input, CancellationToken cancellationToken = default);
 
         // ── Social ────────────────────────────────────────────────────────────────
         Task FollowAsync(Guid targetUserId);

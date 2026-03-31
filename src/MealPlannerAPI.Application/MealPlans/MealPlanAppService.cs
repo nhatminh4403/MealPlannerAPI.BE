@@ -80,12 +80,11 @@ namespace MealPlannerAPI.MealPlans
         [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
         public override async Task<MealPlanDto> GetAsync(Guid id)
         {
-            var mealPlan = await _mealPlanRepository.GetAsync(id);
+            var mealPlan = await _mealPlanRepository.GetAsync(id, true, default);
             if (mealPlan == null)
             {
                 throw new EntityNotFoundException(typeof(MealPlan), id);
             }
-
 
 
             //var dailyNutrition = mealPlanEntries
@@ -112,26 +111,23 @@ namespace MealPlannerAPI.MealPlans
             return await MapToMealPlanDtoAsync(plan);
         }
 
-        //[Authorize()]
+        [Authorize(MealPlannerAPIPermissions.MealPlans.Default)]
         //[AllowAnonymous]
         public async override Task<PagedResultDto<MealPlanDto>> GetListAsync(GetMealPlansInput input)
         {
             var query = await _mealPlanRepository.GetQueryableAsync();
-   
-            // Safely assign nullable Id (will be null for anonymous requests)
+
             var currentUserId = CurrentUser.Id;
 
-            // Update the LINQ expression to account for a possible null currentUserId
             query = query.Where(mp => (currentUserId.HasValue && mp.UserId == currentUserId.Value) || mp.UserId == input.UserId);
 
             if (input.WeekStartDate.HasValue)
                 query = query.Where(mp => mp.WeekStartDate == input.WeekStartDate.Value);
-            
+
             var totalCount = await AsyncExecuter.CountAsync(query);
 
             var mealPlans = await AsyncExecuter.ToListAsync(
                 query.OrderByDescending(mp => mp.WeekStartDate)
-                    //.Include()
                      .Skip(input.SkipCount)
                      .Take(input.MaxResultCount));
 
@@ -144,11 +140,15 @@ namespace MealPlannerAPI.MealPlans
         [Authorize(MealPlannerAPIPermissions.MealPlans.Create)]
         public async Task<MealPlanEntryDto> SetEntryAsync(Guid mealPlanId, CreateUpdateMealPlanEntryDto input)
         {
-            var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
+            var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId, includeDetails: true, cancellationToken: default);
 
-            var entry = mealPlan.AddEntry(
-                GuidGenerator.Create(),
-                input.DayOfWeek, input.MealName, input.MealType, input.ScheduledTime, input.RecipeId);
+            var entry = mealPlan.AddEntry(GuidGenerator.Create(),
+                                          input.DayOfWeek,
+                                          input.MealName,
+                                          input.MealType,
+                                          input.RecipeName,
+                                          input.ScheduledTime,
+                                          input.RecipeId);
 
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
             return await MapToEntryDtoAsync(entry);
@@ -157,7 +157,7 @@ namespace MealPlannerAPI.MealPlans
         public async Task DeleteEntryAsync(Guid mealPlanId, Guid entryId)
         {
             var mealPlan = await _mealPlanRepository.GetAsync(mealPlanId);
-            if (mealPlan == null )
+            if (mealPlan == null)
             {
                 _logger.LogDebug($"Can't find mealplan {mealPlanId} or {entryId}");
 
@@ -178,7 +178,13 @@ namespace MealPlannerAPI.MealPlans
             input.WeekStartDate);
 
             foreach (var e in input.Entries)
-                mealPlan.AddEntry(GuidGenerator.Create(), e.DayOfWeek, e.MealName, e.MealType, e.ScheduledTime, e.RecipeId);
+                mealPlan.AddEntry(GuidGenerator.Create(),
+                                  e.DayOfWeek,
+                                  e.MealName,
+                                  e.MealType,
+                                  e.RecipeName,
+                                  e.ScheduledTime,
+                                  e.RecipeId);
 
             await _mealPlanRepository.InsertAsync(mealPlan, autoSave: true);
             var dto = await MapToMealPlanDtoAsync(mealPlan);
@@ -192,9 +198,18 @@ namespace MealPlannerAPI.MealPlans
 
             mealPlan.WeekStartDate = MealPlan.GetWeekStart(input.WeekStartDate);
             mealPlan.ReplaceEntries(
-                input.Entries.Select(e => (
-                    GuidGenerator.Create(),
-                    e.DayOfWeek, e.MealName, e.MealType, e.ScheduledTime, e.RecipeId)));
+                input.Entries.Select(e =>
+                {
+                    return (
+                        Id: GuidGenerator.Create(),
+                        DayOfWeek: e.DayOfWeek,
+                        MealName: e.MealName,
+                        MealType: e.MealType,
+                        ScheduledTime: e.ScheduledTime,
+                        RecipeId: e.RecipeId,
+                        RecipeName: e.RecipeName
+                    );
+                }));
 
             await _mealPlanRepository.UpdateAsync(mealPlan, autoSave: true);
             var dto = await MapToMealPlanDtoAsync(mealPlan);
@@ -204,7 +219,7 @@ namespace MealPlannerAPI.MealPlans
         [Authorize(MealPlannerAPIPermissions.MealPlans.Delete)]
         public override Task DeleteAsync(Guid id)
         {
-            return base.DeleteAsync(id);
+            return _mealPlanRepository.DeleteAsync(id);
         }
 
         // ── Auto-generate ─────────────────────────────────────────────────────────
@@ -214,7 +229,6 @@ namespace MealPlannerAPI.MealPlans
         {
             var userId = CurrentUser.GetId();
 
-            // ── 1. Resolve user preferences ───────────────────────────────────
             var cuisines = input.CuisinePreferences ?? new();
             var restrictions = input.DietaryRestrictions ?? new();
 
@@ -230,14 +244,11 @@ namespace MealPlannerAPI.MealPlans
                 }
             }
 
-            // ── 2. Build candidate recipe pool ────────────────────────────────
             var recipeQuery = await _recipeRepository.GetQueryableAsync();
 
-            // Filter by cuisine (if any preferences set)
             if (cuisines.Count > 0)
                 recipeQuery = recipeQuery.Where(r => cuisines.Contains(r.Cuisine));
 
-            // Filter by dietary tags (if any restrictions set)
             if (restrictions.Count > 0)
                 recipeQuery = recipeQuery.Where(r =>
                     r.Tags != null && restrictions.Any(tag => r.Tags.Contains(tag)));
@@ -276,7 +287,7 @@ namespace MealPlannerAPI.MealPlans
             var mealPlan = await _mealPlanManager.GetOrCreateMealPlanAsync(userId, weekStart);
 
             // Clear any existing entries for a clean generation
-            mealPlan.ReplaceEntries(Enumerable.Empty<(Guid, DayOfWeek, string, MealType, string?, Guid?)>());
+            mealPlan.ReplaceEntries(Enumerable.Empty<(Guid, DayOfWeek, string, MealType, string?, Guid?, string?)>());
 
             var rng = new Random();
             var daysOfWeek = new[]
@@ -303,6 +314,7 @@ namespace MealPlannerAPI.MealPlans
                         day,
                         mt.ToString(),
                         mt,
+                        recipe.Name,
                         scheduledTimes.GetValueOrDefault(mt),
                         recipe.Id);
                 }
@@ -323,7 +335,6 @@ namespace MealPlannerAPI.MealPlans
 
         private async Task<List<MealPlanDayDto>> BuildDaysWithRecipeNamesAsync(ICollection<MealPlanEntry> entries)
         {
-            // Batch-load recipe names for all entries that have a RecipeId
             var recipeIds = entries
                 .Where(e => e.RecipeId.HasValue)
                 .Select(e => e.RecipeId!.Value)

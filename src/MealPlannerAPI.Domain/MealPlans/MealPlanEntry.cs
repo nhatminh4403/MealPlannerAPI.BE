@@ -1,10 +1,11 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Entities.Auditing;
 
 namespace MealPlannerAPI.MealPlans
 {
-    public class MealPlanEntry : Entity<Guid>
+    public class MealPlanEntry : FullAuditedEntity<Guid>
     {
         public Guid MealPlanId { get; set; }
 
@@ -16,7 +17,7 @@ namespace MealPlannerAPI.MealPlans
 
         /// <summary>Scheduled time in HH:mm format, e.g. "08:00".</summary>
         public string? ScheduledTime { get; set; }
-
+        public string? RecipeName { get; set; }
         public Guid? RecipeId { get; set; }
         protected MealPlanEntry() { }
         public MealPlanEntry(Guid id,
@@ -25,7 +26,8 @@ namespace MealPlannerAPI.MealPlans
                              string mealName,
                              MealType mealType,
                              Guid? recipeId,
-                             string? scheduledTime)
+                             string? scheduledTime,
+                             string? recipeName)
             : base(id)
         {
             MealPlanId = mealPlanId;
@@ -34,6 +36,7 @@ namespace MealPlannerAPI.MealPlans
             MealName = mealName;
             RecipeId = recipeId;
             ScheduledTime = scheduledTime;
+            RecipeName = recipeName;
         }
     }
 }

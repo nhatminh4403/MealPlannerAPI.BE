@@ -19,7 +19,8 @@ public enum NotificationType
     MealReminder = 1,
     RecipeLiked = 2,
     RecipeCommented = 3,
-    ShoppingListAlert = 4
+    ShoppingListAlert = 4,
+    NewFollower = 5,
 }
 public enum VisibilityLevel
 {

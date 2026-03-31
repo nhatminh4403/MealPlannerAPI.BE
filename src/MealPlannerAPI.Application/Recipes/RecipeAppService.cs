@@ -83,7 +83,7 @@ namespace MealPlannerAPI.Recipes
             recipe.SetInstructions(input.Instructions);
 
             foreach (var i in input.Ingredients)
-                recipe.AddIngredient(GuidGenerator.Create(), i.Name, i.Quantity, i.Unit);
+                recipe.AddIngredient(GuidGenerator.Create(), i.Name, i.Quantity, i.Unit, i.NutritionId);
 
             await Repository.InsertAsync(recipe, autoSave: true);
             await InvalidateTrendingAsync();
@@ -166,7 +166,7 @@ namespace MealPlannerAPI.Recipes
             recipe.SetTags(input.Tags);
             recipe.SetInstructions(input.Instructions);
             recipe.ReplaceIngredients(
-                input.Ingredients.Select(i => (GuidGenerator.Create(), i.Name, i.Quantity, i.Unit)));
+    input.Ingredients.Select(i => (GuidGenerator.Create(), i.Name, i.Quantity, i.Unit, i.NutritionId)));
 
             await Repository.UpdateAsync(recipe, autoSave: true);
             if (recipe.Rating != previousRating)

@@ -4,6 +4,7 @@ using MealPlannerAPI.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    partial class MealPlannerAPIDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330094309_UpdateEntriesToFullAuditedEntity")]
+    partial class UpdateEntriesToFullAuditedEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,9 +147,6 @@ namespace MealPlannerAPI.Migrations
 
                     b.Property<Guid?>("RecipeId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RecipeName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ScheduledTime")
                         .HasMaxLength(8)

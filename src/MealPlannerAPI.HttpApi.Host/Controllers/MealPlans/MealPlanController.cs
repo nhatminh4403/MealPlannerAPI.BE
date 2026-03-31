@@ -30,7 +30,7 @@ namespace MealPlannerAPI.Controllers.MealPlans
 
         /// <summary>Get the current user's meal plans, optionally filtered by week start date.</summary>
         [HttpGet]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public Task<PagedResultDto<MealPlanDto>> GetListAsync([FromQuery] GetMealPlansInput input)
             => _mealPlanAppService.GetListAsync(input);
 

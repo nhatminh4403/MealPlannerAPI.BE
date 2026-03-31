@@ -102,8 +102,9 @@ public partial class MealPlanEntryToMealPlanEntryDtoMapper : MapperBase<MealPlan
                                  dayOfWeek: default,
                                  mealName: string.Empty,
                                  mealType: default,
-                                 null,
-                                 null);
+                                 recipeName: null,
+                                 recipeId :null,
+                                 scheduledTime:null);
 
         [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
         [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]

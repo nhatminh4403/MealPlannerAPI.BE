@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -19,11 +20,15 @@ namespace MealPlannerAPI.MealPlans
 
         public override async Task<MealPlan> GetAsync(Guid id, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
-            var dbSet = await GetDbSetAsync();
+            var query = await GetQueryableAsync();
 
-            return await dbSet?
-                .Include(r => r.Entries)
-                .FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken);
+            if (!includeDetails)
+            {
+                query = (await GetDbSetAsync()).AsQueryable();
+            }
+
+
+            return await query.FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken) ?? throw new EntityNotFoundException(typeof(MealPlan), id);
         }
 
         public async override Task<IQueryable<MealPlan>> GetQueryableAsync()

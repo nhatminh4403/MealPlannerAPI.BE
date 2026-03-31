@@ -25,6 +25,7 @@ namespace MealPlannerAPI.MealPlans
                                       DayOfWeek dayOfWeek,
                                       string mealName,
                                       MealType mealType,
+                                      string? recipeName,
                                       string? scheduledTime,
                                       Guid? recipeId)
         {
@@ -38,12 +39,13 @@ namespace MealPlannerAPI.MealPlans
                 existing.RecipeId = recipeId;
                 return existing;
             }
-
+            
             var entry = new MealPlanEntry(id: id,
                                           mealPlanId: Id,
                                           dayOfWeek,
                                           mealName,
                                           mealType,
+                                          recipeName: recipeName,
                                           scheduledTime: scheduledTime,
                                           recipeId: recipeId);
             Entries.Add(entry);
@@ -58,11 +60,17 @@ namespace MealPlannerAPI.MealPlans
             Entries.Remove(entry);
         }
         public void ReplaceEntries(
-        IEnumerable<(Guid Id, DayOfWeek DayOfWeek, string MealName, MealType MealType, string? ScheduledTime, Guid? RecipeId)> entries)
+        IEnumerable<(Guid Id, DayOfWeek DayOfWeek, string MealName,MealType MealType, string? ScheduledTime, Guid? RecipeId, string? RecipeName)> entries)
         {
             Entries.Clear();
             foreach (var e in entries)
-                AddEntry(e.Id, e.DayOfWeek, e.MealName, e.MealType, e.ScheduledTime, e.RecipeId);
+                AddEntry(id: e.Id,
+                         dayOfWeek: e.DayOfWeek,
+                         mealName: e.MealName,
+                         mealType: e.MealType,
+                         scheduledTime: e.ScheduledTime,
+                         recipeId: e.RecipeId,
+                         recipeName: e.RecipeName);
         }
         public static DateTime GetWeekStart(DateTime date)
         {

@@ -65,24 +65,24 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
     {
         InstructionsJson = JsonSerializer.Serialize(new List<string>(steps));
     }
-    public RecipeIngredient AddIngredient(Guid id, string name, decimal quantity, string unit)
+    // Domain / Recipes / Recipe.cs
+    public RecipeIngredient AddIngredient(Guid id, string name, decimal quantityGrams, string displayQuantity, Guid? nutritionId = null)
     {
         if (Ingredients.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             throw new BusinessException(MealPlannerAPIDomainErrorCodes.DuplicateIngredient);
         if (Ingredients.Count >= RecipeConsts.MaxIngredients)
             throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyIngredients)
                                         .WithData("max", RecipeConsts.MaxIngredients);
-        var ingredient = new RecipeIngredient(id, Id, name, (float)quantity, unit);
+
+        var ingredient = new RecipeIngredient(id, Id, name, (float)quantityGrams, displayQuantity, nutritionId);
         Ingredients.Add(ingredient);
         return ingredient;
     }
-    public void ReplaceIngredients(IEnumerable<(Guid Id, string Name, decimal Quantity, string Unit)> ingredients)
+    public void ReplaceIngredients(IEnumerable<(Guid Id, string Name, decimal Quantity, string DisplayQuantity, Guid? NutritionId)> ingredients)
     {
         Ingredients.Clear();
-        foreach (var (id, name, quantity, unit) in ingredients)
-        {
-            AddIngredient(id, name, quantity, unit);
-        }
+        foreach (var (id, name, quantity, display, nutritionId) in ingredients)
+            AddIngredient(id, name, quantity, display, nutritionId);
     }
     public int GetTotalTimeMinutes() => CookingTimeMinutes + PrepTimeMinutes;
     public double CalculateTrendingScore()

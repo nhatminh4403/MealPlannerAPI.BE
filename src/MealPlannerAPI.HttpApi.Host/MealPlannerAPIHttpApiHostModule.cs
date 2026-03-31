@@ -1,15 +1,19 @@
-using MealPlannerAPI.SignalR;
+using MealPlannerAPI.BackgroundJobs;
 using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.HealthChecks;
 using MealPlannerAPI.Hubs;
+using MealPlannerAPI.MealPlans.BackgroundJobs;
 using MealPlannerAPI.MultiTenancy;
 using MealPlannerAPI.Nutritions.ExternalData;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MealPlannerAPI.Settings;
+using MealPlannerAPI.SignalR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,10 +22,9 @@ using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using Polly;
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading.RateLimiting;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
@@ -34,6 +37,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
@@ -42,11 +46,6 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Http;
-using Swashbuckle.AspNetCore;
-using System.Collections.Generic;
 
 namespace MealPlannerAPI;
 
@@ -70,7 +69,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        //JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
 
@@ -126,6 +125,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
                 options.KnownProxies.Clear();
             });
         }
+        services.Configure<HardDeleteOptions>(configuration.GetSection("HardDelete"));
 
         ConfigureStudio(hostingEnvironment);
         ConfigureAuthentication(context);
@@ -139,9 +139,8 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         ConfigureRouting(services);
         ConfigureSignalR(services);
         ConfigureDistributedCacheOptions(context);
-        ConfigureJwtOption(services);
         ConfigureHttpClient(services);
-         services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
+        services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
         ConfigureRateLimiter(services);
     }
     private void ConfigureRateLimiter(IServiceCollection services)
@@ -159,7 +158,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         Window = TimeSpan.FromSeconds(10)
                     }));
-            
+
             options.AddFixedWindowLimiter("SignalR", configureOptions: signalrOptions =>
             {
                 signalrOptions.AutoReplenishment = true;
@@ -170,35 +169,6 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
 
             options.RejectionStatusCode = StatusCodes.Status503ServiceUnavailable;
         });
-    }
-    private void ConfigureJwtOption(IServiceCollection services)
-    {
-        Configure<JwtBearerOptions>(options =>
-        {
-            options.MapInboundClaims = false;
-            options.TokenHandlers.Clear();
-        });
-        services.Configure<JwtBearerOptions>(
-            JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.MapInboundClaims = false;
-                var existingOnMessageReceived = options.Events?.OnMessageReceived;
-                options.Events ??= new JwtBearerEvents();
-                options.Events.OnMessageReceived = async context =>
-                {
-                    if (existingOnMessageReceived != null)
-                        await existingOnMessageReceived(context);
-
-                    var accessToken = context.Request.Query["access_token"];
-                    var path = context.HttpContext.Request.Path;
-
-                    if (!string.IsNullOrEmpty(accessToken) &&
-                        path.StartsWithSegments("/signalr-hubs"))
-                    {
-                        context.Token = accessToken;
-                    }
-                };
-            });
     }
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
     {
@@ -222,28 +192,6 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         {
             options.IsDynamicClaimsEnabled = true;
         });
-
-        context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddAbpJwtBearer(options =>
-            {
-                options.Authority = context.Services.GetConfiguration()["AuthServer:Authority"];
-                options.RequireHttpsMetadata = context.Services.GetConfiguration().GetValue<bool>("AuthServer:RequireHttpsMetadata");
-                options.Audience = "MealPlannerAPI";
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        var token = context.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(token) &&
-                            context.HttpContext.Request.Path.StartsWithSegments("/signalr-hubs"))
-                        {
-                            context.Token = token;
-                        }
-                        return Task.CompletedTask;
-                    }
-                };
-            });
     }
 
     private void ConfigureUrls(IConfiguration configuration)
@@ -285,8 +233,10 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
 
-        Configure<AbpVirtualFileSystemOptions>(options => {
-            if (hostingEnvironment.IsDevelopment()) {
+        Configure<AbpVirtualFileSystemOptions>(options =>
+        {
+            if (hostingEnvironment.IsDevelopment())
+            {
                 void ReplaceIfExists<TModule>(string path)
                 {
                     var fullPath = Path.Combine(hostingEnvironment.ContentRootPath, path);
@@ -423,10 +373,19 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     {
         context.Services.AddMealPlannerAPIHealthChecks();
     }
+
+    // Registers background workers application-wide. They will be started automatically by the ABP framework.
+    private void BackgroundJobsInitialization(ApplicationInitializationContext context)
+    {
+        context.AddBackgroundWorkerAsync<MealPlanHardDeleteWorker>();
+        context.AddBackgroundWorkerAsync<MealReminderBackgroundWorker>();
+    }
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
         var env = context.GetEnvironment();
+        BackgroundJobsInitialization(context);
 
         app.UseForwardedHeaders();
 

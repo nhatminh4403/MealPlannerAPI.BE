@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.Hubs;
+﻿using MealPlannerAPI.Enums;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using System;
@@ -16,11 +17,11 @@ namespace MealPlannerAPI.Notifications
     [RemoteService(false)]
     public class UserNotificationAppService : MealPlannerAPIAppService, IUserNotificationAppService
     {
-        private readonly IRepository<UserNotification, Guid> _notificationRepository;
+        private readonly IUserNotificationRepository _notificationRepository;
         private readonly UserNotificationToUserNotificationDtoMapper _toNotificationDtoMapper;
         private readonly IMealPlannerHubPublisher _hubPublisher;
 
-        public UserNotificationAppService(IRepository<UserNotification, Guid> notificationRepository, UserNotificationToUserNotificationDtoMapper toNotificationDtoMapper, IMealPlannerHubPublisher hubPublisher)
+        public UserNotificationAppService(IUserNotificationRepository notificationRepository, UserNotificationToUserNotificationDtoMapper toNotificationDtoMapper, IMealPlannerHubPublisher hubPublisher)
         {
             _notificationRepository = notificationRepository;
             _toNotificationDtoMapper = toNotificationDtoMapper;
@@ -89,7 +90,7 @@ namespace MealPlannerAPI.Notifications
         {
             var query = await _notificationRepository.GetQueryableAsync();
             return await AsyncExecuter.CountAsync(
-                query.Where(n => n.UserId == CurrentUser.GetId() && n.IsRead));
+                query.Where(n => n.UserId == CurrentUser.GetId() && !n.IsRead));
         }
 
         [Authorize(MealPlannerAPIPermissions.Notifications.Default)]
@@ -130,6 +131,30 @@ namespace MealPlannerAPI.Notifications
 
             var count = await GetOrComputeUnreadCountAsync(notification.UserId);
             await _hubPublisher.NotifyUnreadCountChangedAsync(notification.UserId, count);
+        }
+
+        public async Task SendAsync(Guid userId, NotificationType type, string title, string message, string? avatarUrl = null, bool preventDuplicateToday = false)
+        {
+            var notification = new UserNotification(GuidGenerator.Create(),
+                                                    userId,
+                                                    type,
+                                                    title,
+                                                    message,
+                                                    avatarUrl);
+
+            await _notificationRepository.InsertAsync(notification, autoSave: true);
+
+            var dto = _toNotificationDtoMapper.Map(notification);
+
+            // Push to the user's SignalR group
+            await _hubPublisher.NotifyNotificationReceivedAsync(userId, dto);
+
+            // Also update their unread badge count
+            var query = await _notificationRepository.GetQueryableAsync();
+            var unreadCount = await AsyncExecuter.CountAsync(
+                query.Where(n => n.UserId == userId && !n.IsRead));
+
+            await _hubPublisher.NotifyUnreadCountChangedAsync(userId, unreadCount);
         }
     }
 }

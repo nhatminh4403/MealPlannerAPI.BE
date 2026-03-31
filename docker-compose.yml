@@ -34,6 +34,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:81
       - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
+      - App__HealthUiCheckUrl=http://localhost:81/health-status
     ports:
       - "44339:81"
     depends_on:

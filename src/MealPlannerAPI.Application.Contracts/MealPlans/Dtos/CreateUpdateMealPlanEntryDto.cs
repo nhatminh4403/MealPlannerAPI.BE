@@ -17,5 +17,6 @@ namespace MealPlannerAPI.MealPlans.Dtos
         public string? ScheduledTime { get; set; }
 
         public Guid? RecipeId { get; set; }
+        public string? RecipeName { get; set; }
     }
 }
