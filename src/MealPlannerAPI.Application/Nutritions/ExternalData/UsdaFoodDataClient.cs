@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// MealPlannerAPI.Nutritions.ExternalData.UsdaFoodDataClient
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,11 +19,7 @@ namespace MealPlannerAPI.Nutritions.ExternalData
 
         private readonly ILogger<UsdaFoodDataClient> _logger;
         private const string BaseUrl = "https://api.nal.usda.gov/fdc/v1";
-        private const int NutrientEnergy = 1008; // kcal
-        private const int NutrientProtein = 1003;
-        private const int NutrientCarbs = 1005;
-        private const int NutrientFat = 1004;
-        private const int NutrientFiber = 1079;
+
         public UsdaFoodDataClient(HttpClient http,
                                   ILogger<UsdaFoodDataClient> logger,
                                   IConfiguration configuration)
@@ -43,31 +39,29 @@ namespace MealPlannerAPI.Nutritions.ExternalData
         {
             try
             {
-                // Prefer "Foundation" and "SR Legacy" data types —
-                // these are raw ingredients with the most accurate per-100g values.
-                // "Branded" foods are also included as fallback.
                 var url = $"{BaseUrl}/foods/search" +
                           $"?query={Uri.EscapeDataString(query)}" +
                           $"&dataType=Foundation,SR%20Legacy,Branded" +
-                          $"&pageSize={maxResults * 3}" + // fetch extra to filter below
+                          $"&pageSize={maxResults * 3}" +
                           $"&api_key={_apiKey}";
 
-                var response = await _http.GetFromJsonAsync<UsdaSearchResponse>(
-                    url, cancellationToken);
+                var response = await _http.GetFromJsonAsync<UsdaSearchResponse>(url, cancellationToken);
 
-                if (response?.Foods == null) return [];
+                if (response?.Foods == null) return new List<UsdaFoodDataResultDTO>();
 
                 return response.Foods
                     .Select(Map)
-                    .Where(r => r.CaloriesPer100g > 0)
+                    // Drop items with virtually 0 scores or data entirely
+                    .Where(r => r.CompletenessScore > 0 || r.CaloriesPer100g > 0)
                     .OrderByDescending(r => r.CompletenessScore)
                     .Take(maxResults)
                     .ToList();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "USDA FoodData search failed for query: {Query}", query);
-                return [];
+                // This will print if you get Rate Limited (429)!
+                _logger.LogWarning(ex, "USDA FoodData search failed for query: {Query}. Make sure you haven't exceeded your DEMO_KEY limits.", query);
+                return new List<UsdaFoodDataResultDTO>();
             }
         }
 
@@ -75,18 +69,19 @@ namespace MealPlannerAPI.Nutritions.ExternalData
 
         private static UsdaFoodDataResultDTO Map(UsdaFood food)
         {
-            var nutrients = food.FoodNutrients ?? [];
+            var nutrients = food.FoodNutrients ?? new List<UsdaNutrient>();
 
-            float Get(int id) => MathF.Round(
-                nutrients.FirstOrDefault(n => n.NutrientId == id)?.Value ?? 0f, 1);
+            // Improved parser checks both standard strings (FDC universal representations like "208") and integers like "1008".
+            float GetSafeValue(string stringNumId, int intBackupId) => MathF.Round(
+                nutrients.FirstOrDefault(n => n.NutrientNumber == stringNumId || n.NutrientId == intBackupId)?.Value ?? 0f, 1);
 
-            var calories = Get(NutrientEnergy);
-            var protein = Get(NutrientProtein);
-            var carbs = Get(NutrientCarbs);
-            var fat = Get(NutrientFat);
-            var fiber = Get(NutrientFiber);
+            // Energy="208"(str) or 1008(id), Protein="203", Carbs="205", Fat="204", Fiber="291"
+            var calories = GetSafeValue("208", 1008);
+            var protein = GetSafeValue("203", 1003);
+            var carbs = GetSafeValue("205", 1005);
+            var fat = GetSafeValue("204", 1004);
+            var fiber = GetSafeValue("291", 1079);
 
-            // Score: each present macro = 20 pts, calories = 20 pts
             var score = (calories > 0 ? 20 : 0)
                       + (protein > 0 ? 20 : 0)
                       + (carbs > 0 ? 20 : 0)
@@ -135,8 +130,13 @@ namespace MealPlannerAPI.Nutritions.ExternalData
 
         private class UsdaNutrient
         {
+            // FDC Native Integer
             [JsonPropertyName("nutrientId")]
             public int NutrientId { get; set; }
+
+            // MUST INCLUDE: Standard string nutrientNumber mapping fixes "missing values" in basic veg
+            [JsonPropertyName("nutrientNumber")]
+            public string? NutrientNumber { get; set; }
 
             [JsonPropertyName("value")]
             public float Value { get; set; }

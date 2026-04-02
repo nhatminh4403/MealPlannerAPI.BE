@@ -23,13 +23,9 @@ namespace MealPlannerAPI.Controllers.Nutritions
         [HttpGet("search")]
         public Task<IngredientNutritionSearchResultDto> SearchAsync(
         [FromQuery] string query,
-        [FromQuery] bool includeOff = false)
-        => _ingredientNutritionAppService.SearchAsync(query, includeOff);
+        [FromQuery] bool includeExternal = false)
+        => _ingredientNutritionAppService.SearchAsync(query, includeExternal);
 
-        /// <summary>
-        /// Save a new ingredient (manual entry or confirmed OFF result).
-        /// POST /api/app/ingredient-nutritions
-        /// </summary>
         [HttpPost]
         public Task<IngredientNutritionDto> CreateAsync(
             [FromBody] CreateIngredientNutritionDto input)
