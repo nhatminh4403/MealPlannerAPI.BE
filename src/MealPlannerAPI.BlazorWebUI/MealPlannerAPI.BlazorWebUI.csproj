@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <Import Project="..\..\common.props" />
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MealPlannerAPI.BlazorWebUI</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Blazorise.Bootstrap" Version="2.0.4" />
+    <PackageReference Include="Blazorise.Bootstrap5" Version="2.0.4" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="2.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Components.Server.LeptonXLiteTheme" Version="5.2.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Components.Server.Theming" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.Account.Web.OpenIddict" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Components.WebAssembly.LeptonXLiteTheme" Version="5.2.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Components.WebAssembly.LeptonXLiteTheme.Bundling" Version="5.2.0" />
+    <ProjectReference Include="../MealPlannerAPI.Application.Contracts/MealPlannerAPI.Application.Contracts.csproj" />
+    <ProjectReference Include="../MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.csproj" />
+    <PackageReference Include="Volo.Abp.Account.Blazor" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Blazor.Server" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.Identity.Blazor.Server" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Blazor" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Blazor.Server" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Blazor.Server" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Blazor.Server" Version="10.1.0" />
+    <ProjectReference Include="../MealPlannerAPI.HttpApi.Client/MealPlannerAPI.HttpApi.Client.csproj" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI" Version="10.3.0-rc.1" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.3.0-rc.1" />
+  </ItemGroup>
+</Project>
