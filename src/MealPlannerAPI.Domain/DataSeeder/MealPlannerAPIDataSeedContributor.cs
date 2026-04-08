@@ -46,9 +46,9 @@ namespace MealPlannerAPI.DataSeeder
             // 1. Get Existing Recipes to use for Meal Plan
             //var existingRecipes = await _recipeRepository.GetListAsync(skipCount: 0, maxResultCount: 2);
             var existingRecipes = await _recipeRepository.GetPagedListAsync(
-      skipCount: 0,
-      maxResultCount: 2,
-      sorting: nameof(Recipe.CreationTime));
+                  skipCount: 0,
+                  maxResultCount: 2,
+                  sorting: nameof(Recipe.CreationTime));
             Guid? recipe1Id = existingRecipes.Count > 0 ? existingRecipes[0].Id : null;
             var recipe1Name = existingRecipes.Count > 0 ? existingRecipes[0].Name : null;
             Guid? recipe2Id = existingRecipes.Count > 1 ? existingRecipes[1].Id : null;

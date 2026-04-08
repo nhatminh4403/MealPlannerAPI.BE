@@ -1,3 +1,4 @@
+using MealPlannerAPI.Enums;
 using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Recipes;
 using System;
@@ -8,7 +9,7 @@ using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
-using MealPlannerAPI.Enums;
+using Volo.Abp.Identity;
 namespace MealPlannerAPI.DataSeeder
 {
     public class NutritionDataSeedContributor : IDataSeedContributor, ITransientDependency
@@ -16,14 +17,18 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IIngredientNutritionRepository _ingredientNutritionRepository;
         private readonly IRecipeRepository _recipeRepository;
         private readonly IGuidGenerator _guidGenerator;
+        private readonly IIdentityUserRepository _identityUserRepository;
+
         public int Order => 1;
         public NutritionDataSeedContributor(IIngredientNutritionRepository ingredientNutritionRepository,
                                             IRecipeRepository recipeRepository,
-                                            IGuidGenerator guidGenerator)
+                                            IGuidGenerator guidGenerator,
+                                            IIdentityUserRepository identityUserRepository)
         {
             _ingredientNutritionRepository = ingredientNutritionRepository;
             _recipeRepository = recipeRepository;
             _guidGenerator = guidGenerator;
+            _identityUserRepository = identityUserRepository;
         }
 
         public async Task SeedAsync(DataSeedContext context)
@@ -101,9 +106,11 @@ namespace MealPlannerAPI.DataSeeder
 
         private async Task SeedSampleRecipesAsync(Dictionary<string, Guid> lookup)
         {
+            var adminId = await _identityUserRepository.FindByNormalizedUserNameAsync("ADMIN");
+
             var recipes = new[]
             {
-            BuildGrilledChicken(lookup),
+            BuildGrilledChicken(lookup,adminId.Id),
             BuildSalmonRice(lookup),
             BuildPastaPomodoro(lookup),
             BuildSpinachOmelette(lookup),
@@ -143,14 +150,16 @@ namespace MealPlannerAPI.DataSeeder
             }
         }
 
-        private Recipe BuildGrilledChicken(Dictionary<string, Guid> l)
+        private Recipe BuildGrilledChicken(Dictionary<string, Guid> l, Guid id)
         {
+
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Grilled Chicken with Broccoli",
                 cuisine: "American",
                 description: "A clean high-protein meal with grilled chicken breast and steamed broccoli.",
                 servings: 2, prepMinutes: 10, cookMinutes: 20,
                 difficulty: DifficultyLevel.Medium,
+                authorId: id,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "Chicken Breast", 300, "300g", l),
@@ -177,6 +186,7 @@ namespace MealPlannerAPI.DataSeeder
                 description: "Omega-3 rich salmon fillet served over nutty brown rice.",
                 servings: 2, prepMinutes: 10, cookMinutes: 25,
                 difficulty: DifficultyLevel.Medium,
+                authorId: null,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "Salmon",           250, "250g", l),
@@ -203,7 +213,7 @@ namespace MealPlannerAPI.DataSeeder
                 cuisine: "Italian",
                 description: "Classic Italian pasta with a simple fresh tomato sauce.",
                 servings: 4, prepMinutes: 10, cookMinutes: 20,
-                difficulty: DifficultyLevel.Easy,
+                difficulty: DifficultyLevel.Easy, authorId: null,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "Pasta (Dry)",  320, "320g", l),
@@ -231,7 +241,7 @@ namespace MealPlannerAPI.DataSeeder
                 cuisine: "French",
                 description: "Fluffy omelette loaded with wilted spinach and melted cheddar.",
                 servings: 1, prepMinutes: 5, cookMinutes: 8,
-                difficulty: DifficultyLevel.Easy,
+                difficulty: DifficultyLevel.Easy, authorId: null,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "Egg",            150, "3 eggs", l),
@@ -258,7 +268,7 @@ namespace MealPlannerAPI.DataSeeder
                 cuisine: "Mexican",
                 description: "Hearty plant-based bowl with roasted sweet potato and spiced black beans.",
                 servings: 2, prepMinutes: 10, cookMinutes: 30,
-                difficulty: DifficultyLevel.Medium,
+                difficulty: DifficultyLevel.Medium, authorId: null,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "Sweet Potato",         300, "2 medium", l),
@@ -286,7 +296,7 @@ namespace MealPlannerAPI.DataSeeder
                 cuisine: "Chinese",
                 description: "Classic homemade fried rice with chicken breast, eggs, and onions.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
-                difficulty: DifficultyLevel.Medium,
+                difficulty: DifficultyLevel.Medium, authorId: null,
                 ingredients: new[]
                 {
                     Ing(_guidGenerator, "White Rice (Dry)",  100, "100g dry", l),
@@ -311,7 +321,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Banana Peanut Butter Oatmeal",
-                cuisine: "Breakfast",
+                cuisine: "Breakfast", authorId: null,
                 description: "A hearty breakfast bowl of oats topped with fresh banana and peanut butter.",
                 servings: 1, prepMinutes: 5, cookMinutes: 10,
                 difficulty: DifficultyLevel.Easy,
@@ -338,7 +348,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Ground Beef and Potato Bake",
-                cuisine: "Continental",
+                cuisine: "Continental", authorId: null,
                 description: "A comforting casserole with layers of potato, seasoned ground beef, and cheesy goodness.",
                 servings: 4, prepMinutes: 15, cookMinutes: 45,
                 difficulty: DifficultyLevel.Hard,
@@ -366,7 +376,7 @@ namespace MealPlannerAPI.DataSeeder
         private Recipe BuildYogurtParfait(Dictionary<string, Guid> l)
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
-                name: "Greek Yogurt Parfait",
+                name: "Greek Yogurt Parfait", authorId: null,
                 cuisine: "Breakfast",
                 description: "A quick and healthy snack or breakfast with Greek yogurt and honey.",
                 servings: 1, prepMinutes: 5, cookMinutes: 0,
@@ -392,7 +402,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Peanut Butter Banana Toast",
-                cuisine: "Breakfast",
+                cuisine: "Breakfast", authorId: null,
                 description: "Simple and delicious toast topped with peanut butter and sliced bananas.",
                 servings: 1, prepMinutes: 5, cookMinutes: 2,
                 difficulty: DifficultyLevel.Easy,
@@ -416,7 +426,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Beef and Bell Pepper Stir Fry",
-                cuisine: "Asian",
+                cuisine: "Asian", authorId: null,
                 description: "A quick stir fry with ground beef, vibrant bell peppers, and savory garlic.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
                 difficulty: DifficultyLevel.Medium,
@@ -445,7 +455,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Chicken and Spinach Salad",
-                cuisine: "American",
+                cuisine: "American", authorId: null,
                 description: "A light salad featuring grilled chicken, fresh spinach, and sweet cherry tomatoes.",
                 servings: 2, prepMinutes: 15, cookMinutes: 15,
                 difficulty: DifficultyLevel.Easy,
@@ -471,7 +481,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Avocado Toast",
-                cuisine: "Australian",
+                cuisine: "Australian", authorId: null,
                 description: "Trendy and nutritious avocado squash on toast.",
                 servings: 1, prepMinutes: 5, cookMinutes: 0,
                 difficulty: DifficultyLevel.Easy,
@@ -497,7 +507,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Mushroom Omelette",
-                cuisine: "Breakfast",
+                cuisine: "Breakfast", authorId: null,
                 description: "Savory mushroom and cheese omelette.",
                 servings: 1, prepMinutes: 5, cookMinutes: 10,
                 difficulty: DifficultyLevel.Easy,
@@ -525,7 +535,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Tofu Stir Fry",
-                cuisine: "Asian",
+                cuisine: "Asian", authorId: null,
                 description: "Quick and healthy vegetarian stir fry.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
                 difficulty: DifficultyLevel.Medium,
@@ -554,7 +564,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Pork Chop with Sweet Potato",
-                cuisine: "American",
+                cuisine: "American", authorId: null,
                 description: "Pan-seared pork chop with baked sweet potato.",
                 servings: 2, prepMinutes: 10, cookMinutes: 30,
                 difficulty: DifficultyLevel.Medium,
@@ -579,7 +589,7 @@ namespace MealPlannerAPI.DataSeeder
         private Recipe BuildLentilSoup(Dictionary<string, Guid> l)
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
-                name: "Hearty Lentil Soup",
+                name: "Hearty Lentil Soup", authorId: null,
                 cuisine: "Mediterranean",
                 description: "A warm, comforting lentil and veggie soup.",
                 servings: 4, prepMinutes: 15, cookMinutes: 45,
@@ -609,7 +619,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Greek Salad",
-                cuisine: "Greek",
+                cuisine: "Greek", authorId: null,
                 description: "Crisp cucumber and tomato salad with cheese.",
                 servings: 2, prepMinutes: 10, cookMinutes: 0,
                 difficulty: DifficultyLevel.Easy,
@@ -636,7 +646,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Apple & Almond Snack",
-                cuisine: "Snack",
+                cuisine: "Snack", authorId: null,
                 description: "Simple raw snack.",
                 servings: 1, prepMinutes: 2, cookMinutes: 0,
                 difficulty: DifficultyLevel.Easy,
@@ -658,7 +668,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Chicken Rice Bowl",
-                cuisine: "Asian",
+                cuisine: "Asian", authorId: null,
                 description: "Lean chicken and avocado over rice.",
                 servings: 2, prepMinutes: 10, cookMinutes: 20,
                 difficulty: DifficultyLevel.Medium,
@@ -684,7 +694,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Beef Burger Patty Salad",
-                cuisine: "American",
+                cuisine: "American", authorId: null,
                 description: "Keto-friendly burger patties on lettuce.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
                 difficulty: DifficultyLevel.Medium,
@@ -710,7 +720,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Peanut Butter Apple Toast",
-                cuisine: "Breakfast",
+                cuisine: "Breakfast", authorId: null,
                 description: "Sweet and crunchy toast.",
                 servings: 1, prepMinutes: 5, cookMinutes: 2,
                 difficulty: DifficultyLevel.Easy,
@@ -734,7 +744,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Vegetable Fried Rice",
-                cuisine: "Asian",
+                cuisine: "Asian", authorId: null,
                 description: "Quick fried rice loaded with veggies.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
                 difficulty: DifficultyLevel.Medium,
@@ -761,7 +771,7 @@ namespace MealPlannerAPI.DataSeeder
         private Recipe BuildMushroomPasta(Dictionary<string, Guid> l)
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
-                name: "Mushroom Pasta",
+                name: "Mushroom Pasta", authorId: null,
                 cuisine: "Italian",
                 description: "Garlicky mushroom pasta with spinach.",
                 servings: 2, prepMinutes: 10, cookMinutes: 20,
@@ -789,7 +799,7 @@ namespace MealPlannerAPI.DataSeeder
         private Recipe BuildSpicyTofuScramble(Dictionary<string, Guid> l)
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
-                name: "Spicy Tofu Scramble",
+                name: "Spicy Tofu Scramble", authorId: null,
                 cuisine: "American",
                 description: "Vegan scramble with veggies.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
@@ -818,7 +828,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Garlic Butter Pork Chops",
-                cuisine: "American",
+                cuisine: "American", authorId: null,
                 description: "Rich and tender pork chops with potatoes.",
                 servings: 2, prepMinutes: 10, cookMinutes: 25,
                 difficulty: DifficultyLevel.Medium,
@@ -845,7 +855,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Breakfast Burrito Bowl",
-                cuisine: "Mexican",
+                cuisine: "Mexican", authorId: null,
                 description: "Deconstructed burrito for breakfast.",
                 servings: 2, prepMinutes: 10, cookMinutes: 15,
                 difficulty: DifficultyLevel.Medium,
@@ -873,7 +883,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Chicken & Mushroom Sauté",
-                cuisine: "French",
+                cuisine: "French", authorId: null,
                 description: "Simple pan-fried chicken and mushrooms.",
                 servings: 2, prepMinutes: 10, cookMinutes: 20,
                 difficulty: DifficultyLevel.Medium,
@@ -900,7 +910,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Carrot & Lentil Mash",
-                cuisine: "British",
+                cuisine: "British", authorId: null,
                 description: "Soft comforting mash.",
                 servings: 2, prepMinutes: 10, cookMinutes: 30,
                 difficulty: DifficultyLevel.Easy,
@@ -925,7 +935,7 @@ namespace MealPlannerAPI.DataSeeder
         {
             var recipe = Recipe.CreateSeed(_guidGenerator.Create(),
                 name: "Yogurt with Almonds",
-                cuisine: "Snack",
+                cuisine: "Snack", authorId: null,
                 description: "Protein-rich yogurt snack.",
                 servings: 1, prepMinutes: 2, cookMinutes: 0,
                 difficulty: DifficultyLevel.Easy,
@@ -951,7 +961,7 @@ namespace MealPlannerAPI.DataSeeder
             IGuidGenerator gen,
             string name,
             float grams,
-            string display, 
+            string display,
             Dictionary<string, Guid> lookup)
         {
             return (name, grams, display, lookup.TryGetValue(name, out var id) ? id : null);
