@@ -83,7 +83,11 @@ namespace MealPlannerAPI.Recipes
             recipe.SetInstructions(input.Instructions);
 
             foreach (var i in input.Ingredients)
-                recipe.AddIngredient(GuidGenerator.Create(), i.Name, i.Quantity, i.Unit, i.NutritionId);
+                if (i.Id.HasValue)
+                {
+                    recipe.AddIngredient(i.Id.Value, i.Name, i.Quantity, i.DisplayQuantity, i.NutritionId);
+
+                }
 
             await Repository.InsertAsync(recipe, autoSave: true);
             await InvalidateTrendingAsync();
@@ -115,7 +119,7 @@ namespace MealPlannerAPI.Recipes
                 throw new EntityNotFoundException(typeof(Recipe), id);
 
             }
-            
+
             var dto = await MapToRecipeDtoAsync(recipe);
             await _nutritionCalculator.EnrichAsync(recipe, dto);
             return dto;
@@ -165,8 +169,14 @@ namespace MealPlannerAPI.Recipes
 
             recipe.SetTags(input.Tags);
             recipe.SetInstructions(input.Instructions);
-            recipe.ReplaceIngredients(
-    input.Ingredients.Select(i => (GuidGenerator.Create(), i.Name, i.Quantity, i.Unit, i.NutritionId)));
+            recipe.ReplaceIngredients(input.Ingredients.Select(i =>
+            (
+                i.Id, // Pass the ID from the DTO (which is already Guid?)
+                i.Name,
+                Quantity: i.Quantity, // Cast decimal to float
+                i.DisplayQuantity,
+                i.NutritionId
+            )));
 
             await Repository.UpdateAsync(recipe, autoSave: true);
             if (recipe.Rating != previousRating)

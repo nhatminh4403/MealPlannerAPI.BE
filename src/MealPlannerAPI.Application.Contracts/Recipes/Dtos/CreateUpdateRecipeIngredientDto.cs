@@ -5,6 +5,7 @@ namespace MealPlannerAPI.Recipes.Dtos
 {
     public class CreateUpdateRecipeIngredientDto
     {
+        public Guid? Id { get; set; }
         [Required, MaxLength(128)]
         public string Name { get; set; } = null!;
 
@@ -12,7 +13,7 @@ namespace MealPlannerAPI.Recipes.Dtos
         public decimal Quantity { get; set; }
 
         [Required, MaxLength(32)]
-        public string Unit { get; set; } = null!; 
+        public string DisplayQuantity { get; set; } = null!; 
         public Guid? NutritionId { get; set; }
     }
 }
