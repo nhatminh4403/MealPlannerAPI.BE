@@ -78,11 +78,27 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
         Ingredients.Add(ingredient);
         return ingredient;
     }
-    public void ReplaceIngredients(IEnumerable<(Guid Id, string Name, decimal Quantity, string DisplayQuantity, Guid? NutritionId)> ingredients)
+    public void ReplaceIngredients(IEnumerable<(Guid? Id, string Name, decimal Quantity, string DisplayQuantity, Guid? NutritionId)>
+        inputIngredients)
     {
-        Ingredients.Clear();
-        foreach (var (id, name, quantity, display, nutritionId) in ingredients)
-            AddIngredient(id, name, quantity, display, nutritionId);
+        var inputIds = inputIngredients.Where(x => x.Id.HasValue).Select(x => x.Id!.Value).ToList();
+        var toRemove = Ingredients.Where(x => !inputIds.Contains(x.Id)).ToList();
+        foreach (var item in toRemove) Ingredients.Remove(item);
+
+        foreach (var input in inputIngredients)
+        {
+            if (input.Id.HasValue)
+            {
+                // 2. Update existing
+                var existing = Ingredients.FirstOrDefault(x => x.Id == input.Id.Value);
+                existing?.Update(input.Name, (float)input.Quantity, input.DisplayQuantity, input.NutritionId);
+            }
+            else
+            {
+                // 3. Add new
+                AddIngredient(Guid.NewGuid(), input.Name, (decimal)input.Quantity, input.DisplayQuantity, input.NutritionId);
+            }
+        }
     }
     public int GetTotalTimeMinutes() => CookingTimeMinutes + PrepTimeMinutes;
     public double CalculateTrendingScore()
@@ -94,8 +110,8 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                                     string description,
                                     int servings,
                                     int prepMinutes,
-                                    int cookMinutes,
-                                    DifficultyLevel difficulty, 
+                                    int cookMinutes, Guid? authorId,
+                                    DifficultyLevel difficulty,
                                     IEnumerable<(string Name, float Grams, string Display, Guid? NutritionId)> ingredients,
                                     IEnumerable<string>? instructions = null)
     {
@@ -110,6 +126,11 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
             CookingTimeMinutes = cookMinutes,
             Difficulty = difficulty,
         };
+        if (authorId.HasValue)
+        {
+            recipe.AuthorId = authorId.Value;
+        }
+
 
         foreach (var (iName, grams, display, nutritionId) in ingredients)
         {
@@ -121,7 +142,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                displayQuantity: display,
                ingredientNutritionId: nutritionId));
         }
-        if(instructions != null)
+        if (instructions != null)
         {
             recipe.SetInstructions(instructions);
 

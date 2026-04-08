@@ -1,15 +1,18 @@
-﻿using System;
+﻿using MealPlannerAPI.Nutritions;
+using System;
 using Volo.Abp.Domain.Entities;
 
 namespace MealPlannerAPI.Recipes
 {
     public class RecipeIngredient : Entity<Guid>
     {
-        public Guid RecipeId { get; set; }
-        public string Name { get; set; } = null!;
+        public Guid RecipeId { get; private set; } // Private set
+        public string Name { get; private set; } = null!;
         public float QuantityGrams { get; private set; }
         public string? DisplayQuantity { get; private set; }
         public Guid? IngredientNutritionId { get; private set; }
+        public virtual IngredientNutrition? Nutrition { get; private set; }
+
 
         protected RecipeIngredient() { }
         public RecipeIngredient(Guid id,
@@ -25,7 +28,7 @@ namespace MealPlannerAPI.Recipes
             DisplayQuantity = displayQuantity;
             IngredientNutritionId = ingredientNutritionId;
         }
-        public void Update(string name,
+        internal void Update(string name,
                            float quantityGrams,
                            string? displayQuantity = null,
                            Guid? ingredientNutritionId = null)
