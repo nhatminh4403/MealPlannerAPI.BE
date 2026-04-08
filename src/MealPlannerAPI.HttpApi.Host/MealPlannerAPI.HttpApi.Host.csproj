@@ -21,24 +21,24 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Scriban" Version="7.0.3" />
+    <PackageReference Include="Scriban" Version="7.0.6" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="10.2.0-rc.2" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="10.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.SignalR" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.Autofac" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.Swashbuckle" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.SignalR" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="10.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Account.Web.OpenIddict" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Account.Web.OpenIddict" Version="10.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite" Version="5.1.1" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite" Version="5.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MealPlannerAPI.Application\MealPlannerAPI.Application.csproj" />

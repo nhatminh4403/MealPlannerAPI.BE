@@ -11,14 +11,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Scriban" Version="7.0.3" />
+    <PackageReference Include="Scriban" Version="7.0.6" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Autofac" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="10.2.0" />
     <ProjectReference Include="..\MealPlannerAPI.EntityFrameworkCore\MealPlannerAPI.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\MealPlannerAPI.Application.Contracts\MealPlannerAPI.Application.Contracts.csproj" />
   </ItemGroup>

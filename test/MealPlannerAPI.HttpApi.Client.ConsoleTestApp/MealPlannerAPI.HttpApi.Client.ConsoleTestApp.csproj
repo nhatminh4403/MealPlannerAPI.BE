@@ -25,8 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Volo.Abp.Autofac" Version="10.1.1" />
-    <PackageReference Include="Volo.Abp.Http.Client.IdentityModel" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="10.2.0" />
+    <PackageReference Include="Volo.Abp.Http.Client.IdentityModel" Version="10.2.0" />
   </ItemGroup>
 
   <ItemGroup>
