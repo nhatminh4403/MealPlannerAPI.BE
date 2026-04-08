@@ -6,4 +6,6 @@ public static class MealPlannerAPISettings
 
     //Add your own setting names here. Example:
     //public const string MySetting1 = Prefix + ".MySetting1";
+    public const string EnableMockData = Prefix + ".EnableMockData";
+    public const string EnableUI = Prefix + ".EnableUI";
 }

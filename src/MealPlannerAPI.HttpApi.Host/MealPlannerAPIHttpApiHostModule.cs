@@ -38,6 +38,7 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.Caching;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
@@ -252,7 +253,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
                 ReplaceIfExists<MealPlannerAPIDomainModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain");
                 ReplaceIfExists<MealPlannerAPIDomainSharedModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain.Shared");
 
-                ReplaceIfExists<MealPlannerAPIHttpApiModule>($"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi");
+                ReplaceIfExists<MealPlannerAPIHttpApiModule>($"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi.Host");
                 if (Directory.Exists(hostingEnvironment.ContentRootPath))
                 {
                     options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIHttpApiHostModule>(hostingEnvironment.ContentRootPath);
@@ -354,17 +355,24 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     private void ConfigureDistributedCacheOptions(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-
+        var configuration = context.Services.GetConfiguration();
         if (hostingEnvironment.IsDevelopment())
         {
-            context.Services.AddDistributedMemoryCache();
-
+            //context.Services.AddDistributedMemoryCache();
+            context.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("Redis");
+            });
         }
         else
         {
+            Configure<AbpDistributedCacheOptions>(options =>
+            {
+                options.KeyPrefix = "MealPlanner:";
+            });
             context.Services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = context.Services.GetConfiguration().GetConnectionString("Redis");
+                options.Configuration = configuration.GetConnectionString("Redis");
             });
         }
 
