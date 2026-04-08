@@ -10,8 +10,14 @@ public class MealPlannerAPISettingDefinitionProvider : SettingDefinitionProvider
     {
         //Define your own settings here. Example:
         //context.Add(new SettingDefinition(MealPlannerAPISettings.MySetting1));
-        context.Add(new SettingDefinition(MealPlannerAPISettings.EnableMockData, defaultValue: "true"));
-        context.Add(new SettingDefinition(MealPlannerAPISettings.EnableUI, defaultValue: "true"));
+        //context.Add(new SettingDefinition(MealPlannerAPISettings.EnableMockData,
+        //                                  defaultValue: "false",
+        //                                  isVisibleToClients: true));
+
+        context.Add(new SettingDefinition(MealPlannerAPISettings.EnableUI,
+                                          defaultValue: "true",
+                                          isVisibleToClients: true));
+
     }
 
     private static LocalizableString L(string name) =>
