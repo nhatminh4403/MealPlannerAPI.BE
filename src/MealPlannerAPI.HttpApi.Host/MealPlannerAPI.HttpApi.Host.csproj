@@ -47,7 +47,7 @@
     <ProjectReference Include="../MealPlannerAPI.SignalR/MealPlannerAPI.SignalR.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Studio.Client.AspNetCore" Version="2.2.4" />
+    <PackageReference Include="Volo.Abp.Studio.Client.AspNetCore" Version="2.2.6" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />

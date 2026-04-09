@@ -43,7 +43,7 @@ This is a layered monolith application that consists of the following applicatio
 
 * `MealPlannerAPI.DbMigrator`: A console application which applies the migrations and also seeds the initial data. It is useful on development as well as on production environment.
 * `MealPlannerAPI.HttpApi.Host`: ASP.NET Core API application that is used to expose the APIs to the clients.
-* `MealPlannerAPI.BlazorWebUI`: A dedicated Blazor WebAssembly application that is used as the UI for admin of the solution. It is a separate project to demonstrate how to use ABP Framework with Blazor WebAssembly. It is also useful for testing the APIs during development.
+* `MealPlannerAPI.BlazorHost`: A dedicated Blazor WebAssembly application that is used as the UI for admin of the solution. It is a separate project to demonstrate how to use ABP Framework with Blazor WebAssembly. It is also useful for testing the APIs during development.
 #### Test Projects
 
 The `test` folder contains the following test projects:

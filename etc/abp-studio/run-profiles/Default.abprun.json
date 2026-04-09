@@ -1,4 +1,4 @@
-﻿{
+{
   "applications": {
     "MealPlannerAPI.HttpApi.Host": {
       "type": "dotnet-project",
@@ -10,19 +10,31 @@
       "execution": {
         "order": 4
       }
+    },
+    "MealPlannerAPI.BlazorWebUI": {
+      "type": "dotnet-project",
+      "path": "../../../src/MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.csproj",
+      "launchUrl": "https://localhost:44444",
+      "runnable": true
+    },
+    "MealPlannerAPI.Blazor": {
+      "type": "dotnet-project",
+      "path": "../../../src/MealPlannerAPI.Blazor/MealPlannerAPI.Blazor.csproj",
+      "launchUrl": "https://localhost:58376",
+      "runnable": true
     }
   },
   "containers": {
-    "serviceName": "MealPlannerAPI-Containers",
+    "serviceName": "MealPlannerAPI-Containers"
   },
-  "tasks":{
-    "Initialize Solution":{
+  "tasks": {
+    "Initialize Solution": {
       "behaviour": 2,
       "startCommand": "./initialize-solution.ps1",
       "workingDirectory": "../../scripts",
       "shortDescription": "Installs required UI libraries, creates required certificates and seeds the database."
     },
-    "Migrate Database":{
+    "Migrate Database": {
       "behaviour": 0,
       "startCommand": "./migrate-database.ps1",
       "workingDirectory": "../../scripts",

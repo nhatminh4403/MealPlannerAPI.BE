@@ -109,8 +109,8 @@
       "path": "src/MealPlannerAPI.SignalR/MealPlannerAPI.SignalR.abppkg",
       "folder": "src"
     },
-    "MealPlannerAPI.BlazorWebUI": {
-      "path": "src/MealPlannerAPI.BlazorWebUI/MealPlannerAPI.BlazorWebUI.abppkg",
+    "MealPlannerAPI.Blazor": {
+      "path": "src/MealPlannerAPI.Blazor/MealPlannerAPI.Blazor.abppkg",
       "folder": "src"
     }
   }

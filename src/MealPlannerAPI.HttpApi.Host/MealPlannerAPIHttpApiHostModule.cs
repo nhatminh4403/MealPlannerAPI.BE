@@ -64,6 +64,7 @@ namespace MealPlannerAPI;
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpAspNetCoreSignalRModule),
     typeof(AbpAspNetCoreAuthenticationJwtBearerModule)
+    //typeof(MealPlannerAPIBlazorWebUIModule)
 
     )]
 public class MealPlannerAPIHttpApiHostModule : AbpModule

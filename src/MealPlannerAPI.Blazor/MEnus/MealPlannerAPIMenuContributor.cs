@@ -1,9 +1,6 @@
 ﻿using MealPlannerAPI.Localization;
 using MealPlannerAPI.MultiTenancy;
 using MealPlannerAPI.Permissions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Identity.Blazor;
@@ -11,9 +8,9 @@ using Volo.Abp.SettingManagement.Blazor.Menus;
 using Volo.Abp.TenantManagement.Blazor.Navigation;
 using Volo.Abp.UI.Navigation;
 
-namespace MealPlannerAPI.BlazorWebUI.Menus
+namespace MealPlannerAPI.BlazorHost.MEnus
 {
-    public class MenuContributor : IMenuContributor
+    public class MealPlannerAPIMenuContributor : IMenuContributor
     {
         public async Task ConfigureMenuAsync(MenuConfigurationContext context)
         {
@@ -22,7 +19,7 @@ namespace MealPlannerAPI.BlazorWebUI.Menus
                 await ConfigureMainMenuAsync(context);
             }
         }
-        private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
+        private async Task ConfigureMainMenuAsync(MenuConfigurationContext context)
         {
             var l = context.GetLocalizer<MealPlannerAPIResource>();
 
@@ -56,18 +53,35 @@ namespace MealPlannerAPI.BlazorWebUI.Menus
             context.Menu.AddItem(
              new ApplicationMenuItem(
                  "MealPlanner",
-                 l["Menu:Recipes"],
+                 l["Menu:Home"],
                  icon: "fa fa-book"
              ).AddItem(
                  new ApplicationMenuItem(
-                     "Recipes.Recipes",
+                     "MealPlanner.Recipes",
                      l["Menu:Recipes"],
                      url: "/recipes"
                  ).RequirePermissions(MealPlannerAPIPermissions.Recipes.Default)
+             ).AddItem(
+                 new ApplicationMenuItem(
+                     "MealPlanner.Recipes.Trending",
+                     l["Menu:Trending"],
+                     url: "/recipes/trending"
+                 ).RequirePermissions(MealPlannerAPIPermissions.Recipes.Default)
+             ).AddItem(
+                 new ApplicationMenuItem(
+                     "MealPlanner.Recipes.TopRated",
+                     l["Menu:TopRated"],
+                     url: "/recipes/top-rated"
+                 ).RequirePermissions(MealPlannerAPIPermissions.Recipes.Default)
+             ).AddItem(
+                 new ApplicationMenuItem(
+                     "MealPlanner.Ingredients",
+                     l["Menu:Ingredients"],
+                     url: "/ingredients"
+                 ).RequirePermissions(MealPlannerAPIPermissions.Recipes.Default)
              )
             );
-
-            return Task.CompletedTask;
         }
+
     }
 }

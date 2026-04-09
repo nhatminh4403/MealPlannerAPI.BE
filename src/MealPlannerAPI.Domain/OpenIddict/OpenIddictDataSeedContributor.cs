@@ -25,7 +25,11 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
         IOpenIddictScopeRepository openIddictScopeRepository,
         IOpenIddictScopeManager scopeManager,
         IOpenIddictApplicationManager iopeniddictApplicationManager)
-        : base(configuration, openIddictApplicationRepository, applicationManager, openIddictScopeRepository, scopeManager)
+        : base(configuration,
+               openIddictApplicationRepository,
+               applicationManager,
+               openIddictScopeRepository,
+               scopeManager)
     {
         _openIddictApplicationManager = iopeniddictApplicationManager;
     }
@@ -79,8 +83,62 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             });
 
         }
+        if(await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Blazor") == null )
+        {
 
-
+            await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+            {
+                ClientId = "MealPlannerAPI_Blazor",
+                ClientType = OpenIddictConstants.ClientTypes.Confidential,
+                ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
+                DisplayName = "MealPlanner Blazor Admin",
+                //ClientSecret = "your-secret",
+                Permissions =
+                {
+                    OpenIddictConstants.Permissions.Endpoints.Authorization,
+                    OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation,
+                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                    //OpenIddictConstants.Permissions.GrantTypes.o,
+                    OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Permissions.Scopes.Profile,
+                    OpenIddictConstants.Permissions.Scopes.Roles,
+                    //OpenIddictConstants.Permissions.Scopes.OfflineAccess,
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
+                },
+                    RedirectUris =
+                        {
+                            new Uri("https://localhost:58376/signin-oidc")
+                        },
+                    PostLogoutRedirectUris =
+                        {
+                            new Uri("https://localhost:58376/signout-callback-oidc")
+                        }
+            });
+            //            await CreateApplicationAsync(
+            //    name: "MealPlannerAPI_Blazor",
+            //    type: OpenIddictConstants.ClientTypes.Confidential,
+            //    consentType: OpenIddictConstants.ConsentTypes.Implicit,
+            //    displayName: "MealPlanner Blazor Admin",
+            //    secret: "your-secret",
+            //    grantTypes: new List<string>
+            //    {
+            //        OpenIddictConstants.GrantTypes.AuthorizationCode,
+            //        OpenIddictConstants.GrantTypes.RefreshToken
+            //    },
+            //    scopes: new List<string>
+            //    {
+            //        OpenIddictConstants.Scopes.OpenId,
+            //        OpenIddictConstants.Scopes.Profile,
+            //        OpenIddictConstants.Scopes.Email,
+            //        OpenIddictConstants.Scopes.OfflineAccess,
+            //        "MealPlannerAPI"
+            //    },
+            //    redirectUri: "https://localhost:44339/signin-oidc",
+            //    postLogoutRedirectUri: "https://localhost:44339/signout-callback-oidc"
+            //);
+        }
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");
 
 
