@@ -61,7 +61,8 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             OpenIddictConstants.Permissions.Scopes.Roles,
             "MealPlannerAPI"
         };
-        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_App") == null)
+
+        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Web") == null)
         {
             await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
             {
@@ -83,16 +84,17 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             });
 
         }
-        if(await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Blazor") == null )
+        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Blazor") == null)
         {
+            //var oidcSection = Configuration.GetSection("AuthServer:OpenIddictClientSecret");
 
             await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
             {
                 ClientId = "MealPlannerAPI_Blazor",
-                ClientType = OpenIddictConstants.ClientTypes.Confidential,
+                ClientType = OpenIddictConstants.ClientTypes.Public,
                 ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
                 DisplayName = "MealPlanner Blazor Admin",
-                //ClientSecret = "your-secret",
+                //ClientSecret = oidcSection.Value,
                 Permissions =
                 {
                     OpenIddictConstants.Permissions.Endpoints.Authorization,
@@ -100,44 +102,20 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
                     OpenIddictConstants.Permissions.Endpoints.Revocation,
                     OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                     OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                    //OpenIddictConstants.Permissions.GrantTypes.o,
                     OpenIddictConstants.Permissions.Scopes.Email,
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Roles,
-                    //OpenIddictConstants.Permissions.Scopes.OfflineAccess,
                     OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
                 },
-                    RedirectUris =
+                RedirectUris =
                         {
                             new Uri("https://localhost:58376/signin-oidc")
                         },
-                    PostLogoutRedirectUris =
+                PostLogoutRedirectUris =
                         {
                             new Uri("https://localhost:58376/signout-callback-oidc")
                         }
             });
-            //            await CreateApplicationAsync(
-            //    name: "MealPlannerAPI_Blazor",
-            //    type: OpenIddictConstants.ClientTypes.Confidential,
-            //    consentType: OpenIddictConstants.ConsentTypes.Implicit,
-            //    displayName: "MealPlanner Blazor Admin",
-            //    secret: "your-secret",
-            //    grantTypes: new List<string>
-            //    {
-            //        OpenIddictConstants.GrantTypes.AuthorizationCode,
-            //        OpenIddictConstants.GrantTypes.RefreshToken
-            //    },
-            //    scopes: new List<string>
-            //    {
-            //        OpenIddictConstants.Scopes.OpenId,
-            //        OpenIddictConstants.Scopes.Profile,
-            //        OpenIddictConstants.Scopes.Email,
-            //        OpenIddictConstants.Scopes.OfflineAccess,
-            //        "MealPlannerAPI"
-            //    },
-            //    redirectUri: "https://localhost:44339/signin-oidc",
-            //    postLogoutRedirectUri: "https://localhost:44339/signout-callback-oidc"
-            //);
         }
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");
 

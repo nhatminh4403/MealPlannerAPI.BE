@@ -1,0 +1,67 @@
+﻿@{
+    // Layout = null;
+    var rtl = CultureHelper.IsRtl ? "rtl" : string.Empty;
+}
+@using Microsoft.Extensions.Hosting
+@inject IHostEnvironment Env
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentCulture.Name" dir="@rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Meal Planner</title>
+    <base href="/" />
+
+    <!--ABP:Styles-->
+    <!--/ABP:Styles-->
+
+    @* <link href="AbpSolution3.Blazor.Client.styles.css" rel="stylesheet"/> *@
+    <AbpStyles BundleName="@BlazorLeptonXLiteThemeBundles.Styles.Global"  />
+
+    @* <link href="~/global-styles.css" rel="stylesheet" /> *@
+    <link href="MealPlannerAPI.BlazorHost.styles.css" rel="stylesheet" />
+
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body class="abp-application-layout">
+    <Routes @rendermode="InteractiveServer" />
+
+    @* <div id="ApplicationContainer">
+        <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+        </div>
+
+        <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="true">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" />
+            </Found>
+            <NotFound>
+                <p>Sorry, there's nothing at this address.</p>
+            </NotFound>
+        </Router>
+    </div> *@
+    <div id="blazor-error-ui">
+        @if (Env.IsDevelopment())
+        {
+            <text>An unhandled exception has occurred. See browser dev tools for details.</text>
+        }
+        else if (Env.IsStaging() || Env.IsProduction())
+        {
+            <text>An error has occurred. This application may no longer respond until reloaded.</text>
+        }
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <!--ABP:Scripts-->
+    @* <script src="global.js"></script> *@
+    <!--/ABP:Scripts-->
+    <AbpScripts BundleName="@BlazorLeptonXLiteThemeBundles.Scripts.Global"></AbpScripts>
+
+    <script src="_framework/blazor.web.js"></script>
+
+</body>
+</html>

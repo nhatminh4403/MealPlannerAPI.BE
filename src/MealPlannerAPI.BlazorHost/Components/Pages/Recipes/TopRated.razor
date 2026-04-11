@@ -1,0 +1,14 @@
+﻿@page "/recipes/top-rated"
+
+
+
+<h3>TopRated</h3>
+
+@code {
+    private List<RecipeSummaryDto> TopRatedRecipes { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await RecipeAppService.GetListAsync(new GetRecipesInput());
+        TopRatedRecipes = result.Items.ToList();
+    }
+}

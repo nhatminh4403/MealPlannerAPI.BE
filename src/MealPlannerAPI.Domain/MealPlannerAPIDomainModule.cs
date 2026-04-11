@@ -18,6 +18,7 @@ using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement.Identity;
 using Volo.Abp.PermissionManagement.OpenIddict;
 using Volo.Abp.SettingManagement;
+using Volo.Abp.Settings;
 using Volo.Abp.TenantManagement;
 
 namespace MealPlannerAPI;
@@ -47,6 +48,11 @@ public class MealPlannerAPIDomainModule : AbpModule
         Configure<AbpMultiTenancyOptions>(options =>
         {
             options.IsEnabled = !MultiTenancyConsts.IsEnabled;
+        });
+
+        Configure<AbpSettingOptions>(options =>
+        {
+            options.DefinitionProviders.Add<MealPlannerAPISettingDefinitionProvider>();
         });
 
         var services = context.Services;

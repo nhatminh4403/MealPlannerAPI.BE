@@ -273,3 +273,4 @@ src/MealPlannerAPI.Blazor.Server.Tiered/Logs/*
 tempkey.rsa
 tempkey.jwk
 /src/MealPlannerAPI.HttpApi.Host/appsettings.Development.json
+/src/MealPlannerAPI.BlazorHost/appsettings.Developer.json

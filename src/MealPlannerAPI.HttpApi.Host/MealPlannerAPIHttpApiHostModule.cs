@@ -359,11 +359,11 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         if (hostingEnvironment.IsDevelopment())
         {
-            //context.Services.AddDistributedMemoryCache();
-            context.Services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = configuration.GetConnectionString("Redis");
-            });
+            context.Services.AddDistributedMemoryCache();
+            //context.Services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = configuration.GetConnectionString("Redis");
+            //});
         }
         else
         {

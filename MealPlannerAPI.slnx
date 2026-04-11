@@ -12,7 +12,7 @@
         <Project Path="src/MealPlannerAPI.Application.Contracts/MealPlannerAPI.Application.Contracts.csproj" />
         <Project Path="src/MealPlannerAPI.HttpApi/MealPlannerAPI.HttpApi.csproj" />
         <Project Path="src/MealPlannerAPI.HttpApi.Client/MealPlannerAPI.HttpApi.Client.csproj" />
-        <Project Path="src/MealPlannerAPI.Blazor/MealPlannerAPI.BlazorHost.csproj" />
+        <Project Path="src/MealPlannerAPI.BlazorHost/MealPlannerAPI.BlazorHost.csproj" />
         <Project Path="src/MealPlannerAPI.DbMigrator/MealPlannerAPI.DbMigrator.csproj" />
         <Project Path="src/MealPlannerAPI.HttpApi.Host/MealPlannerAPI.HttpApi.Host.csproj" />
         <Project Path="src/MealPlannerAPI.SignalR/MealPlannerAPI.SignalR.csproj" />

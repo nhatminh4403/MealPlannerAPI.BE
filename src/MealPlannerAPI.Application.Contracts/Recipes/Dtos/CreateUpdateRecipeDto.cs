@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace MealPlannerAPI.Recipes
+namespace MealPlannerAPI.Recipes.Dtos
 {
     public class CreateUpdateRecipeDto
     {
