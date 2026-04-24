@@ -10,6 +10,12 @@ services:
       - "1433:1433"
     networks:
       - mealplanner-api-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Nhatminh03 -Q 'SELECT 1' -No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   # 2. Migrator
   migrator:
@@ -20,12 +26,13 @@ services:
     environment:
       - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - mealplanner-api-network
 
   # 3. The API Host
-  web:
+  web-api:
     build:
       context: .
       dockerfile: src/MealPlannerAPI.HttpApi.Host/Dockerfile
@@ -34,14 +41,33 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:81
       - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
+      - ConnectionStrings__Redis=redis:6379
       - App__HealthUiCheckUrl=http://localhost:81/health-status
     ports:
       - "44339:81"
     depends_on:
-      - migrator
+      migrator:
+        condition: service_completed_successfully
     networks:
       - mealplanner-api-network
-
+  # 4. The Blazor Web Admin Host UI
+  blazor-web-admin:
+    build:
+      context: .
+      dockerfile: src/MealPlannerAPI.BlazorHost/Dockerfile
+    container_name: meal-planner-blazor-host
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:82
+      - ConnectionStrings__Default=Server=db,1433;Database=MealPlannerAPI;TrustServerCertificate=True;User ID=sa;Password=Nhatminh03
+      - App__HealthUiCheckUrl=http://localhost:82/health-status
+    ports:
+      - "58376:82"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    networks:
+      - mealplanner-api-network
 networks:
   mealplanner-api-network:
     driver: bridge
