@@ -6,8 +6,10 @@ using MealPlannerAPI.BlazorHost.Components;
 using MealPlannerAPI.BlazorHost.Components.Settings;
 using MealPlannerAPI.BlazorHost.Menus;
 using MealPlannerAPI.EntityFrameworkCore;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Localization;
 using MealPlannerAPI.MultiTenancy;
+using MealPlannerAPI.SignalR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
+using Polly;
 using System;
 using System.IO;
 using Volo.Abp;
@@ -60,6 +63,7 @@ namespace MealPlannerAPI.BlazorHost;
     typeof(MealPlannerAPIHttpApiModule),
     typeof(MealPlannerAPIEntityFrameworkCoreModule),
     typeof(MealPlannerAPIApplicationModule),
+    typeof(MealPlannerAPISignalRModule),
 
     typeof(AbpTenantManagementBlazorServerModule),
     typeof(AbpTenantManagementBlazorModule),
@@ -135,7 +139,7 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-
+        var services = context.Services;
         context.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
@@ -156,12 +160,14 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
         ConfigureBundles();
-        ConfigureVirtualFileSystem(hostingEnvironment);
+        ConfigureVirtualFileSystem(hostingEnvironment,services);
         ConfigureBlazorise(context);
         ConfigureRouter();
         ConfigureMenu(context);
         ConfigureAutoApiControllers();
         ConfigureSettingPages();
+        services.AddTransient<IMealPlannerHubPublisher, MealPlannerAPIPublisher>();
+
     }
     private void ConfigureUrls(IConfiguration configuration)
     {
@@ -188,28 +194,36 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
             options.AppAssembly = typeof(MealPlannerAPIBlazorHostModule).Assembly;
         });
     }
-    private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment)
+    private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment, IServiceCollection services)
     {
-        if (hostingEnvironment.IsDevelopment())
+        //var hostingEnvironment = context.Services.GetHostingEnvironment();
+
+        var hostEnv = services.GetHostingEnvironment();
+        Configure<AbpVirtualFileSystemOptions>(options =>
         {
-            Configure<AbpVirtualFileSystemOptions>(options =>
+            if (hostEnv.IsDevelopment())
             {
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainSharedModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain.Shared"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIDomainModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Domain"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationContractsModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application.Contracts"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIApplicationModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application"));
-                options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIBlazorHostModule>(
-                    hostingEnvironment.ContentRootPath);
-            });
-        }
+                void ReplaceIfExists<TModule>(string path)
+                {
+                    var fullPath = Path.Combine(hostingEnvironment.ContentRootPath, path);
+                    if (Directory.Exists(fullPath))
+                    {
+                        options.FileSets.ReplaceEmbeddedByPhysical<TModule>(fullPath);
+                    }
+                }
+
+
+                ReplaceIfExists<MealPlannerAPIApplicationModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.Application");
+                ReplaceIfExists<MealPlannerAPIHttpApiModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi");
+                ReplaceIfExists<MealPlannerAPIHttpApiClientModule>($"..{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi.Client");
+
+                ReplaceIfExists<MealPlannerAPIHttpApiModule>($"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}MealPlannerAPI.HttpApi.Host");
+                if (Directory.Exists(hostingEnvironment.ContentRootPath))
+                {
+                    options.FileSets.ReplaceEmbeddedByPhysical<MealPlannerAPIBlazorHostModule>(hostingEnvironment.ContentRootPath);
+                }
+            }
+        });
     }
     private void ConfigureBlazorise(ServiceConfigurationContext context)
     {
@@ -219,6 +233,8 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
             .AddBlazorise(
             options =>
             {
+                options.Debounce = true;
+                options.DebounceInterval = 300;
                 options.ProductToken = configuration["Blazorise:ProductToken"];
             }
             )
@@ -273,7 +289,7 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
         {
             options.Contributors.Add(new MealPlannerSettingPageContributor());
         });
-    } 
+    }
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var env = context.GetEnvironment();

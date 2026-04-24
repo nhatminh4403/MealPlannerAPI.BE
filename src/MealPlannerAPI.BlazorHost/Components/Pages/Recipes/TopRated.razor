@@ -1,14 +1,126 @@
 ﻿@page "/recipes/top-rated"
+@inherits AbpCrudPageBase<IRecipeAppService,
+                            RecipeDto,
+                            RecipeSummaryDto,
+                            Guid,
+                            GetRecipesInput,
+                            CreateUpdateRecipeDto,
+                            CreateUpdateRecipeDto>
+<Card>
+    <CardHeader>
+        <CardTitle>Top Rated Recipes</CardTitle>
+    </CardHeader>
+    <Row Class="justify-content-between">
+        <Column ColumnSize="ColumnSize.IsAuto">
+            <CardTitle>@L["Books"]</CardTitle>
+        </Column>
+        <Column ColumnSize="ColumnSize.IsAuto">
+            @if (HasCreatePermission)
+            {
+                <Button Color="Color.Primary"
+                        Clicked="OpenCreateModalAsync">
+                    <Icon Name="IconName.Add" />
+                    @L["Recipes:New"]
+                </Button>
+            }
+        </Column>
+    </Row>
+<CardBody>
+    <DataGrid TItem="RecipeSummaryDto"
+              Data="Entities"
+              ReadData="OnDataGridReadAsync"
+              Page="CurrentPage"
+              TotalItems="TotalCount"
+              ShowPager="true"
+              PageSize="PageSize">
+        <DataGridColumns>
+            <DataGridEntityActionsColumn TItem="RecipeSummaryDto" @ref="@EntityActionsColumn">
+                <DisplayTemplate>
+                    <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
+                        <EntityAction TItem="RecipeSummaryDto"
+                                      Text="@L["Common:Edit"]"
+                                      Visible=HasUpdatePermission
+                                      Clicked="() => OpenEditModalAsync(context.Item)" />
+                        <EntityAction TItem="RecipeSummaryDto"
+                                      Text="@L["Common:Delete"]"
+                                      Visible=HasDeletePermission
+                                      Clicked="() => DeleteEntityAsync(context.Item)"
+                                      ConfirmationMessage="()=>GetDeleteConfirmationMessage(context.Item)" />
+                    </EntityActions>
+                </DisplayTemplate>
+            </DataGridEntityActionsColumn>
+            <DataGridColumn TItem="RecipeSummaryDto"
+                            Field="@nameof(RecipeSummaryDto.Name)"
+                            Caption="@L["Recipes:Name"]"></DataGridColumn>
+            @* <DataGridColumn TItem="RecipeSummaryDto"
+                            Field="@nameof(RecipeSummaryDto.ImageUrl)"
+                            Caption="@L["Type"]">
+                <DisplayTemplate>
+                    @L[$"Enum:BookType.{(int)context.Item.Type}"]
+                </DisplayTemplate>
+            </DataGridColumn> *@
+
+        </DataGridColumns>
+    </DataGrid>
+</CardBody>
+</Card>
 
 
+<Row>
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>Id</TableHeaderCell>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Rating</TableHeaderCell>
+                @* <TableHeaderCell>Published By</TableHeaderCell> *@
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @foreach (var recipe in TopRatedRecipes)
+            {
+                <TableRow @onclick="() => GoToDetail(recipe.Id)" Class="clickable-row"> 
+                    <TableRowCell>@recipe.Id</TableRowCell>
+                    <TableRowCell>@recipe.Name</TableRowCell>
+                    <TableRowCell>@recipe.Rating</TableRowCell>
+                    @* <TableRowCell>@recipe.</TableRowCell> *@
+                </TableRow>
+            }
+        </TableBody>
 
-<h3>TopRated</h3>
+    </Table>
+</Row>
+
 
 @code {
     private List<RecipeSummaryDto> TopRatedRecipes { get; set; }
+    private List<RecipeDto> Recipes { get; set; }
+
+    public TopRated(List<RecipeSummaryDto> topRatedRecipes, List<RecipeDto> recipes)
+    {
+        TopRatedRecipes = topRatedRecipes;
+        Recipes = recipes;
+
+        CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
+        UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
+        DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
+
+        LocalizationResource = typeof(MealPlannerAPIResource);
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        var result = await RecipeAppService.GetListAsync(new GetRecipesInput());
+        var result = await RecipeAppService.GetTopRatedAsync(50);
+        var recipes = await RecipeAppService.GetListAsync(new GetRecipesInput { MaxResultCount = 100 });
+
+        // Recipes = recipes.Items.ToList();
         TopRatedRecipes = result.Items.ToList();
     }
+    private void GoToDetail(Guid id)
+    {
+        // encode current URL as returnUrl query param
+        var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/recipes/{id}?returnUrl={returnUrl}");
+    }
+}
 }

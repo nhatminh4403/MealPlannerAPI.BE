@@ -1,10 +1,9 @@
-﻿@using MealPlannerAPI.Settings
-@using System.Threading.Tasks
-@using Volo.Abp.SettingManagement
-@using Volo.Abp.AspNetCore.Components;
-
-@* @inherits MealPlannerAPIComponentBase *@
-@inherits AbpComponentBase
+﻿
+@inject  ISettingManager SettingManager
+@inject ISettingProvider SettingProvider
+@inject IUiNotificationService UiNotificationService
+@inject IUnitOfWorkManager UnitOfWorkManager
+@inherits MealPlannerAPIComponentBase
 
 <Row>
     <Column ColumnSize="ColumnSize.Is12">
@@ -15,16 +14,37 @@
             <CardBody TextAlignment="TextAlignment.Center">
                 <Field Horizontal="true">
                     <FieldLabel ColumnSize="ColumnSize.Is3">
-                        @L["EnableUI"]
+                        @L["Settings:EnableUI"]
                     </FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is9" Display="Display.Flex" Flex="Flex.JustifyContent.Between">
-                        <label class="toggle-switch">
+                        @* Testing with a custom toggle switch implementation. 
+                            <label class="toggle-switch">
                             <input type="checkbox" @bind="EnableUI" />
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">
-                                @(EnableUI? L["Enabled"] : L["Disabled"])
+                                @(EnableUI? L["Common:Enabled"] : L["Common:Disabled"])
                             </span>
-                        </label>
+                        </label> *@
+                        <Switch @bind-Value="EnableUI"
+                                @bind-Value:event="onchange"
+                                @* ValueChanged="OnSwitchValueChanged" *@
+                                />
+                    </FieldBody>
+                    <FieldLabel ColumnSize="ColumnSize.Is3">
+                        @L["Settings:EnableMockData"]
+                    </FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is9" Display="Display.Flex" Flex="Flex.JustifyContent.Between">
+                        @* Testing with a custom toggle switch implementation.
+                            <label class="toggle-switch">
+                            <input type="checkbox" @bind="EnableUI" />
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">
+                                @(EnableUI? L["Common:Enabled"] : L["Common:Disabled"])
+                            </span>
+                        </label> *@
+                        <Switch @bind-Value="EnableMockData"
+                                @bind-Value:event="onchange"
+                                @* ValueChanged="OnSwitchValueChanged" *@ />
                     </FieldBody>
                 </Field>
 
@@ -36,11 +56,47 @@
 <Row Class="mt-3">
     <Column>
         <Button Color="Color.Primary" Clicked="SaveAsync">
-            @L["Save"]
+            @L["Common:Save"]
         </Button>
     </Column>
 </Row>
 
 @code{
+    protected bool EnableUI { get; set; }
+    protected bool EnableMockData { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
 
+        EnableUI = await SettingProvider.GetAsync<bool>(MealPlannerAPISettings.EnableUI);
+        EnableMockData = await SettingProvider.GetAsync<bool>(MealPlannerAPISettings.EnableMockData);
+    }
+
+    protected async Task SaveAsync()
+    {
+        try
+        {
+            Console.WriteLine($"Saving setting: {MealPlannerAPISettings.EnableUI} = {EnableUI}");
+            await SettingManager.SetGlobalAsync(
+               name: MealPlannerAPISettings.EnableUI,
+               value: EnableUI.ToString()
+            );
+            
+            Console.WriteLine($"Setting saved successfully: {MealPlannerAPISettings.EnableUI} = {EnableUI}");
+
+            await SettingManager.SetGlobalAsync(
+               name: MealPlannerAPISettings.EnableMockData,
+               value: EnableMockData.ToString()
+            );
+            await UiNotificationService.Success(L["Common:SavedSuccessfully"]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving setting: {ex.Message}");
+            await UiNotificationService.Error("Failed to save: " + ex.Message);
+        }
+    }
+    private async Task OnSwitchValueChanged(bool newValue)
+    {
+        await SaveAsync();
+    }
 }

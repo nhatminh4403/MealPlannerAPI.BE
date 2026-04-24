@@ -25,3 +25,12 @@
         --lpx-logo: url('/images/logo/leptonxlite/logo-dark-thumbnail.png');
         background-position: left;
     }
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+    .clickable-row:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+    }

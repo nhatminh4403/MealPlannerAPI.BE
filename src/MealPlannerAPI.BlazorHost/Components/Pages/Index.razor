@@ -14,9 +14,9 @@
                     <div class="starting-content pe-5">
                         @if (!CurrentUser.IsAuthenticated)
                         {
-                            <h3>@L["Welcome"]</h3>
+                            <h3>@L["Common:Welcome"]</h3>
                             <p class="lead text-muted mb-2">@L["LongWelcomeMessage"]</p>
-                            <a @onclick="Login" class="btn btn-primary mb-4"><i class="fa-solid fa-right-to-bracket me-1"></i><span>@L["Login"]</span></a>
+                            <a @onclick="Login" class="btn btn-primary mb-4"><i class="fa-solid fa-right-to-bracket me-1"></i><span>@L["Auth:Login"]</span></a>
                         }
 
                         <h4>Getting Started</h4>

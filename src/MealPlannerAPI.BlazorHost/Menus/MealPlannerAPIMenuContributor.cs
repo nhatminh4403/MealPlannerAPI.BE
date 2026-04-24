@@ -83,7 +83,7 @@ namespace MealPlannerAPI.BlazorHost.Menus
                 new ApplicationMenuItem(
                     "MealPlannerAPI.Keys",
                     l["Menu:KeyManagement"],
-                    url: "/shopping-list",
+                    url: "/keys",
                     icon: "fa-solid fa-list",
                     order: 4
                 ).RequirePermissions(MealPlannerAPIPermissions.Dashboard.Default)
