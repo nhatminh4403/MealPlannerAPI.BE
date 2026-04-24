@@ -7,10 +7,12 @@ using Volo.Abp.Application.Services;
 namespace MealPlannerAPI.Recipes.Services
 {
     public interface IRecipeAppService : ICrudAppService<
-        RecipeDto, RecipeSummaryDto,
+        RecipeDto,
+        RecipeSummaryDto,
         Guid,
         GetRecipesInput,
-        CreateUpdateRecipeDto, CreateUpdateRecipeDto>
+        CreateUpdateRecipeDto, 
+        CreateUpdateRecipeDto>
     {
         Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId);
         Task<ListResultDto<RecipeSummaryDto>> GetTopRatedAsync(int count);

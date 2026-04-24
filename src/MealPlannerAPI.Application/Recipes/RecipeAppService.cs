@@ -15,6 +15,9 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using System.Linq.Dynamic.Core;
+using Microsoft.Extensions.Logging;
+using MealPlannerAPI.Enums;
 
 namespace MealPlannerAPI.Recipes
 {
@@ -33,6 +36,7 @@ namespace MealPlannerAPI.Recipes
         private readonly TrendingRecipeCache _trendingCache;
         private readonly IMealPlannerHubPublisher _hub;
         private readonly NutritionCalculator _nutritionCalculator;
+        private readonly ILogger<RecipeAppService> _logger;
         public RecipeAppService(IRecipeRepository recipeRepository,
                                 IIdentityUserRepository identityUserRepository,
                                 RecipeToRecipeDtoMapper toRecipeDtoMapper,
@@ -41,7 +45,8 @@ namespace MealPlannerAPI.Recipes
                                 CreateUpdateRecipeDtoToRecipeMapper toRecipeMapper,
                                 TrendingRecipeCache trendingCache,
                                 IMealPlannerHubPublisher hub,
-                                NutritionCalculator nutritionCalculator) : base(recipeRepository)
+                                NutritionCalculator nutritionCalculator,
+                                ILogger<RecipeAppService> logger) : base(recipeRepository)
         {
             _recipeRepository = recipeRepository;
             _identityUserRepository = identityUserRepository;
@@ -53,6 +58,7 @@ namespace MealPlannerAPI.Recipes
             _hub = hub;
             ConfigurePolicies();
             _nutritionCalculator = nutritionCalculator;
+            _logger = logger;
         }
 
         private void ConfigurePolicies()
@@ -85,7 +91,11 @@ namespace MealPlannerAPI.Recipes
             foreach (var i in input.Ingredients)
                 if (i.Id.HasValue)
                 {
-                    recipe.AddIngredient(i.Id.Value, i.Name, i.Quantity, i.DisplayQuantity, i.NutritionId);
+                    recipe.AddIngredient(i.Id.Value,
+                                         i.Name,
+                                         i.Quantity,
+                                         i.DisplayQuantity,
+                                         i.NutritionId);
 
                 }
 
@@ -146,12 +156,41 @@ namespace MealPlannerAPI.Recipes
 
             if (input.Vegetarian == true)
                 query = query.Where(r => r.Tags != null && r.Tags.Contains("vegetarian"));
+            if (!string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                var sorting = input.Sorting;
+
+                if (sorting.Contains(nameof(RecipeSummaryDto.TotalTimeMinutes)))
+                {
+                    sorting = sorting.Replace(
+                        nameof(RecipeSummaryDto.TotalTimeMinutes),
+                        "(CookingTimeMinutes + PrepTimeMinutes)"
+                    );
+                }
+
+                if (sorting.Contains("Difficulty DESC"))
+                {
+                    query = query.OrderBy("Difficulty DESC");
+                }
+                else if (sorting.Contains("Difficulty ASC"))
+                {
+                    query = query.OrderBy("Difficulty ASC");
+                }
+                else
+                {
+                    query = query.OrderBy(sorting);
+                }
+            }
+            else
+            {
+                // Fallback sorting if none is provided
+                query = query.OrderByDescending(r => r.Rating);
+            }
 
             var totalCount = await AsyncExecuter.CountAsync(query);
 
             var recipes = await AsyncExecuter.ToListAsync(
-                query.OrderByDescending(r => r.Rating)
-                     .Skip(input.SkipCount)
+                query.Skip(input.SkipCount)
                      .Take(input.MaxResultCount));
 
             return new PagedResultDto<RecipeSummaryDto>(
@@ -217,7 +256,7 @@ namespace MealPlannerAPI.Recipes
             dto.Author = new RecipeAuthorDto
             {
                 Id = recipe.AuthorId,
-                Name = author?.Name ?? "Unknown",
+                Name = author?.Name ?? L["Common:Unknown"],
                 AvatarUrl = (author as UserProfile)?.AvatarUrl
             };
 

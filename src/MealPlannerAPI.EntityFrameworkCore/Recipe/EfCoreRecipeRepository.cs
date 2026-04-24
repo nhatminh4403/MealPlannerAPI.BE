@@ -48,7 +48,6 @@ namespace MealPlannerAPI.Recipes
         {
             var dbSet = await GetDbSetAsync();
             var query = dbSet.AsQueryable().AsNoTracking();
-            
             return await query.OrderByDescending(r => r.Rating).Take(count).ToListAsync(cancellationToken);
         }
 

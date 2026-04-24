@@ -100,7 +100,6 @@ public class MealPlannerAPIDbContext :
                 .HasMaxLength(128);
 
             b.Property(x => x.Difficulty)
-                .HasConversion<string>()
                 .HasMaxLength(32);
 
             b.Property(x => x.CookingTimeMinutes)
