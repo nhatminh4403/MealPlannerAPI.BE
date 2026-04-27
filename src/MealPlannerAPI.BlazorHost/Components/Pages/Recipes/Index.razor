@@ -1,12 +1,16 @@
 @page "/recipes"
 @using Microsoft.Extensions.Logging
-@inject ILogger<Index> Logger
-
-@inherits AbpCrudPageBase<IRecipeAppService, RecipeDto, RecipeSummaryDto, Guid, GetRecipesInput, CreateUpdateRecipeDto, CreateUpdateRecipeDto>
+@inherits AbpCrudPageBase<IRecipeAppService,
+                            RecipeDto,
+                            RecipeSummaryDto,
+                            Guid,
+                            GetRecipesInput,
+                            CreateUpdateRecipeDto,
+                            CreateUpdateRecipeDto >
 
 
 <PageHeader>
-    <PageHeaderTitle>@L["Recipes:Title"]</PageHeaderTitle>
+    <PageHeaderTitle>@L["Recipes:AllRecipes"]</PageHeaderTitle>
     <PageHeaderToolbar>
         @if (HasCreatePermission)
         {
@@ -174,22 +178,26 @@
 
                 <!-- ABP Unified Entity Actions Column -->
                 <DataGridEntityActionsColumn TItem="RecipeSummaryDto" @ref="@EntityActionsColumn">
+                     
                     <DisplayTemplate>
-                        <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
+                        <div @onclick:stopPropagation="true">
+                            <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
                             
-                            <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:View"]" Icon="IconName.Eye" Clicked="() => GoToDetail(context.Item.Id)" />
+                                <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:View"]" Icon="IconName.Eye" Clicked="() => GoToDetail(context.Item.Id)" />
                             
-                            @if (HasUpdatePermission)
-                            {
-                                <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Edit"]" Icon="IconName.Edit" Clicked="() => OpenEditPage(context.Item.Id)" />
-                            }
+                                @if (HasUpdatePermission)
+                                {
+                                    <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Edit"]" Icon="IconName.Edit" Clicked="() => OpenEditPage(context.Item.Id)" />
+                                }
                             
-                            @if (HasDeletePermission)
-                            {
-                                <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Delete"]" Icon="IconName.Delete" Color="Color.Danger" Clicked="() => DeleteEntityAsync(context.Item)" />
-                            }
+                                @if (HasDeletePermission)
+                                {
+                                    <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Delete"]" Icon="IconName.Delete" Color="Color.Danger" Clicked="() => DeleteEntityAsync(context.Item)" />
+                                }
 
-                        </EntityActions>
+                            </EntityActions>
+                        </div>
+                        
                     </DisplayTemplate>
                 </DataGridEntityActionsColumn>
 
@@ -200,72 +208,56 @@
 
 @code {
     private GetRecipesInput FilterInputs = new();
-
+    public Index()
+    {
+        LocalizationResource = typeof(MealPlannerAPIResource);
+    }
     protected override void OnInitialized()
     {
         CurrentSorting = "Rating DESC";
         CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
         UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
         DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
-
-        Logger.LogInformation("Recipes page initialized. Default sorting set to: {Sorting}", CurrentSorting);
-
         base.OnInitialized();
     }
 
     protected override Task UpdateGetListInputAsync()
     {
         GetListInput.Sorting = CurrentSorting;
-        Logger.LogDebug("GetListInput.Sorting updated to: {Sorting}", CurrentSorting);
 
         return base.UpdateGetListInputAsync();
     }
 
     private async Task ApplyFilters()
     {
-        Logger.LogInformation("ApplyFilters triggered. Criteria -> Search: '{Search}', Cuisine: '{Cuisine}', Difficulty: {Diff}, MaxTime: {Time}, Veg: {Veg}",
-            GetListInput.SearchTerm, 
-            GetListInput.Cuisine, 
-            GetListInput.Difficulty, 
-            GetListInput.MaxTotalTimeMinutes, 
-            GetListInput.Vegetarian);
-
         CurrentPage = 1;
         await UpdateGetListInputAsync();
 
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
-
-        Logger.LogInformation("Filters applied successfully. Data reloaded.");
     }
 
     private async Task ResetFilters()
     {
-        Logger.LogInformation("ResetFilters triggered. Clearing all criteria.");
-
         GetListInput.SearchTerm = "";
         GetListInput.Cuisine = "";
-        GetListInput.Difficulty = null ;
+        GetListInput.Difficulty = null;
         GetListInput.MaxTotalTimeMinutes = null;
         GetListInput.Vegetarian = null;
         CurrentSorting = "Rating DESC";
         CurrentPage = 1;
         
-        await UpdateGetListInputAsync(); 
+        await UpdateGetListInputAsync();
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
-
-        Logger.LogInformation("Filters reset successfully. Data reloaded.");
     }
 
     private async Task OnSortChanged(string newSortValue)
     {
-        Logger.LogInformation("Sorting changed from '{OldSort}' to '{NewSort}'", CurrentSorting, newSortValue);
-
         CurrentSorting = newSortValue;
         CurrentPage = 1;
         
-        await UpdateGetListInputAsync(); 
+        await UpdateGetListInputAsync();
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
     }

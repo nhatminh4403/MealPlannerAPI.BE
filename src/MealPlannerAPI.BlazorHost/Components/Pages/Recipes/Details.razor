@@ -104,7 +104,7 @@ else
                                     <Text> @Recipe.PrepTimeMinutes min</Text>
                                 </Column>
                                 <Column ColumnSize="ColumnSize.Is4">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:CookTime"]:</Text>
+                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:CookingTime"]:</Text>
                                     <Text> @Recipe.CookingTimeMinutes min</Text>
                                 </Column>
                                 <Column ColumnSize="ColumnSize.Is4">
@@ -213,7 +213,7 @@ else
                                 </FieldLabel>
                                 <FieldBody>
                                     <Select TValue="string"
-                                            @bind-SelectedValue="selectedUnit"
+                                            @bind-Value="selectedUnit"
                                             Style="width: auto;">
                                         <SelectGroup Label="Weight">
                                             @foreach (var u in Units.WeightUnits)
@@ -241,9 +241,9 @@ else
                     <Table Striped="true" Hoverable="true" Responsive="true">
                         <TableHeader>
                             <TableRow>
-                                <TableHeaderCell>@L["Ingredient"]</TableHeaderCell>
-                                <TableHeaderCell>@L["OriginalQuantity"]</TableHeaderCell>
-                                <TableHeaderCell>@L["ConvertedQuantity"]</TableHeaderCell>
+                                <TableHeaderCell>@L["Recipes:Ingredient"]</TableHeaderCell>
+                                <TableHeaderCell>@L["Recipes:OriginalQuantity"]</TableHeaderCell>
+                                <TableHeaderCell>@L["Recipes:ConvertedQuantity"]</TableHeaderCell>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

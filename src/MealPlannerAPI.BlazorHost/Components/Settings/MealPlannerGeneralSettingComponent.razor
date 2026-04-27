@@ -23,28 +23,19 @@
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">
                                 @(EnableUI? L["Common:Enabled"] : L["Common:Disabled"])
-                            </span>
+                            </span>ValueChanged="OnSwitchValueChanged"
                         </label> *@
                         <Switch @bind-Value="EnableUI"
-                                @bind-Value:event="onchange"
-                                @* ValueChanged="OnSwitchValueChanged" *@
+                                
                                 />
                     </FieldBody>
                     <FieldLabel ColumnSize="ColumnSize.Is3">
                         @L["Settings:EnableMockData"]
                     </FieldLabel>
                     <FieldBody ColumnSize="ColumnSize.Is9" Display="Display.Flex" Flex="Flex.JustifyContent.Between">
-                        @* Testing with a custom toggle switch implementation.
-                            <label class="toggle-switch">
-                            <input type="checkbox" @bind="EnableUI" />
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-label">
-                                @(EnableUI? L["Common:Enabled"] : L["Common:Disabled"])
-                            </span>
-                        </label> *@
                         <Switch @bind-Value="EnableMockData"
-                                @bind-Value:event="onchange"
-                                @* ValueChanged="OnSwitchValueChanged" *@ />
+                               
+                                />
                     </FieldBody>
                 </Field>
 

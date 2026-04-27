@@ -10,15 +10,18 @@
     z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
-}
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
 :root {
     --lpx-logo: url('/images/logo/leptonxlite/logo-light-thumbnail.png');
     --lpx-logo-icon: url('/images/logo/leptonxlite/logo-light-thumbnail.png');
+    --primary: #3b82f6;
+    --secondary: #10b981;
 }
 
     :root .abp-account-layout .lpx-brand-logo {
@@ -34,3 +37,22 @@
     .clickable-row:hover {
         background-color: rgba(0, 0, 0, 0.04);
     }
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent
+}
+
+.lpx-brand-name {
+    color: var(--primary);
+    font-size: 16px;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+}
+
+.pagination {
+    --bs-pagination-active-bg: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+}

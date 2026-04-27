@@ -1,30 +1,30 @@
 ﻿@page "/recipes/top-rated"
+
 @inherits AbpCrudPageBase<IRecipeAppService,
-                            RecipeDto,
-                            RecipeSummaryDto,
-                            Guid,
-                            GetRecipesInput,
-                            CreateUpdateRecipeDto,
-                            CreateUpdateRecipeDto>
+RecipeDto,
+RecipeSummaryDto,
+Guid,
+GetRecipesInput,
+CreateUpdateRecipeDto,
+CreateUpdateRecipeDto>
+
 <Card>
-    <CardHeader>
-        <CardTitle>Top Rated Recipes</CardTitle>
-    </CardHeader>
-    <Row Class="justify-content-between">
-        <Column ColumnSize="ColumnSize.IsAuto">
-            <CardTitle>@L["Books"]</CardTitle>
-        </Column>
-        <Column ColumnSize="ColumnSize.IsAuto">
-            @if (HasCreatePermission)
-            {
-                <Button Color="Color.Primary"
-                        Clicked="OpenCreateModalAsync">
-                    <Icon Name="IconName.Add" />
-                    @L["Recipes:New"]
-                </Button>
-            }
-        </Column>
-    </Row>
+
+<Row Class="justify-content-between">
+<Column ColumnSize="ColumnSize.IsAuto">
+<CardTitle>Top Rated Recipes</CardTitle>
+</Column>
+<Column ColumnSize="ColumnSize.IsAuto">
+    @if (HasCreatePermission)
+    {
+        <Button Color="Color.Primary"
+                Clicked="OpenCreateModalAsync">
+            <Icon Name="IconName.Add" />
+            @L["Recipes:New"]
+        </Button>
+    }
+</Column>
+</Row>
 <CardBody>
     <DataGrid TItem="RecipeSummaryDto"
               Data="Entities"
@@ -32,33 +32,36 @@
               Page="CurrentPage"
               TotalItems="TotalCount"
               ShowPager="true"
+              RowStyling="OnRowStyling"
+              RowClicked="OnRowClicked"
               PageSize="PageSize">
         <DataGridColumns>
             <DataGridEntityActionsColumn TItem="RecipeSummaryDto" @ref="@EntityActionsColumn">
                 <DisplayTemplate>
-                    <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
-                        <EntityAction TItem="RecipeSummaryDto"
-                                      Text="@L["Common:Edit"]"
-                                      Visible=HasUpdatePermission
-                                      Clicked="() => OpenEditModalAsync(context.Item)" />
-                        <EntityAction TItem="RecipeSummaryDto"
-                                      Text="@L["Common:Delete"]"
-                                      Visible=HasDeletePermission
-                                      Clicked="() => DeleteEntityAsync(context.Item)"
-                                      ConfirmationMessage="()=>GetDeleteConfirmationMessage(context.Item)" />
-                    </EntityActions>
+                   <div @onclick:stopPropagation="true">
+                        <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="RecipeSummaryDto"
+                                          Text="@L["Common:Edit"]"
+                                          Visible=HasUpdatePermission
+                                          Clicked="() => OpenEditModalAsync(context.Item)" />
+                            <EntityAction TItem="RecipeSummaryDto"
+                                          Text="@L["Common:Delete"]"
+                                          Visible=HasDeletePermission
+                                          Clicked="() => DeleteEntityAsync(context.Item)"
+                                          ConfirmationMessage="()=>GetDeleteConfirmationMessage(context.Item)" />
+                        </EntityActions>
+                   </div>
+                    
                 </DisplayTemplate>
             </DataGridEntityActionsColumn>
             <DataGridColumn TItem="RecipeSummaryDto"
                             Field="@nameof(RecipeSummaryDto.Name)"
                             Caption="@L["Recipes:Name"]"></DataGridColumn>
-            @* <DataGridColumn TItem="RecipeSummaryDto"
-                            Field="@nameof(RecipeSummaryDto.ImageUrl)"
-                            Caption="@L["Type"]">
-                <DisplayTemplate>
-                    @L[$"Enum:BookType.{(int)context.Item.Type}"]
-                </DisplayTemplate>
-            </DataGridColumn> *@
+            <DataGridColumn TItem="RecipeSummaryDto"
+                            Field="@nameof(RecipeSummaryDto.Id)"
+                            Caption="@L["Recipes:Id"]">
+                
+            </DataGridColumn>
 
         </DataGridColumns>
     </DataGrid>
@@ -66,55 +69,35 @@
 </Card>
 
 
-<Row>
-    <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHeaderCell>Id</TableHeaderCell>
-                <TableHeaderCell>Name</TableHeaderCell>
-                <TableHeaderCell>Rating</TableHeaderCell>
-                @* <TableHeaderCell>Published By</TableHeaderCell> *@
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            @foreach (var recipe in TopRatedRecipes)
-            {
-                <TableRow @onclick="() => GoToDetail(recipe.Id)" Class="clickable-row"> 
-                    <TableRowCell>@recipe.Id</TableRowCell>
-                    <TableRowCell>@recipe.Name</TableRowCell>
-                    <TableRowCell>@recipe.Rating</TableRowCell>
-                    @* <TableRowCell>@recipe.</TableRowCell> *@
-                </TableRow>
-            }
-        </TableBody>
+    @code {
+    private List<RecipeSummaryDto> TopRatedRecipes { get; set; } = new();
+    // private List<RecipeDto> Recipes { get; set; }
 
-    </Table>
-</Row>
-
-
-@code {
-    private List<RecipeSummaryDto> TopRatedRecipes { get; set; }
-    private List<RecipeDto> Recipes { get; set; }
-
-    public TopRated(List<RecipeSummaryDto> topRatedRecipes, List<RecipeDto> recipes)
+    public TopRated()
     {
-        TopRatedRecipes = topRatedRecipes;
-        Recipes = recipes;
+        LocalizationResource = typeof(MealPlannerAPIResource);
+    }
 
+    protected override void OnInitialized()
+    {
         CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
         UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
         DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
-
-        LocalizationResource = typeof(MealPlannerAPIResource);
+        base.OnInitialized();
     }
 
     protected override async Task OnInitializedAsync()
     {
+        CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
+        UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
+        DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
+
         var result = await RecipeAppService.GetTopRatedAsync(50);
         var recipes = await RecipeAppService.GetListAsync(new GetRecipesInput { MaxResultCount = 100 });
 
         // Recipes = recipes.Items.ToList();
-        TopRatedRecipes = result.Items.ToList();
+        TopRatedRecipes = result?.Items?.ToList() ?? new List<RecipeSummaryDto>();
+        await base.OnInitializedAsync();
     }
     private void GoToDetail(Guid id)
     {
@@ -122,5 +105,16 @@
         var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
         NavigationManager.NavigateTo($"/recipes/{id}?returnUrl={returnUrl}");
     }
-}
+
+    private void OnRowClicked(DataGridRowMouseEventArgs<RecipeSummaryDto> args)
+    {
+        var id = args.Item.Id;
+        GoToDetail(id);
+    }
+    private void OnRowStyling(RecipeSummaryDto item,
+                                DataGridRowStyling style)
+    {
+        style.Class = "clickable-row";
+
+    }
 }

@@ -16,14 +16,18 @@
 
     <!--ABP:Styles-->
     <!--/ABP:Styles-->
-
     @* <link href="AbpSolution3.Blazor.Client.styles.css" rel="stylesheet"/> *@
-    <AbpStyles BundleName="@BlazorLeptonXLiteThemeBundles.Styles.Global"  />
+    <AbpStyles BundleName="@BlazorLeptonXLiteThemeBundles.Styles.Global" />
 
     @* <link href="~/global-styles.css" rel="stylesheet" /> *@
     <link href="MealPlannerAPI.BlazorHost.styles.css" rel="stylesheet" />
 
     <HeadOutlet @rendermode="InteractiveServer" />
+    <style>
+            #blazorise-license-banner-host {
+                visibility: hidden;
+            }
+    </style>
 </head>
 
 <body class="abp-application-layout">

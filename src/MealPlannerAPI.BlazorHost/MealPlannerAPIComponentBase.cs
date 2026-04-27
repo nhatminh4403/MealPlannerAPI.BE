@@ -1,5 +1,4 @@
 ﻿using MealPlannerAPI.Localization;
-using Microsoft.AspNetCore.Components;
 using Volo.Abp.AspNetCore.Components;
 
 namespace MealPlannerAPI.BlazorHost

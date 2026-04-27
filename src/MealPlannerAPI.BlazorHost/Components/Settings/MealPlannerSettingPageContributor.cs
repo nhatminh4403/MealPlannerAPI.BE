@@ -23,8 +23,8 @@ namespace MealPlannerAPI.BlazorHost.Components.Settings
 
             context.Groups.Add(
                 new SettingComponentGroup(
-                    id: "MealPlannerAPI.General",          
-                    displayName: localizer["MealPlannerSettings"],              
+                    id: "MealPlannerAPI.General",
+                    displayName: localizer["MealPlannerSettings"],
                     componentType: typeof(MealPlannerGeneralSettingComponent),
                     order: 1
                 ));

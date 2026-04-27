@@ -1,7 +1,6 @@
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using MealPlannerAPI;
 using MealPlannerAPI.BlazorHost.Components;
 using MealPlannerAPI.BlazorHost.Components.Settings;
 using MealPlannerAPI.BlazorHost.Menus;
@@ -20,7 +19,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
-using Polly;
 using System;
 using System.IO;
 using Volo.Abp;
@@ -160,7 +158,7 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
         ConfigureBundles();
-        ConfigureVirtualFileSystem(hostingEnvironment,services);
+        ConfigureVirtualFileSystem(hostingEnvironment, services);
         ConfigureBlazorise(context);
         ConfigureRouter();
         ConfigureMenu(context);
