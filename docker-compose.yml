@@ -16,8 +16,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
-
-  # 2. Migrator
+    
+  # 3. Migrator
   migrator:
     build:
       context: .
@@ -31,7 +31,7 @@ services:
     networks:
       - mealplanner-api-network
 
-  # 3. The API Host
+  # 4. The API Host
   web-api:
     build:
       context: .
@@ -50,7 +50,7 @@ services:
         condition: service_completed_successfully
     networks:
       - mealplanner-api-network
-  # 4. The Blazor Web Admin Host UI
+  # 5. The Blazor Web Admin Host UI
   blazor-web-admin:
     build:
       context: .

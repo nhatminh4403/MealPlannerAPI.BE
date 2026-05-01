@@ -233,11 +233,6 @@ namespace MealPlannerAPI.Users
                 return profile;
             }
 
-            // Fallback for admin or unmigrated users: build a UserProfile proxy or 
-            // return a basic one. Since IdentityUser is the base, we can't easily
-            // "cast" it if EF didn't load it as the derived type.
-            // We'll throw a more descriptive error or return a basic profile if it's the current user.
-
             if (identityUser != null)
             {
                 // Return a "virtual" profile derived from the identity user

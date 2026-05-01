@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using MealPlannerAPI.Recipes.Dtos;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
@@ -11,6 +13,7 @@ namespace MealPlannerAPI.Dashboard
         Task<DashboardStatsDto> GetStatsAsync();
 
         Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync();
+
         Task InvalidateTrendingCacheAsync();
     }
 }

@@ -36,7 +36,6 @@
 
   <ItemGroup>
     <Folder Include="Nutritions\" />
-    <Folder Include="Users\" />
   </ItemGroup>
 
 </Project>

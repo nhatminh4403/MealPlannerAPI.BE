@@ -16,18 +16,6 @@ namespace MealPlannerAPI.Dashboard
         public int ShoppingLists { get; set; }
 
     }
-
-    public class TrendingRecipeDto : EntityDto<Guid>
-    {
-        // public Guid Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string? ImageUrl { get; set; }
-        public double Rating { get; set; }
-        public int ReviewCount { get; set; }
-        public double TrendingScore { get; set; }
-        public string TrendingSince { get; set; } = null!;
-    }
-
     public class DashboardDto
     {
         public DashboardStatsDto Stats { get; set; } = null!;

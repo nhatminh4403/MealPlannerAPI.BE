@@ -276,3 +276,5 @@ tempkey.jwk
 /src/MealPlannerAPI.BlazorHost/appsettings.Developer.json
 src/MealPlannerAPI.BlazorHost/Logs/blazor-ui-logs.txt
 /src/MealPlannerAPI.BlazorHost/Logs/blazor-ui-logs.txt
+/.kiro/
+/.cursor/

@@ -26,14 +26,15 @@ namespace MealPlannerAPI.Dashboard
         private readonly RecipeToTrendingRecipeDtoMapper _toTrendingDtoMapper;
         private readonly IMealPlannerHubPublisher _hub;
         private readonly TrendingRecipeCache _trendingCache;
-
+        private readonly ITrendingRecipeRefreshService _trendingRefresh;
         public DashboardAppService(IRecipeRepository recipeRepository,
                                    IMealPlanRepository mealPlanRepository,
                                    IShoppingListRepository shoppingListRepository,
                                    RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
                                    RecipeToTrendingRecipeDtoMapper toTrendingDtoMapper,
                                    IMealPlannerHubPublisher hub,
-                                   TrendingRecipeCache trendingCache)
+                                   TrendingRecipeCache trendingCache,
+                                   ITrendingRecipeRefreshService trendingRefresh)
         {
             _recipeRepository = recipeRepository;
             _mealPlanRepository = mealPlanRepository;
@@ -42,6 +43,7 @@ namespace MealPlannerAPI.Dashboard
             _toTrendingDtoMapper = toTrendingDtoMapper;
             _hub = hub;
             _trendingCache = trendingCache;
+            _trendingRefresh = trendingRefresh;
         }
 
         public async Task<DashboardDto> GetAsync()
@@ -112,25 +114,10 @@ namespace MealPlannerAPI.Dashboard
 
         public async Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync()
         {
-            var cutoff = DateTime.UtcNow.AddDays(-RecipeConsts.TrendingWindowDays);
-            var query = await _recipeRepository.GetQueryableAsync();
+            var items = await _trendingCache.GetOrSetAsync(
+            _trendingRefresh.FetchFromDbAsync);
 
-            var recipes = await AsyncExecuter.ToListAsync(
-                query.Where(r => r.LastModificationTime >= cutoff || r.CreationTime >= cutoff)
-                     .OrderByDescending(r => r.Rating)
-                     .ThenByDescending(r => r.ReviewCount)
-                     .Take(RecipeConsts.TrendingMaxResults));
-
-            var dtos = recipes.Select(r =>
-            {
-                var dto = _toTrendingDtoMapper.Map(r);
-                // Domain method owns the trending score formula
-                dto.TrendingScore = r.CalculateTrendingScore();
-                dto.TrendingSince = FormatTrendingSince(r.LastModificationTime ?? r.CreationTime);
-                return dto;
-            }).ToList();
-
-            return new ListResultDto<TrendingRecipeDto>(dtos);
+            return new ListResultDto<TrendingRecipeDto>(items);
         }
 
 
@@ -152,38 +139,11 @@ namespace MealPlannerAPI.Dashboard
 
             return new ListResultDto<RecipeSummaryDto>(summaries);
         }
-        public async Task InvalidateTrendingCacheAsync()
+        public Task InvalidateTrendingCacheAsync()
         {
-            await _trendingCache.InvalidateAsync();
+            return _trendingRefresh.RefreshAsync();
 
-            var items = await FetchTrendingFromDbAsync();
-            await _trendingCache.SetAsync(items);
-
-            await _hub.NotifyTrendingUpdatedAsync();
         }
-        private async Task<List<TrendingRecipeDto>> FetchTrendingFromDbAsync()
-        {
-            var cutoff = DateTime.UtcNow.AddDays(-RecipeConsts.TrendingWindowDays);
-            var query = await _recipeRepository.GetQueryableAsync();
-
-            var recipes = await AsyncExecuter.ToListAsync(
-                query.Where(r => r.LastModificationTime >= cutoff || r.CreationTime >= cutoff)
-                     .OrderByDescending(r => r.Rating)
-                     .ThenByDescending(r => r.ReviewCount)
-                     .Take(RecipeConsts.TrendingMaxResults));
-
-            return recipes.Select(r =>
-            {
-                var dto = _toTrendingDtoMapper.Map(r);
-                dto.TrendingScore = r.CalculateTrendingScore();
-                dto.TrendingSince = FormatTrendingSince(r.LastModificationTime ?? r.CreationTime);
-                return dto;
-            }).ToList();
-        }
-        /// <summary>
-        /// Presentation-layer formatting of a relative time string.
-        /// Lives here (not on the domain) because it is purely a display concern.
-        /// </summary>
         private static string FormatTrendingSince(DateTime since)
         {
             var diff = DateTime.UtcNow - since;
