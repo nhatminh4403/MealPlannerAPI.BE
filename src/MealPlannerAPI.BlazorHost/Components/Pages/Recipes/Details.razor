@@ -1,4 +1,4 @@
-﻿@page "/recipes/{id:guid}"
+@page "/recipes/{id:guid}"
 @using MealPlannerAPI.BlazorHost.Helpers
 
 @code {
@@ -14,7 +14,8 @@
 
     private string ImageAltText => Recipe is null
         ? string.Empty
-        : $"Image of {Recipe.Name} by {Recipe.Author.Name}";    
+        : $"Image of {Recipe.Name} by {Recipe.Author.Name}";
+
     protected PageToolbar Toolbar { get; } = new();
 
     protected override async Task OnInitializedAsync()
@@ -23,7 +24,7 @@
         Toolbar.AddButton(L["Common:Back"], async () =>
         {
             await GoBack();
-        }, icon: IconName.ArrowLeft, color:Color.Light);
+        }, icon: IconName.ArrowLeft, color: Color.Light);
         try
         {
             Recipe = await RecipeAppService.GetAsync(Id);
@@ -32,9 +33,18 @@
         {
             isLoading = false;
         }
-
     }
-
+    private bool IsVegetarian(List<string> tags)
+    {
+        if (tags.Contains("vegetarian") || tags.Contains("vegan"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     private async Task GoBack()
     {
         if (!string.IsNullOrEmpty(ReturnUrl))
@@ -50,13 +60,22 @@
         DifficultyLevel.Hard => Color.Danger,
         _ => Color.Light
     };
-}
 
+    private string GetDifficultyEmoji(DifficultyLevel difficulty) => difficulty switch
+    {
+        DifficultyLevel.Easy => "🟢",
+        DifficultyLevel.Medium => "🟡",
+        DifficultyLevel.Hard => "🔴",
+        _ => "⚪"
+    };
+}
 
 
 @if (isLoading)
 {
-    <SpinKit Type="SpinKitType.Circle" Color="Color.Primary" />
+    <div class="d-flex justify-content-center align-items-center" style="min-height:300px;">
+        <SpinKit Type="SpinKitType.Circle" Color="Color.Primary" />
+    </div>
 }
 else if (Recipe is null)
 {
@@ -68,143 +87,145 @@ else
 {
     <PageHeader Toolbar="@Toolbar">
         <PageTitle>@Recipe.Name</PageTitle>
-        
     </PageHeader>
 
-    @* ── Overview ──────────────────────────────────────────────────────── *@
-    <Row>
-        <Column ColumnSize="ColumnSize.Is8">
+    @* ── Overview ──────────────────────────────────────────────────Gutter="(16,16)" *@
+    <Row Margin="Margin.Is0.OnY" Gutter="Gutter.Is5.OnAll">
+
+        @* Left: image + meta *@
+        <Column ColumnSize="ColumnSize.Is8.OnDesktop.Is12.OnMobile">
             <Card>
                 <CardBody>
-                    <Row>
+                    <Row Gutter="Gutter.Is5.OnAll">
+                        @* Cover image *@
                         <Column ColumnSize="ColumnSize.Is4">
-                            <Image
-                                Source="@Recipe.ImageUrl"
-                                Text="@ImageAltText"
-                                Style="width:100%; height:220px; object-fit:cover; border-radius:8px;" />
+                            @if (!string.IsNullOrEmpty(Recipe.ImageUrl))
+                            {
+                                <img class="mp-recipe-cover" src="@Recipe.ImageUrl" alt="@ImageAltText" />
+                            }
+                            else
+                            {
+                                <div style="width:100%; height:240px; border-radius:12px; background:linear-gradient(135deg,#dbeafe,#ede9fe); display:flex; align-items:center; justify-content:center; font-size:5rem;">
+                                    🍽️
+                                </div>
+                            }
                         </Column>
+
+                        @* Meta *@
                         <Column ColumnSize="ColumnSize.Is8">
-                            <Heading Size="HeadingSize.Is5">@Recipe.Name</Heading>
-                            <Paragraph TextColor="TextColor.Muted">@Recipe.Description</Paragraph>
+                            <Heading Size="HeadingSize.Is4" Margin="Margin.Is1.OnY">@Recipe.Name</Heading>
+                            <Paragraph TextColor="TextColor.Muted" Style="font-size:.88rem; line-height:1.6;">@Recipe.Description</Paragraph>
 
-                            <Row Margin="Margin.Is2.OnY">
-                                <Column ColumnSize="ColumnSize.Is6">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:Author"]:</Text>
-                                    <Text> @Recipe.Author.Name</Text>
-                                </Column>
-                                <Column ColumnSize="ColumnSize.Is6">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:Rating"]:</Text>
-                                    <Text> @Recipe.Rating ⭐ (@Recipe.ReviewCount @L["Recipes:Reviews"])</Text>
-                                </Column>
-                            </Row>
-
-                            <Row Margin="Margin.Is2.OnY">
-                                <Column ColumnSize="ColumnSize.Is4">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:PrepTime"]:</Text>
-                                    <Text> @Recipe.PrepTimeMinutes min</Text>
-                                </Column>
-                                <Column ColumnSize="ColumnSize.Is4">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:CookingTime"]:</Text>
-                                    <Text> @Recipe.CookingTimeMinutes min</Text>
-                                </Column>
-                                <Column ColumnSize="ColumnSize.Is4">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:TotalTime"]:</Text>
-                                    <Text> @Recipe.TotalTimeMinutes min</Text>
-                                </Column>
-                            </Row>
-
-                            <Row Margin="Margin.Is2.OnY">
-                                <Column ColumnSize="ColumnSize.Is6">
-                                    <Text TextWeight="TextWeight.Bold">@L["Recipes:Servings"]:</Text>
-                                    <Text> @Recipe.Servings</Text>
-                                </Column>
-                                <Column ColumnSize="ColumnSize.Is6">
-                                    <Text TextWeight="TextWeight.Bold">@L["Unit:Difficulty"]:</Text>
-                                    <Badge Color="@GetDifficultyColor(Recipe.Difficulty)">
-                                        @Recipe.Difficulty
-                                    </Badge>
-                                </Column>
-                            </Row>
-
+                            @* Tags *@
                             @if (Recipe.Tags.Any())
                             {
-                                <Row Margin="Margin.Is2.OnY">
-                                    <Column>
-                                        @foreach (var tag in Recipe.Tags)
-                                        {
-                                            <Badge Color="Color.Light"
-                                                   Margin="Margin.Is1.FromEnd">
-                                                @tag
-                                            </Badge>
-                                        }
-                                    </Column>
-                                </Row>
+                                <div class="mb-3">
+                                    @foreach (var tag in Recipe.Tags)
+                                    {
+                                        <span class="mp-tag">@tag</span>
+                                    }
+                                </div>
                             }
+
+                            @* Quick stats row *@
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="mp-stat-chip">
+                                    <i class="fa-solid fa-user-pen"></i> @Recipe.Author.Name
+                                </span>
+                                <span class="mp-stat-chip" style="background:rgba(245,158,11,.1); color:#d97706;">
+                                    ⭐ @Recipe.Rating.ToString("F1") &nbsp;<small style="opacity:.7;">(@Recipe.ReviewCount @L["Recipes:Reviews"])</small>
+                                </span>
+                                <Badge Color="@GetDifficultyColor(Recipe.Difficulty)" Margin="Margin.Is0">
+                                    @GetDifficultyEmoji(Recipe.Difficulty) @Recipe.Difficulty
+                                </Badge>
+                                @if (IsVegetarian(Recipe.Tags))
+                                {
+                                    <span class="mp-stat-chip" style="background:rgba(16,185,129,.1); color:#059669;">
+                                        🌿 Vegetarian
+                                    </span>
+                                }
+                            </div>
+
+                            @* Time breakdown *@
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="mp-nutrition-pill">
+                                    <span class="mp-nutrition-pill-value">@Recipe.PrepTimeMinutes</span>
+                                    <span class="mp-nutrition-pill-label">Prep (min)</span>
+                                </div>
+                                <div class="mp-nutrition-pill">
+                                    <span class="mp-nutrition-pill-value">@Recipe.CookingTimeMinutes</span>
+                                    <span class="mp-nutrition-pill-label">Cook (min)</span>
+                                </div>
+                                <div class="mp-nutrition-pill" style="background:var(--mp-gradient); color:#fff;">
+                                    <span class="mp-nutrition-pill-value" style="color:#fff;">@Recipe.TotalTimeMinutes</span>
+                                    <span class="mp-nutrition-pill-label" style="color:rgba(255,255,255,.8);">Total (min)</span>
+                                </div>
+                                <div class="mp-nutrition-pill">
+                                    <span class="mp-nutrition-pill-value">@Recipe.Servings</span>
+                                    <span class="mp-nutrition-pill-label">Servings</span>
+                                </div>
+                            </div>
                         </Column>
                     </Row>
                 </CardBody>
             </Card>
         </Column>
 
-        @* ── Nutrition ─────────────────────────────────────────────────── *@
+        @* Right: Nutrition *@
         @if (Recipe.NutritionPerServing is not null)
         {
-            <Column ColumnSize="ColumnSize.Is4">
+            <Column ColumnSize="ColumnSize.Is4.OnDesktop.Is12.OnMobile">
                 <Card>
                     <CardHeader>
-                        <CardTitle>@L["Recipes:NutritionPerServing"]</CardTitle>
+                        <CardTitle>
+                            <i class="fa-solid fa-apple-whole me-1 text-success"></i>
+                            @L["Recipes:NutritionPerServing"]
+                        </CardTitle>
                     </CardHeader>
                     <CardBody>
-                        <Table Narrow="true" Borderless="true">
-                            <TableBody>
-                                <TableRow>
-                                    <TableRowCell>@L["Recipes:Calories"]</TableRowCell>
-                                    <TableRowCell TextAlignment="TextAlignment.End">
-                                        <Badge Color="Color.Warning">
-                                            @Recipe.NutritionPerServing.Calories kcal
-                                        </Badge>
-                                    </TableRowCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableRowCell>@L["Recipes:Protein"]</TableRowCell>
-                                    <TableRowCell TextAlignment="TextAlignment.End">
-                                        @Recipe.NutritionPerServing.ProteinGrams g
-                                    </TableRowCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableRowCell>@L["Recipes:Carbs"]</TableRowCell>
-                                    <TableRowCell TextAlignment="TextAlignment.End">
-                                        @Recipe.NutritionPerServing.CarbsGrams g
-                                    </TableRowCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableRowCell>@L["Recipes:Fat"]</TableRowCell>
-                                    <TableRowCell TextAlignment="TextAlignment.End">
-                                        @Recipe.NutritionPerServing.FatGrams g
-                                    </TableRowCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableRowCell>@L["Recipes:Fiber"]</TableRowCell>
-                                    <TableRowCell TextAlignment="TextAlignment.End">
-                                        @Recipe.NutritionPerServing.FiberGrams g
-                                    </TableRowCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
+                        @* Calories highlight *@
+                        <div class="text-center mb-3">
+                            <div style="font-size:2rem; font-weight:800; background:var(--mp-gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+                                @Recipe.NutritionPerServing.Calories
+                            </div>
+                            <div style="font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--bs-secondary-color);">kcal per serving</div>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <div class="mp-nutrition-pill">
+                                <span class="mp-nutrition-pill-value">@Recipe.NutritionPerServing.ProteinGrams<small style="font-size:.6rem;">g</small></span>
+                                <span class="mp-nutrition-pill-label">@L["Recipes:Protein"]</span>
+                            </div>
+                            <div class="mp-nutrition-pill">
+                                <span class="mp-nutrition-pill-value">@Recipe.NutritionPerServing.CarbsGrams<small style="font-size:.6rem;">g</small></span>
+                                <span class="mp-nutrition-pill-label">@L["Recipes:Carbs"]</span>
+                            </div>
+                            <div class="mp-nutrition-pill">
+                                <span class="mp-nutrition-pill-value">@Recipe.NutritionPerServing.FatGrams<small style="font-size:.6rem;">g</small></span>
+                                <span class="mp-nutrition-pill-label">@L["Recipes:Fat"]</span>
+                            </div>
+                            <div class="mp-nutrition-pill">
+                                <span class="mp-nutrition-pill-value">@Recipe.NutritionPerServing.FiberGrams<small style="font-size:.6rem;">g</small></span>
+                                <span class="mp-nutrition-pill-label">@L["Recipes:Fiber"]</span>
+                            </div>
+                        </div>
                     </CardBody>
                 </Card>
             </Column>
         }
     </Row>
 
-    @* ── Ingredients ───────────────────────────────────────────────────── *@
+    @* ── Ingredients ─────────────────────────────────────────────── *@
     <Row Margin="Margin.Is3.OnY">
         <Column>
             <Card>
                 <CardHeader>
                     <Row>
                         <Column>
-                            <CardTitle>@L["Recipes:Ingredients"]</CardTitle>
+                            <CardTitle>
+                                <i class="fa-solid fa-basket-shopping me-1"></i>
+                                @L["Recipes:Ingredients"]
+                            </CardTitle>
                         </Column>
                         <Column TextAlignment="TextAlignment.End">
                             <Field Horizontal="true" Margin="Margin.Is0">
@@ -218,17 +239,13 @@ else
                                         <SelectGroup Label="Weight">
                                             @foreach (var u in Units.WeightUnits)
                                             {
-                                                <SelectItem Value="@u.Label">
-                                                    @u.FullName (@u.Label)
-                                                </SelectItem>
+                                                <SelectItem Value="@u.Label">@u.FullName (@u.Label)</SelectItem>
                                             }
                                         </SelectGroup>
                                         <SelectGroup Label="Volume">
                                             @foreach (var u in Units.VolumeUnits)
                                             {
-                                                <SelectItem Value="@u.Label">
-                                                    @u.FullName (@u.Label)
-                                                </SelectItem>
+                                                <SelectItem Value="@u.Label">@u.FullName (@u.Label)</SelectItem>
                                             }
                                         </SelectGroup>
                                     </Select>
@@ -250,7 +267,9 @@ else
                             @foreach (var ingredient in Recipe.Ingredients)
                             {
                                 <TableRow>
-                                    <TableRowCell>@ingredient.Name</TableRowCell>
+                                    <TableRowCell>
+                                        <strong>@ingredient.Name</strong>
+                                    </TableRowCell>
                                     <TableRowCell>
                                         @(!string.IsNullOrWhiteSpace(ingredient.DisplayQuantity)
                                             ? ingredient.DisplayQuantity
@@ -258,12 +277,10 @@ else
                                     </TableRowCell>
                                     <TableRowCell>
                                         @{
-                                            var targetUnit = Units.ByLabel.GetValueOrDefault(
-                                                selectedUnit, Units.G);
-                                            var converted = UnitConverter.Format(
-                                                ingredient.QuantityGrams, targetUnit);
+                                            var targetUnit = Units.ByLabel.GetValueOrDefault(selectedUnit, Units.G);
+                                            var converted = UnitConverter.Format(ingredient.QuantityGrams, targetUnit);
                                         }
-                                        @converted
+                                        <span class="mp-tag">@converted</span>
                                     </TableRowCell>
                                 </TableRow>
                             }
@@ -274,20 +291,23 @@ else
         </Column>
     </Row>
 
-    @* ── Instructions ──────────────────────────────────────────────────── *@
+    @* ── Instructions ─────────────────────────────────────────────── *@
     @if (Recipe.Instructions.Any())
     {
         <Row Margin="Margin.Is3.OnY">
             <Column>
                 <Card>
                     <CardHeader>
-                        <CardTitle>@L["Recipes:Instructions"]</CardTitle>
+                        <CardTitle>
+                            <i class="fa-solid fa-list-ol me-1"></i>
+                            @L["Recipes:Instructions"]
+                        </CardTitle>
                     </CardHeader>
                     <CardBody>
-                        <ol>
+                        <ol class="mp-step-list">
                             @foreach (var step in Recipe.Instructions)
                             {
-                                <li style="margin-bottom: 8px;">@step</li>
+                                <li>@step</li>
                             }
                         </ol>
                     </CardBody>
@@ -296,4 +316,3 @@ else
         </Row>
     }
 }
-

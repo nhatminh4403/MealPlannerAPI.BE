@@ -1,4 +1,4 @@
-﻿@{
+@{
     // Layout = null;
     var rtl = CultureHelper.IsRtl ? "rtl" : string.Empty;
 }
@@ -19,14 +19,17 @@
     @* <link href="AbpSolution3.Blazor.Client.styles.css" rel="stylesheet"/> *@
     <AbpStyles BundleName="@BlazorLeptonXLiteThemeBundles.Styles.Global" />
 
-    @* <link href="~/global-styles.css" rel="stylesheet" /> *@
+    @* Google Fonts – Inter *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <link href="~/global-styles.css" rel="stylesheet" />
     <link href="MealPlannerAPI.BlazorHost.styles.css" rel="stylesheet" />
 
     <HeadOutlet @rendermode="InteractiveServer" />
     <style>
-            #blazorise-license-banner-host {
-                visibility: hidden;
-            }
+
     </style>
 </head>
 

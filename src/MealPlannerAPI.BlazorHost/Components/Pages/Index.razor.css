@@ -1,166 +1,39 @@
-/* Getting-Started */
-.starting-content {
-    position: relative;
-    z-index: 2;
+/* ── Home page entrance animations ──────────────────────────── */
+.mp-home-page {
+    animation: mp-fade-up 0.45s ease both;
 }
 
-
-.getting-started-hero-card .card-body {
-    position: relative;
+@keyframes mp-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.card-bg-image {
-    pointer-events: none;
-    position: absolute;
-    width: 630px;
-    max-width: 100%;
-    height: auto;
-    bottom: 0;
-    right: 0;
-    z-index: 1;
-}
+/* Stagger the three row sections */
+.mp-home-page > *:nth-child(1) { animation-delay: 0s;    }
+.mp-home-page > *:nth-child(2) { animation-delay: 0.07s; animation: mp-fade-up 0.45s ease 0.07s both; }
+.mp-home-page > *:nth-child(3) { animation-delay: 0.14s; animation: mp-fade-up 0.45s ease 0.14s both; }
 
-@media (min-width: 1199px) {
-    .h-lg-100 {
-        height: 100% !important;
+/* ── Hero responsive tweaks ──────────────────────────────────── */
+@media (max-width: 767px) {
+    .mp-hero-banner {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .mp-hero-banner h3 {
+        font-size: 1.25rem;
     }
 }
 
-@media (min-width: 768px) {
-    .h-md-100 {
-        height: 100% !important;
+/* ── Quick action grid ───────────────────────────────────────── */
+@media (max-width: 575px) {
+    .mp-quick-action {
+        padding: 1.1rem 0.75rem;
+    }
+
+    .mp-quick-action-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        border-radius: 12px;
     }
 }
-
-.abp-support {
-    width: 178px;
-    height: 30px;
-    background-image: url('/images/getting-started/abp-support.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.abp-community {
-    width: 215px;
-    height: 30px;
-    background-image: url('/images/getting-started/abp-community.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.abp-blog {
-    width: 142px;
-    height: 30px;
-    background-image: url('/images/getting-started/abp-blog.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.abp-studio {
-    width: 146px;
-    height: 30px;
-    background-image: url('/images/getting-started/abp-studio.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.abp-suite {
-    width: 132px;
-    height: 30px;
-    background-image: url('/images/getting-started/abp-suite.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.logo-x {
-    width: 20px;
-    height: 20px;
-    background-image: url('/images/getting-started/x.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.entity-famework-core {
-    width: 84px;
-    height: 24px;
-    background-image: url('/images/getting-started/entity-famework-core-dark.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.mongo-db {
-    width: 85px;
-    height: 24px;
-    background-image: url('/images/getting-started/mongo-db-dark.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.blazor {
-    width: 65px;
-    height: 20px;
-    background-image: url('/images/getting-started/blazor-dark.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.angular {
-    width: 82px;
-    height: 20px;
-    background-image: url('/images/getting-started/angular-dark.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.mvc-razor-pages {
-    width: 95px;
-    height: 20px;
-    background-image: url('/images/getting-started/mvc-razor-pages-dark.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.lpx-theme-dark .abp-support {
-    background-image: url('/images/getting-started/abp-support-white.svg');
-}
-
-.lpx-theme-dark .abp-community {
-    background-image: url('/images/getting-started/abp-community-white.svg');
-}
-
-.lpx-theme-dark .abp-blog {
-    background-image: url('/images/getting-started/abp-blog-white.svg');
-}
-
-.lpx-theme-dark .logo-x {
-    background-image: url('/images/getting-started/x-white.svg');
-}
-
-.lpx-theme-dark .abp-studio {
-    background-image: url('/images/getting-started/abp-studio-white.svg');
-}
-
-.lpx-theme-dark .abp-suite {
-    background-image: url('/images/getting-started/abp-suite-white.svg');
-}
-
-.lpx-theme-dark .entity-famework-core {
-    background-image: url('/images/getting-started/entity-famework-core.svg');
-}
-
-.lpx-theme-dark .mongo-db {
-    background-image: url('/images/getting-started/mongo-db.svg');
-}
-
-.lpx-theme-dark .blazor {
-    background-image: url('/images/getting-started/blazor.svg');
-}
-
-.lpx-theme-dark .angular {
-    background-image: url('/images/getting-started/angular.svg');
-}
-
-.lpx-theme-dark .mvc-razor-pages {
-    background-image: url('/images/getting-started/mvc-razor-pages.svg');
-}
-/* Getting-Started End */

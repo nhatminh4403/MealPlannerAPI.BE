@@ -1,58 +1,506 @@
+/* ── Typography ─────────────────────────────────────────────── */
+body,
+.lpx-content-layout,
+.card,
+.btn,
+.form-control,
+.form-select,
+.table {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+    /* Brand palette */
+    --mp-primary:       #3b82f6;   /* vivid blue          */
+    --mp-secondary:     #10b981;   /* emerald green       */
+    --mp-accent:        #f59e0b;   /* warm amber          */
+    --mp-danger:        #ef4444;
+
+    /* Gradient shortcuts */
+    --mp-gradient:        linear-gradient(135deg, var(--mp-primary), var(--mp-secondary));
+    --mp-gradient-hover:  linear-gradient(135deg, #2563eb, #059669);
+    --mp-gradient-accent: linear-gradient(135deg, var(--mp-accent), #f97316);
+
+    /* Surfaces */
+    --mp-card-radius:  12px;
+    --mp-btn-radius:   8px;
+    --mp-badge-radius: 6px;
+
+    /* Shadows */
+    --mp-shadow-sm:   0 1px 4px rgba(0,0,0,.06);
+    --mp-shadow-md:   0 4px 16px rgba(0,0,0,.10);
+    --mp-shadow-lg:   0 8px 32px rgba(0,0,0,.14);
+    --mp-shadow-glow: 0 0 0 3px rgba(59,130,246,.25);
+
+    /* Transitions */
+    --mp-transition: 0.2s ease;
+
+    /* LeptonX overrides */
+    --lpx-logo:      url('/images/logo/leptonxlite/logo-light-thumbnail.png');
+    --lpx-logo-icon: url('/images/logo/leptonxlite/logo-light-thumbnail.png');
+    --primary:   var(--mp-primary);
+    --secondary: var(--mp-secondary);
+}
+div[class*="blazorise"] {
+    display: none !important;
+}
+/* ── Blazor Error UI ────────────────────────────────────────── */
 #blazor-error-ui {
-    background: lightyellow;
+    background: linear-gradient(90deg, #fee2e2, #fef3c7);
+    border-top: 3px solid var(--mp-danger);
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -4px 20px rgba(239,68,68,.15);
     display: none;
     left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     position: fixed;
     width: 100%;
-    z-index: 1000;
+    z-index: 1050;
+    font-size: 0.9rem;
+    color: #7f1d1d;
 }
 
     #blazor-error-ui .dismiss {
         cursor: pointer;
         position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: .6;
+        transition: opacity var(--mp-transition);
     }
+    #blazor-error-ui .dismiss:hover { opacity: 1; }
 
-:root {
-    --lpx-logo: url('/images/logo/leptonxlite/logo-light-thumbnail.png');
-    --lpx-logo-icon: url('/images/logo/leptonxlite/logo-light-thumbnail.png');
-    --primary: #3b82f6;
-    --secondary: #10b981;
+/* ── Dark-theme logo ────────────────────────────────────────── */
+:root .abp-account-layout .lpx-brand-logo {
+    --lpx-logo: url('/images/logo/leptonxlite/logo-dark-thumbnail.png');
+    background-position: left;
 }
 
-    :root .abp-account-layout .lpx-brand-logo {
-        --lpx-logo: url('/images/logo/leptonxlite/logo-dark-thumbnail.png');
-        background-position: left;
-    }
+/* ── Brand name in sidebar ──────────────────────────────────── */
+.lpx-brand-name {
+    background: var(--mp-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
 
+/* ── Gradient text utility ──────────────────────────────────── */
+.gradient-text {
+    background: var(--mp-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── Card enhancements ──────────────────────────────────────── */
+.card {
+    border-radius: var(--mp-card-radius) !important;
+    box-shadow: var(--mp-shadow-sm);
+    transition: box-shadow var(--mp-transition), transform var(--mp-transition);
+    border: 1px solid rgba(0,0,0,.06) !important;
+}
+
+.card:hover {
+    box-shadow: var(--mp-shadow-md);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,.06) !important;
+    border-radius: calc(var(--mp-card-radius) - 1px) calc(var(--mp-card-radius) - 1px) 0 0 !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.card-title {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: -0.01em;
+    margin-bottom: 0 !important;
+}
+
+/* ── Interactive / clickable rows ───────────────────────────── */
 .clickable-row {
     cursor: pointer;
-    transition: background-color 0.15s;
+    transition: background-color var(--mp-transition), transform var(--mp-transition);
 }
 
     .clickable-row:hover {
-        background-color: rgba(0, 0, 0, 0.04);
+        background-color: rgba(59,130,246,.06) !important;
+/*        transform: translateX(2px);*/
     }
 
-.gradient-text {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn {
+    border-radius: var(--mp-btn-radius) !important;
+    font-weight: 500 !important;
+    transition: all var(--mp-transition) !important;
 }
 
-.lpx-brand-name {
-    color: var(--primary);
-    font-size: 16px;
+.btn-primary {
+    background: var(--mp-gradient) !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,.35) !important;
+}
+
+    .btn-primary:hover {
+        background: var(--mp-gradient-hover) !important;
+        box-shadow: 0 4px 16px rgba(59,130,246,.45) !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+    background: rgba(0,0,0,.06) !important;
+    border: 1px solid rgba(0,0,0,.1) !important;
+    color: var(--bs-body-color) !important;
+}
+
+    .btn-secondary:hover {
+        background: rgba(0,0,0,.1) !important;
+        transform: translateY(-1px);
+    }
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.badge {
+    border-radius: var(--mp-badge-radius) !important;
+    font-weight: 500 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.02em;
+    padding: 0.3em 0.6em !important;
+}
+
+/* ── Form controls ──────────────────────────────────────────── */
+.form-control,
+.form-select {
+    border-radius: var(--mp-btn-radius) !important;
+    border: 1px solid rgba(0,0,0,.12) !important;
+    transition: border-color var(--mp-transition), box-shadow var(--mp-transition) !important;
+    font-size: 0.875rem !important;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--mp-primary) !important;
+        box-shadow: var(--mp-shadow-glow) !important;
+        outline: none !important;
+    }
+
+/* ── DataGrid polish ────────────────────────────────────────── */
+.table {
+    font-size: 0.875rem;
+}
+
+    .table thead th {
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--bs-secondary-color, #6c757d) !important;
+        border-bottom: 2px solid rgba(0,0,0,.08) !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    .table tbody tr {
+        transition: background-color var(--mp-transition);
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: rgba(59,130,246,.03) !important;
+    }
+
+/* ── Pagination ─────────────────────────────────────────────── */
+.pagination .page-link {
+    border-radius: 6px !important;
+    margin: 0 2px;
+    transition: all var(--mp-transition) !important;
+    font-size: 0.85rem;
+    min-width: 34px;
+    text-align: center;
 }
 
 .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    background: var(--mp-gradient) !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,.35) !important;
 }
 
-.pagination {
-    --bs-pagination-active-bg: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+.pagination .page-link:hover:not(.active) {
+    background: rgba(59,130,246,.08) !important;
+    color: var(--mp-primary) !important;
 }
+
+/* ── SpinKit / loading ──────────────────────────────────────── */
+.sk-circle .sk-child::before {
+    background-color: var(--mp-primary) !important;
+}
+
+/* ── Alerts ─────────────────────────────────────────────────── */
+.alert {
+    border-radius: var(--mp-card-radius) !important;
+    border: none !important;
+    font-size: 0.875rem;
+}
+
+/* ── Stat chip (used in home dashboard) ─────────────────────── */
+.mp-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(59,130,246,.10);
+    color: var(--mp-primary);
+    letter-spacing: 0.01em;
+}
+
+/* ── Quick-action card (home dashboard) ─────────────────────── */
+.mp-quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1.5rem 1rem;
+    border-radius: var(--mp-card-radius);
+    border: 2px solid rgba(0,0,0,.06) !important;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--mp-transition);
+    text-decoration: none;
+    color: inherit;
+}
+
+    .mp-quick-action:hover {
+        border-color: var(--mp-primary) !important;
+        background: rgba(59,130,246,.05);
+        transform: translateY(-3px);
+        box-shadow: var(--mp-shadow-md);
+        color: var(--mp-primary);
+        text-decoration: none;
+    }
+
+.mp-quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: var(--mp-gradient);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(59,130,246,.3);
+    transition: box-shadow var(--mp-transition);
+}
+
+    .mp-quick-action:hover .mp-quick-action-icon {
+        box-shadow: 0 6px 20px rgba(59,130,246,.45);
+    }
+
+.mp-quick-action-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* ── Hero gradient banner ────────────────────────────────────── */
+.mp-hero-banner {
+    background: var(--mp-gradient);
+    border-radius: var(--mp-card-radius);
+    color: #fff;
+    padding: 2rem 2.25rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(59,130,246,.30);
+}
+
+    .mp-hero-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='25'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        background-size: 60px 60px;
+        pointer-events: none;
+    }
+
+.mp-hero-banner h3 {
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.mp-hero-banner p {
+    opacity: 0.88;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+}
+
+.mp-hero-banner .btn {
+    background: rgba(255,255,255,.20) !important;
+    border: 2px solid rgba(255,255,255,.5) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: blur(4px);
+}
+
+    .mp-hero-banner .btn:hover {
+        background: rgba(255,255,255,.35) !important;
+        transform: translateY(-1px);
+    }
+
+/* ── Nutrition pill row ──────────────────────────────────────── */
+.mp-nutrition-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: rgba(0,0,0,.035);
+    min-width: 70px;
+    transition: background var(--mp-transition);
+}
+
+.mp-nutrition-pill:hover { background: rgba(59,130,246,.08); }
+
+.mp-nutrition-pill-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--mp-primary);
+}
+
+.mp-nutrition-pill-label {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color, #6c757d);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+/* ── Recipe image in details ─────────────────────────────────── */
+.mp-recipe-cover {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: var(--mp-card-radius);
+    box-shadow: var(--mp-shadow-md);
+}
+
+/* ── Tag badges ──────────────────────────────────────────────── */
+.mp-tag {
+    display: inline-block;
+    padding: 0.25em 0.7em;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: rgba(59,130,246,.10);
+    color: var(--mp-primary);
+    margin: 2px 3px 2px 0;
+    transition: background var(--mp-transition);
+}
+
+    .mp-tag:hover { background: rgba(59,130,246,.18); }
+
+/* ── Step counter for instructions ──────────────────────────── */
+.mp-step-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: steps;
+}
+
+    .mp-step-list li {
+        counter-increment: steps;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,.05);
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+        .mp-step-list li:last-child { border-bottom: none; }
+
+        .mp-step-list li::before {
+            content: counter(steps);
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--mp-gradient);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            box-shadow: 0 2px 6px rgba(59,130,246,.3);
+        }
+
+/* ── Trending rank badge ─────────────────────────────────────── */
+.mp-rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--mp-gradient);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(59,130,246,.3);
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────── */
+.lpx-theme-dark {
+    --mp-card-bg-glass: rgba(255,255,255,.04);
+}
+
+    .lpx-theme-dark .card {
+        border-color: rgba(255,255,255,.07) !important;
+        background: var(--mp-card-bg-glass, transparent);
+    }
+
+    .lpx-theme-dark .mp-quick-action {
+        border-color: rgba(255,255,255,.08) !important;
+    }
+
+        .lpx-theme-dark .mp-quick-action:hover {
+            border-color: var(--mp-primary) !important;
+            background: rgba(59,130,246,.12);
+        }
+
+    .lpx-theme-dark .mp-nutrition-pill {
+        background: rgba(255,255,255,.05);
+    }
+
+    .lpx-theme-dark .mp-tag {
+        background: rgba(59,130,246,.2);
+        color: #93c5fd;
+    }
+
+    .lpx-theme-dark .table thead th {
+        border-bottom-color: rgba(255,255,255,.08) !important;
+    }
+
+    .lpx-theme-dark .form-control,
+    .lpx-theme-dark .form-select {
+        border-color: rgba(255,255,255,.12) !important;
+        background-color: rgba(255,255,255,.05) !important;
+    }
+
+    .lpx-theme-dark #blazor-error-ui {
+        background: linear-gradient(90deg, #450a0a, #451a03);
+        color: #fca5a5;
+    }

@@ -1,120 +1,208 @@
-﻿@page "/recipes/top-rated"
+@page "/recipes/top-rated"
 
-@inherits AbpCrudPageBase<IRecipeAppService,
-RecipeDto,
-RecipeSummaryDto,
-Guid,
-GetRecipesInput,
-CreateUpdateRecipeDto,
-CreateUpdateRecipeDto>
+
+<PageHeader>
+    <PageHeaderTitle>
+        <i class="fa-solid fa-star me-2" style="color:#f59e0b;"></i>
+        Top Rated Recipes
+    </PageHeaderTitle>
+    <PageHeaderToolbar>
+        @if (_hasCreatePermission)
+        {
+            <Button Color="Color.Primary" Clicked="NavigateToCreate">
+                <Icon Name="IconName.Add" /> @L["Recipes:New"]
+            </Button>
+        }
+    </PageHeaderToolbar>
+</PageHeader>
 
 <Card>
+    <CardBody>
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="min-height:220px;">
+                <SpinKit Type="SpinKitType.Circle" Color="Color.Primary" />
+            </div>
+        }
+        else if (!TopRatedRecipes.Any())
+        {
+            <Alert Color="Color.Info" Visible>
+                <i class="fa-solid fa-circle-info me-2"></i>
+                @L["Dashboard:NoTopRatedRecipes"]
+            </Alert>
+        }
+        else
+        {
+            <DataGrid TItem="RecipeSummaryDto"
+                      Data="TopRatedRecipes"
+                      ShowPager="true"
+                      RowStyling="OnRowStyling"
+                      RowClicked="OnRowClicked"
+                      Hoverable="true"
+                      Responsive>
+                <DataGridColumns>
 
-<Row Class="justify-content-between">
-<Column ColumnSize="ColumnSize.IsAuto">
-<CardTitle>Top Rated Recipes</CardTitle>
-</Column>
-<Column ColumnSize="ColumnSize.IsAuto">
-    @if (HasCreatePermission)
-    {
-        <Button Color="Color.Primary"
-                Clicked="OpenCreateModalAsync">
-            <Icon Name="IconName.Add" />
-            @L["Recipes:New"]
-        </Button>
-    }
-</Column>
-</Row>
-<CardBody>
-    <DataGrid TItem="RecipeSummaryDto"
-              Data="Entities"
-              ReadData="OnDataGridReadAsync"
-              Page="CurrentPage"
-              TotalItems="TotalCount"
-              ShowPager="true"
-              RowStyling="OnRowStyling"
-              RowClicked="OnRowClicked"
-              PageSize="PageSize">
-        <DataGridColumns>
-            <DataGridEntityActionsColumn TItem="RecipeSummaryDto" @ref="@EntityActionsColumn">
-                <DisplayTemplate>
-                   <div @onclick:stopPropagation="true">
-                        <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
-                            <EntityAction TItem="RecipeSummaryDto"
-                                          Text="@L["Common:Edit"]"
-                                          Visible=HasUpdatePermission
-                                          Clicked="() => OpenEditModalAsync(context.Item)" />
-                            <EntityAction TItem="RecipeSummaryDto"
-                                          Text="@L["Common:Delete"]"
-                                          Visible=HasDeletePermission
-                                          Clicked="() => DeleteEntityAsync(context.Item)"
-                                          ConfirmationMessage="()=>GetDeleteConfirmationMessage(context.Item)" />
-                        </EntityActions>
-                   </div>
+                    @* Rank *@
+                    <DataGridColumn TItem="RecipeSummaryDto" Caption="#" Width="Width.Px(52)">
+                        <DisplayTemplate>
+                            @{
+                                var rank = (TopRatedRecipes?.ToList().IndexOf(context.Item) ?? -1) + 1;
+                                var rankStyle = rank > 0 && rank <= 3
+                                    ? "background:var(--mp-gradient-accent);"
+                                    : "background:rgba(0,0,0,.12); color:var(--bs-body-color);";
+                            }
+                            <span class="mp-rank-badge" style="@rankStyle">@(rank > 0 ? rank : "-")</span>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Thumbnail *@
+                    <DataGridColumn TItem="RecipeSummaryDto" Width="Width.Px(60)">
+                        <DisplayTemplate>
+                            @if (!string.IsNullOrEmpty(context.Item.ImageUrl))
+                            {
+                                <img src="@context.Item.ImageUrl"
+                                     style="width:44px; height:44px; object-fit:cover;
+                                border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.12);" />
+                            }
+                            else
+                            {
+                                <div style="width:44px; height:44px; background:linear-gradient(135deg,#fef9c3,#fde68a);
+                                    border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+                                    ⭐
+                                </div>
+                            }
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Name *@
+                    <DataGridColumn TItem="RecipeSummaryDto"
+                                    Field="@nameof(RecipeSummaryDto.Name)"
+                                    Caption="@L["Recipes:Name"]">
+                        <DisplayTemplate>
+                            <Text TextWeight="TextWeight.SemiBold">@context.Item.Name</Text>
+                            <br />
+                            <Text TextColor="TextColor.Muted" Style="font-size:11px;">@context.Item.Description?.Truncate(55)</Text>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Cuisine *@
+                    <DataGridColumn TItem="RecipeSummaryDto"
+                                    Field="@nameof(RecipeSummaryDto.Cuisine)"
+                                    Caption="@L["Recipes:FieldCuisine"]">
+                        <DisplayTemplate>
+                            @if (!string.IsNullOrEmpty(context.Item.Cuisine))
+                            {
+                                <span class="mp-tag">@context.Item.Cuisine</span>
+                            }
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Rating *@
+                    <DataGridColumn TItem="RecipeSummaryDto"
+                                    Field="@nameof(RecipeSummaryDto.Rating)"
+                                    Caption="@L["Recipes:Rating"]"
+                                    Width="Width.Px(130)">
+                        <DisplayTemplate>
+                            <span style="font-size:.82rem;">
+                                ⭐ <strong>@context.Item.Rating.ToString("F1")</strong>
+                                <Text TextColor="TextColor.Muted" Style="font-size:11px;"> (@context.Item.ReviewCount)</Text>
+                            </span>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Difficulty *@
+                    <DataGridColumn TItem="RecipeSummaryDto"
+                                    Field="@nameof(RecipeSummaryDto.Difficulty)"
+                                    Caption="@L["Unit:Difficulty"]"
+                                    Width="Width.Px(110)">
+                        <DisplayTemplate>
+                            <Badge Color="@GetDifficultyColor(context.Item.Difficulty)">@context.Item.Difficulty</Badge>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    @* Actions *@
+                    <DataGridColumn>
+                        <DisplayTemplate>
+                            <div @onclick:stopPropagation="true" class="d-flex gap-1">
+                                <Button Size="Size.Small" Color="Color.Primary" Outline
+                                        Clicked="() => GoToDetail(context.Item.Id)">
+                                    <Icon Name="IconName.Eye" />
+                                </Button>
+                                @if (_hasUpdatePermission)
+                                {
+                                    <Button Size="Size.Small" Color="Color.Warning" Outline
+                                            Clicked="() => NavigateToEdit(context.Item.Id)">
+                                        <Icon Name="IconName.Edit" />
+                                    </Button>
+                                }
+                            </div>
+                        </DisplayTemplate>
+                    </DataGridColumn>
                     
-                </DisplayTemplate>
-            </DataGridEntityActionsColumn>
-            <DataGridColumn TItem="RecipeSummaryDto"
-                            Field="@nameof(RecipeSummaryDto.Name)"
-                            Caption="@L["Recipes:Name"]"></DataGridColumn>
-            <DataGridColumn TItem="RecipeSummaryDto"
-                            Field="@nameof(RecipeSummaryDto.Id)"
-                            Caption="@L["Recipes:Id"]">
-                
-            </DataGridColumn>
 
-        </DataGridColumns>
-    </DataGrid>
-</CardBody>
+                </DataGridColumns>
+            </DataGrid>
+        }
+     
+    </CardBody>
 </Card>
 
-
-    @code {
-    private List<RecipeSummaryDto> TopRatedRecipes { get; set; } = new();
-    // private List<RecipeDto> Recipes { get; set; }
-
+@code {
+    private List<RecipeSummaryDto> TopRatedRecipes = new();
+    private bool _loading = true;
+    private bool _hasCreatePermission;
+    private bool _hasUpdatePermission;
+    private bool _hasDeletePermission;
     public TopRated()
     {
         LocalizationResource = typeof(MealPlannerAPIResource);
     }
 
-    protected override void OnInitialized()
-    {
-        CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
-        UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
-        DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
-        base.OnInitialized();
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        CreatePolicyName = MealPlannerAPIPermissions.Recipes.Create;
-        UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
-        DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
 
-        var result = await RecipeAppService.GetTopRatedAsync(50);
-        var recipes = await RecipeAppService.GetListAsync(new GetRecipesInput { MaxResultCount = 100 });
+        _hasCreatePermission = await AuthorizationService.IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Create);
+        _hasDeletePermission = await AuthorizationService.IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Delete);
+        _hasUpdatePermission = await AuthorizationService.IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Update);
 
-        // Recipes = recipes.Items.ToList();
-        TopRatedRecipes = result?.Items?.ToList() ?? new List<RecipeSummaryDto>();
         await base.OnInitializedAsync();
+
+        try
+        {
+            _loading = true;
+            var recipes = await RecipeAppService.GetTopRatedAsync(20);
+            TopRatedRecipes = recipes.Items.ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+       
     }
+
     private void GoToDetail(Guid id)
     {
-        // encode current URL as returnUrl query param
         var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
         NavigationManager.NavigateTo($"/recipes/{id}?returnUrl={returnUrl}");
     }
 
     private void OnRowClicked(DataGridRowMouseEventArgs<RecipeSummaryDto> args)
-    {
-        var id = args.Item.Id;
-        GoToDetail(id);
-    }
-    private void OnRowStyling(RecipeSummaryDto item,
-                                DataGridRowStyling style)
-    {
-        style.Class = "clickable-row";
+        => GoToDetail(args.Item.Id);
 
-    }
+    private void OnRowStyling(RecipeSummaryDto item, DataGridRowStyling style)
+        => style.Class = "clickable-row";
+
+    private Color GetDifficultyColor(DifficultyLevel difficulty) => difficulty switch
+    {
+        DifficultyLevel.Easy => Color.Success,
+        DifficultyLevel.Medium => Color.Warning,
+        DifficultyLevel.Hard => Color.Danger,
+        _ => Color.Light
+    };
+    
+    private void NavigateToEdit(Guid id)
+        => NavigationManager.NavigateTo($"/recipes/{id}/edit");
+
+    private void NavigateToCreate()
+        => NavigationManager.NavigateTo("/recipes/new");
 }
+

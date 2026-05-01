@@ -1,4 +1,4 @@
-﻿
+
 @inject  ISettingManager SettingManager
 @inject ISettingProvider SettingProvider
 @inject IUiNotificationService UiNotificationService
@@ -9,35 +9,52 @@
     <Column ColumnSize="ColumnSize.Is12">
         <Card>
             <CardHeader>
-                <CardTitle>MealPlanner General Settings</CardTitle>
+                <CardTitle>
+                    <i class="fa-solid fa-sliders me-2"></i>
+                    MealPlanner General Settings
+                </CardTitle>
             </CardHeader>
-            <CardBody TextAlignment="TextAlignment.Center">
-                <Field Horizontal="true">
-                    <FieldLabel ColumnSize="ColumnSize.Is3">
-                        @L["Settings:EnableUI"]
-                    </FieldLabel>
-                    <FieldBody ColumnSize="ColumnSize.Is9" Display="Display.Flex" Flex="Flex.JustifyContent.Between">
-                        @* Testing with a custom toggle switch implementation. 
-                            <label class="toggle-switch">
-                            <input type="checkbox" @bind="EnableUI" />
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-label">
-                                @(EnableUI? L["Common:Enabled"] : L["Common:Disabled"])
-                            </span>ValueChanged="OnSwitchValueChanged"
-                        </label> *@
-                        <Switch @bind-Value="EnableUI"
-                                
-                                />
-                    </FieldBody>
-                    <FieldLabel ColumnSize="ColumnSize.Is3">
-                        @L["Settings:EnableMockData"]
-                    </FieldLabel>
-                    <FieldBody ColumnSize="ColumnSize.Is9" Display="Display.Flex" Flex="Flex.JustifyContent.Between">
-                        <Switch @bind-Value="EnableMockData"
-                               
-                                />
-                    </FieldBody>
-                </Field>
+            <CardBody>
+
+                @* Enable UI *@
+                <div class="mp-setting-row mb-4">
+                    <div class="mp-setting-info">
+                        <div class="mp-setting-label">
+                            <i class="fa-solid fa-display me-2 text-primary"></i>
+                            @L["Settings:EnableUI"]
+                        </div>
+                        <div class="mp-setting-description">
+                            Controls whether the Meal Planner UI is visible to end-users.
+                        </div>
+                    </div>
+                    <div class="mp-setting-control">
+                        <Switch @bind-Value="EnableUI" Color="Color.Primary" />
+                        <span class="mp-setting-status @(EnableUI ? "mp-status-on" : "mp-status-off")">
+                            @(EnableUI ? L["Common:Enabled"] : L["Common:Disabled"])
+                        </span>
+                    </div>
+                </div>
+
+                <hr class="mp-divider" />
+
+                @* Enable Mock Data *@
+                <div class="mp-setting-row">
+                    <div class="mp-setting-info">
+                        <div class="mp-setting-label">
+                            <i class="fa-solid fa-flask me-2 text-warning"></i>
+                            @L["Settings:EnableMockData"]
+                        </div>
+                        <div class="mp-setting-description">
+                            When enabled, the application will use seeded mock data instead of live API data.
+                        </div>
+                    </div>
+                    <div class="mp-setting-control">
+                        <Switch @bind-Value="EnableMockData" Color="Color.Warning" />
+                        <span class="mp-setting-status @(EnableMockData ? "mp-status-warn" : "mp-status-off")">
+                            @(EnableMockData ? L["Common:Enabled"] : L["Common:Disabled"])
+                        </span>
+                    </div>
+                </div>
 
             </CardBody>
         </Card>
@@ -47,6 +64,7 @@
 <Row Class="mt-3">
     <Column>
         <Button Color="Color.Primary" Clicked="SaveAsync">
+            <i class="fa-solid fa-floppy-disk me-1"></i>
             @L["Common:Save"]
         </Button>
     </Column>
@@ -55,10 +73,10 @@
 @code{
     protected bool EnableUI { get; set; }
     protected bool EnableMockData { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-
-        EnableUI = await SettingProvider.GetAsync<bool>(MealPlannerAPISettings.EnableUI);
+        EnableUI       = await SettingProvider.GetAsync<bool>(MealPlannerAPISettings.EnableUI);
         EnableMockData = await SettingProvider.GetAsync<bool>(MealPlannerAPISettings.EnableMockData);
     }
 
@@ -68,16 +86,16 @@
         {
             Console.WriteLine($"Saving setting: {MealPlannerAPISettings.EnableUI} = {EnableUI}");
             await SettingManager.SetGlobalAsync(
-               name: MealPlannerAPISettings.EnableUI,
+               name:  MealPlannerAPISettings.EnableUI,
                value: EnableUI.ToString()
             );
-            
             Console.WriteLine($"Setting saved successfully: {MealPlannerAPISettings.EnableUI} = {EnableUI}");
 
             await SettingManager.SetGlobalAsync(
-               name: MealPlannerAPISettings.EnableMockData,
+               name:  MealPlannerAPISettings.EnableMockData,
                value: EnableMockData.ToString()
             );
+
             await UiNotificationService.Success(L["Common:SavedSuccessfully"]);
         }
         catch (Exception ex)
@@ -86,6 +104,7 @@
             await UiNotificationService.Error("Failed to save: " + ex.Message);
         }
     }
+
     private async Task OnSwitchValueChanged(bool newValue)
     {
         await SaveAsync();

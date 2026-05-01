@@ -388,6 +388,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     {
         context.AddBackgroundWorkerAsync<MealPlanHardDeleteWorker>();
         context.AddBackgroundWorkerAsync<MealReminderBackgroundWorker>();
+        context.AddBackgroundWorkerAsync<TrendingRefreshWorker>();
     }
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)

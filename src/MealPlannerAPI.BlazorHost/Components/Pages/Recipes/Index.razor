@@ -21,16 +21,23 @@
     </PageHeaderToolbar>
 </PageHeader>
 
-@* ── Filters ───────────────────────────────────────────────────────── *@
-<Card Margin="Margin.Is3.OnY">
+@* ── Filters ─────────────────────────────────────────────────── *@
+<Card Margin="Margin.Is3.OnY" Class="recipe-filter-card">
     <CardBody>
         <Row>
             <Column ColumnSize="ColumnSize.Is3">
                 <Field>
                     <FieldLabel>@L["Common:Search"]</FieldLabel>
-                    <TextInput @bind-Value="@GetListInput.SearchTerm"
-                               Immediate="true"
-                               Placeholder="@L["Recipes:SimpleSearchPlaceholder"]" />
+                    <Addons>
+                        <Addon AddonType="AddonType.Start">
+                            <AddonLabel><Icon Name="IconName.Search" /></AddonLabel>
+                        </Addon>
+                        <Addon AddonType="AddonType.Body">
+                            <TextInput @bind-Value="@GetListInput.SearchTerm"
+                                       Immediate="true"
+                                       Placeholder="@L["Recipes:SimpleSearchPlaceholder"]" />
+                        </Addon>
+                    </Addons>
                 </Field>
             </Column>
             <Column ColumnSize="ColumnSize.Is3">
@@ -47,12 +54,9 @@
                     <Select TValue="DifficultyLevel?"
                             @bind-Value="@GetListInput.Difficulty">
                         <SelectItem TValue="DifficultyLevel?" Value="@(null)">@L["Recipes:FilterAll"]</SelectItem>
-                        <SelectItem TValue="DifficultyLevel?"
-                                    Value="@DifficultyLevel.Easy">@L["Unit:Easy"]</SelectItem>
-                        <SelectItem TValue="DifficultyLevel?"
-                                    Value="@DifficultyLevel.Medium">@L["Unit:Medium"]</SelectItem>
-                        <SelectItem TValue="DifficultyLevel?"
-                                    Value="@DifficultyLevel.Hard">@L["Unit:Hard"]</SelectItem>
+                        <SelectItem TValue="DifficultyLevel?" Value="@DifficultyLevel.Easy">@L["Unit:Easy"]</SelectItem>
+                        <SelectItem TValue="DifficultyLevel?" Value="@DifficultyLevel.Medium">@L["Unit:Medium"]</SelectItem>
+                        <SelectItem TValue="DifficultyLevel?" Value="@DifficultyLevel.Hard">@L["Unit:Hard"]</SelectItem>
                     </Select>
                 </Field>
             </Column>
@@ -61,7 +65,7 @@
                     <FieldLabel>@L["Recipes:MaxTime"] (@L["Recipes:MinShort"])</FieldLabel>
                     <NumericInput TValue="int?"
                                   @bind-Value="@GetListInput.MaxTotalTimeMinutes"
-                                  Placeholder="@L["Recipes:SimpleSearchPlaceholder"]"
+                                  Placeholder="e.g. 30"
                                   Min="0" />
                 </Field>
             </Column>
@@ -91,7 +95,7 @@
     </CardBody>
 </Card>
 
-@* ── Results Using Standard Grid Integration ────────────────────── *@
+@* ── Results ──────────────────────────────────────────────────── *@
 <Card>
     <CardHeader>
         <Row>
@@ -112,92 +116,105 @@
                   Striped="true"
                   ReadData="@OnDataGridReadAsync"
                   Hoverable="true"
-                  Responsive="true"
+                  Responsive
                   Resizable="true"
-                  RowClicked="(e) => GoToDetail(e.Item.Id)">
+                  RowClicked="(e) => GoToDetail(e.Item.Id)"
+                  RowStyling="OnRowStyling">
 
             <DataGridColumns>
-                <!-- Thumbnail -->
-                <DataGridColumn TItem="RecipeSummaryDto">
+
+                @* Thumbnail *@
+                <DataGridColumn TItem="RecipeSummaryDto" Width="Width.Px(60)">
                     <DisplayTemplate>
                         @if (!string.IsNullOrEmpty(context.Item.ImageUrl))
                         {
-                            <img src="@context.Item.ImageUrl" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" />
+                            <img src="@context.Item.ImageUrl"
+                                 style="width:44px; height:44px; object-fit:cover; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.12);" />
                         }
                         else
                         {
-                            <div style="width:40px; height:40px; background:#eee; border-radius:6px; display:flex; align-items:center; justify-content:center;">
-                                <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.BowlFood" />
+                            <div style="width:44px; height:44px; background:linear-gradient(135deg,#dbeafe,#ede9fe); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+                                🍽️
                             </div>
                         }
                     </DisplayTemplate>
                 </DataGridColumn>
 
-                <!-- Information/Description -->
+                @* Name / Description *@
                 <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.Name)" Caption="@L["Recipes:Name"]">
                     <DisplayTemplate>
-                        <Text TextWeight="TextWeight.Bold">@context.Item.Name</Text>
+                        <Text TextWeight="TextWeight.SemiBold">@context.Item.Name</Text>
                         <br />
-                        <Text TextColor="TextColor.Muted" Style="font-size:12px;">@context.Item.Description?.Truncate(60)</Text>
+                        <Text TextColor="TextColor.Muted" Style="font-size:11px;">@context.Item.Description?.Truncate(65)</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
 
-                <!-- General Metrics -->
-                <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.Cuisine)" Caption="@L["Recipes:FieldCuisine"]" />
+                @* Cuisine *@
+                <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.Cuisine)" Caption="@L["Recipes:FieldCuisine"]">
+                    <DisplayTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.Cuisine))
+                        {
+                            <span class="mp-tag">@context.Item.Cuisine</span>
+                        }
+                    </DisplayTemplate>
+                </DataGridColumn>
 
+                @* Difficulty *@
                 <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.Difficulty)" Caption="@L["Unit:Difficulty"]">
                     <DisplayTemplate>
                         <Badge Color="@GetDifficultyColor(context.Item.Difficulty)">@context.Item.Difficulty</Badge>
                     </DisplayTemplate>
                 </DataGridColumn>
 
+                @* Time *@
                 <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.TotalTimeMinutes)" Caption="@L["Recipes:TotalTime"]">
                     <DisplayTemplate>
-                        <Icon Name="IconName.Clock" /> @context.Item.TotalTimeMinutes @L["Recipes:MinShort"]
+                        <span class="mp-stat-chip" style="font-size:.72rem; padding:.2rem .55rem;">
+                            <i class="fa-regular fa-clock"></i> @context.Item.TotalTimeMinutes @L["Recipes:MinShort"]
+                        </span>
                     </DisplayTemplate>
                 </DataGridColumn>
 
+                @* Rating *@
                 <DataGridColumn TItem="RecipeSummaryDto" Field="@nameof(RecipeSummaryDto.Rating)" Caption="@L["Recipes:Rating"]">
                     <DisplayTemplate>
-                        ⭐ @context.Item.Rating <Text TextColor="TextColor.Muted" Style="font-size:12px;">(@context.Item.ReviewCount)</Text>
+                        <span style="font-size:.82rem;">
+                            ⭐ <strong>@context.Item.Rating.ToString("F1")</strong>
+                            <Text TextColor="TextColor.Muted" Style="font-size:11px;"> (@context.Item.ReviewCount)</Text>
+                        </span>
                     </DisplayTemplate>
                 </DataGridColumn>
 
+                @* Tags *@
                 <DataGridColumn TItem="RecipeSummaryDto" Caption="@L["Recipes:Tags"]">
                     <DisplayTemplate>
                         @foreach (var tag in context.Item.Tags.Take(3))
                         {
-                            <Badge Color="Color.Light" Margin="Margin.Is1.FromEnd">@tag</Badge>
+                            <span class="mp-tag">@tag</span>
                         }
                         @if (context.Item.Tags.Count > 3)
                         {
-                            <Badge Color="Color.Light">+@(context.Item.Tags.Count - 3)</Badge>
+                            <span class="mp-tag" style="background:rgba(0,0,0,.06); color:var(--bs-secondary-color);">+@(context.Item.Tags.Count - 3)</span>
                         }
                     </DisplayTemplate>
                 </DataGridColumn>
 
-                <!-- ABP Unified Entity Actions Column -->
+                @* Actions *@
                 <DataGridEntityActionsColumn TItem="RecipeSummaryDto" @ref="@EntityActionsColumn">
-                     
                     <DisplayTemplate>
                         <div @onclick:stopPropagation="true">
                             <EntityActions TItem="RecipeSummaryDto" EntityActionsColumn="@EntityActionsColumn">
-                            
-                                <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:View"]" Icon="IconName.Eye" Clicked="() => GoToDetail(context.Item.Id)" />
-                            
+                                <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:View"]"   Icon="IconName.Eye"    Clicked="() => GoToDetail(context.Item.Id)" />
                                 @if (HasUpdatePermission)
                                 {
-                                    <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Edit"]" Icon="IconName.Edit" Clicked="() => OpenEditPage(context.Item.Id)" />
+                                    <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Edit"]"   Icon="IconName.Edit"   Clicked="() => OpenEditPage(context.Item.Id)" />
                                 }
-                            
                                 @if (HasDeletePermission)
                                 {
                                     <EntityAction TItem="RecipeSummaryDto" Text="@L["Common:Delete"]" Icon="IconName.Delete" Color="Color.Danger" Clicked="() => DeleteEntityAsync(context.Item)" />
                                 }
-
                             </EntityActions>
                         </div>
-                        
                     </DisplayTemplate>
                 </DataGridEntityActionsColumn>
 
@@ -224,7 +241,6 @@
     protected override Task UpdateGetListInputAsync()
     {
         GetListInput.Sorting = CurrentSorting;
-
         return base.UpdateGetListInputAsync();
     }
 
@@ -232,7 +248,6 @@
     {
         CurrentPage = 1;
         await UpdateGetListInputAsync();
-
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
     }
@@ -246,7 +261,6 @@
         GetListInput.Vegetarian = null;
         CurrentSorting = "Rating DESC";
         CurrentPage = 1;
-        
         await UpdateGetListInputAsync();
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
@@ -256,7 +270,6 @@
     {
         CurrentSorting = newSortValue;
         CurrentPage = 1;
-        
         await UpdateGetListInputAsync();
         await GetEntitiesAsync();
         await InvokeAsync(StateHasChanged);
@@ -265,7 +278,6 @@
     private void GoToDetail(Guid id)
     {
         Logger.LogInformation("Navigating to Recipe details page. RecipeId: {RecipeId}", id);
-
         var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
         NavigationManager.NavigateTo($"/recipes/{id}?returnUrl={returnUrl}");
     }
@@ -273,23 +285,24 @@
     private void OpenCreateModal()
     {
         Logger.LogInformation("Navigating to Create Recipe page.");
-
         NavigationManager.NavigateTo("/recipes/create");
     }
 
     private void OpenEditPage(Guid id)
     {
         Logger.LogInformation("Navigating to Edit Recipe page. RecipeId: {RecipeId}", id);
-
         var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
         NavigationManager.NavigateTo($"/recipes/{id}/edit?returnUrl={returnUrl}");
     }
 
+    private void OnRowStyling(RecipeSummaryDto item, DataGridRowStyling style)
+        => style.Class = "clickable-row";
+
     private Color GetDifficultyColor(DifficultyLevel difficulty) => difficulty switch
     {
-        DifficultyLevel.Easy => Color.Success,
+        DifficultyLevel.Easy   => Color.Success,
         DifficultyLevel.Medium => Color.Warning,
-        DifficultyLevel.Hard => Color.Danger,
-        _ => Color.Light
+        DifficultyLevel.Hard   => Color.Danger,
+        _                      => Color.Light
     };
 }

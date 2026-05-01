@@ -1,6 +1,192 @@
-﻿@page "/recipes/trending"
-<h3>Trending</h3>
+@page "/recipes/trending"
+@using Dashboard
+@inject IDashboardAppService DashboardAppService
+
+<PageHeader>
+    <PageHeaderTitle>
+        <i class="fa-solid fa-fire-flame-curved me-2" style="color:#f97316;"></i>
+        @L["Dashboard:Trending"]
+    </PageHeaderTitle>
+    <PageHeaderToolbar>
+        @if (_hasCreatePermission)
+        {
+            <Button Color="Color.Primary" Clicked="NavigateToCreate">
+                <Icon Name="IconName.Add" /> @L["Recipes:New"]
+            </Button>
+        }
+    </PageHeaderToolbar>
+</PageHeader>
+
+<Card>
+    <CardBody>
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="min-height:220px;">
+                <SpinKit Type="SpinKitType.Circle" Color="Color.Primary" />
+            </div>
+        }
+        else if (!_trendingRecipes.Any())
+        {
+            <Alert Color="Color.Info" Visible>
+                <i class="fa-solid fa-circle-info me-2"></i>
+                @L["Dashboard:NoTrendingRecipes"]
+            </Alert>
+        }
+        else
+        {
+            <DataGrid TItem="TrendingRecipeDto"
+                      Data="_trendingRecipes"
+                      Responsive
+                      RowClicked="OnRowClicked"
+                      RowStyling="OnRowStyling">
+                <DataGridColumns>
+
+                    @* Rank *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Caption="#"
+                                    Width="Width.Px(52)">
+                        <DisplayTemplate>
+                            @{
+                                var rank = _trendingRecipes.IndexOf(context.Item) + 1;
+                                var rankStyle = rank <= 3
+                                    ? "background:var(--mp-gradient-accent);"
+                                    : "background:rgba(0,0,0,.12); color:var(--bs-body-color);";
+                            }
+                            <span class="mp-rank-badge" style="@rankStyle">@rank</span>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Name *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Field="@nameof(TrendingRecipeDto.Name)"
+                                    Caption="@L["Recipes:Name"]">
+                        <DisplayTemplate>
+                            <Text TextWeight="TextWeight.SemiBold">@context.Item.Name</Text>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Rating *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Field="@nameof(TrendingRecipeDto.Rating)"
+                                    Caption="@L["Recipes:Rating"]"
+                                    Width="Width.Px(110)">
+                        <DisplayTemplate>
+                            <span style="font-size:.82rem;">⭐ <strong>@context.Item.Rating.ToString("F1")</strong></span>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Reviews *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Field="@nameof(TrendingRecipeDto.ReviewCount)"
+                                    Caption="@L["Recipes:Reviews"]"
+                                    Width="Width.Px(100)">
+                        <DisplayTemplate>
+                            <Text TextColor="TextColor.Muted">@context.Item.ReviewCount</Text>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Trending Score *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Field="@nameof(TrendingRecipeDto.TrendingScore)"
+                                    Caption="@L["Dashboard:TrendingScore"]"
+                                    Width="Width.Px(140)">
+                        <DisplayTemplate>
+                            <span class="mp-stat-chip" style="background:rgba(249,115,22,.1); color:#ea580c; font-size:.72rem;">
+                                <i class="fa-solid fa-arrow-trend-up"></i> @context.Item.TrendingScore.ToString("F1")
+                            </span>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Since *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Field="@nameof(TrendingRecipeDto.TrendingSince)"
+                                    Caption="@L["Dashboard:TrendingSince"]"
+                                    Width="Width.Px(150)">
+                        <DisplayTemplate>
+                            <Text TextColor="TextColor.Muted" 
+                            Style="font-size:.8rem;">@context.Item.TrendingSince</Text>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    @* Actions *@
+                    <DataGridColumn TItem="TrendingRecipeDto"
+                                    Caption="@L["Common:Actions"]"
+                                    Width="Width.Px(100)">
+                        <DisplayTemplate>
+                            <div @onclick:stopPropagation="true" class="d-flex gap-1">
+                                <Button Size="Size.Small" Color="Color.Primary" Outline
+                                        Clicked="() => NavigateToDetail(context.Item.Id)">
+                                    <Icon Name="IconName.Eye" />
+                                </Button>
+                                @if (_hasUpdatePermission)
+                                {
+                                    <Button Size="Size.Small" Color="Color.Warning" Outline
+                                            Clicked="() => NavigateToEdit(context.Item.Id)">
+                                        <Icon Name="IconName.Edit" />
+                                    </Button>
+                                }
+                            </div>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                </DataGridColumns>
+            </DataGrid>
+        }
+    </CardBody>
+</Card>
 
 @code {
+    private List<TrendingRecipeDto> _trendingRecipes = new();
+    private bool _loading = true;
+    private bool _hasCreatePermission;
+    private bool _hasUpdatePermission;
+    private bool _hasDeletePermission;
+    public Trending()
+    {
+        LocalizationResource = typeof(MealPlannerAPIResource);
+    }
 
+    protected override async Task OnInitializedAsync()
+    {
+        _hasCreatePermission = await AuthorizationService
+            .IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Create);
+        _hasUpdatePermission = await AuthorizationService
+            .IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Update);
+
+        _hasDeletePermission = await AuthorizationService
+            .IsGrantedAsync(MealPlannerAPIPermissions.Recipes.Delete);
+        await LoadTrendingAsync();
+    }
+
+    private async Task LoadTrendingAsync()
+    {
+        try
+        {
+            _loading = true;
+            var result = await DashboardAppService.GetTrendingAsync();
+            _trendingRecipes = result.Items.ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnRowClicked(DataGridRowMouseEventArgs<TrendingRecipeDto> args)
+        => NavigateToDetail(args.Item.Id);
+
+    private void OnRowStyling(TrendingRecipeDto item, DataGridRowStyling style)
+        => style.Class = "clickable-row";
+
+    private void NavigateToDetail(Guid id)
+    {
+        var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/recipes/{id}?returnUrl={returnUrl}");
+    }
+
+    private void NavigateToEdit(Guid id)
+        => NavigationManager.NavigateTo($"/recipes/{id}/edit");
+
+    private void NavigateToCreate()
+        => NavigationManager.NavigateTo("/recipes/new");
 }
