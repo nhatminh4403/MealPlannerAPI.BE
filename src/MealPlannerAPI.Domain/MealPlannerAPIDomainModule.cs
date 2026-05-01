@@ -1,4 +1,5 @@
 //using MealPlannerAPI.MealPlans.BackgroundJobs;
+using MealPlannerAPI.Identity;
 using MealPlannerAPI.MultiTenancy;
 using MealPlannerAPI.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,6 @@ public class MealPlannerAPIDomainModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
-
         Configure<AbpMultiTenancyOptions>(options =>
         {
             options.IsEnabled = !MultiTenancyConsts.IsEnabled;
@@ -55,8 +55,9 @@ public class MealPlannerAPIDomainModule : AbpModule
             options.DefinitionProviders.Add<MealPlannerAPISettingDefinitionProvider>();
         });
 
+        
         var services = context.Services;
-
+        services.AddScoped<IdentityUserManager,ExtendedIdentityUserManager>();
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif

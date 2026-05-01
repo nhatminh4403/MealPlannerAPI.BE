@@ -450,6 +450,7 @@ namespace MealPlannerAPI.Migrations
                     EntityVersion = table.Column<int>(type: "int", nullable: false),
                     LastPasswordChangeTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastSignInTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Leaved = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     AvatarUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     DietaryRestrictions = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
@@ -515,7 +516,7 @@ namespace MealPlannerAPI.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Cuisine = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Difficulty = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Difficulty = table.Column<int>(type: "int", maxLength: 32, nullable: false),
                     CookingTimeMinutes = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     PrepTimeMinutes = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     Servings = table.Column<int>(type: "int", nullable: false, defaultValue: 4),
@@ -700,7 +701,7 @@ namespace MealPlannerAPI.Migrations
                     ChangeType = table.Column<byte>(type: "tinyint", nullable: false),
                     EntityTenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     EntityId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    EntityTypeFullName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    EntityTypeFullName = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -969,7 +970,15 @@ namespace MealPlannerAPI.Migrations
                     MealName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     MealType = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     ScheduledTime = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: true),
-                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    RecipeName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RecipeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1018,7 +1027,8 @@ namespace MealPlannerAPI.Migrations
                     Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     QuantityGrams = table.Column<float>(type: "real", nullable: false),
                     DisplayQuantity = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    IngredientNutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IngredientNutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    NutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1035,6 +1045,11 @@ namespace MealPlannerAPI.Migrations
                         principalTable: "IngredientNutritions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_RecipeIngredients_IngredientNutritions_NutritionId",
+                        column: x => x.NutritionId,
+                        principalTable: "IngredientNutritions",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1072,7 +1087,7 @@ namespace MealPlannerAPI.Migrations
                     NewValue = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     OriginalValue = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     PropertyName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    PropertyTypeFullName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
+                    PropertyTypeFullName = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1466,6 +1481,11 @@ namespace MealPlannerAPI.Migrations
                 name: "IX_RecipeIngredients_IngredientNutritionId",
                 table: "RecipeIngredients",
                 column: "IngredientNutritionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecipeIngredients_NutritionId",
+                table: "RecipeIngredients",
+                column: "NutritionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecipeIngredients_RecipeId",

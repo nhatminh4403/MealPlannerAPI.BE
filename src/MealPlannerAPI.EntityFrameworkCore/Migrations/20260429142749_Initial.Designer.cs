@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    [Migration("20260330094309_UpdateEntriesToFullAuditedEntity")]
-    partial class UpdateEntriesToFullAuditedEntity
+    [Migration("20260429142749_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -147,6 +147,9 @@ namespace MealPlannerAPI.Migrations
 
                     b.Property<Guid?>("RecipeId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RecipeName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ScheduledTime")
                         .HasMaxLength(8)
@@ -298,10 +301,9 @@ namespace MealPlannerAPI.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("Difficulty")
-                        .IsRequired()
+                    b.Property<int>("Difficulty")
                         .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                        .HasColumnType("int");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -388,6 +390,9 @@ namespace MealPlannerAPI.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<Guid?>("NutritionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<float>("QuantityGrams")
                         .HasColumnType("real");
 
@@ -397,6 +402,8 @@ namespace MealPlannerAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IngredientNutritionId");
+
+                    b.HasIndex("NutritionId");
 
                     b.HasIndex("RecipeId");
 
@@ -751,8 +758,8 @@ namespace MealPlannerAPI.Migrations
 
                     b.Property<string>("EntityTypeFullName")
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
                         .HasColumnName("EntityTypeFullName");
 
                     b.Property<string>("ExtraProperties")
@@ -799,8 +806,8 @@ namespace MealPlannerAPI.Migrations
 
                     b.Property<string>("PropertyTypeFullName")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
                         .HasColumnName("PropertyTypeFullName");
 
                     b.Property<Guid?>("TenantId")
@@ -1459,6 +1466,12 @@ namespace MealPlannerAPI.Migrations
 
                     b.Property<DateTimeOffset?>("LastSignInTime")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("Leaved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("Leaved");
 
                     b.Property<bool>("LockoutEnabled")
                         .ValueGeneratedOnAdd()
@@ -2639,11 +2652,17 @@ namespace MealPlannerAPI.Migrations
                         .HasForeignKey("IngredientNutritionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MealPlannerAPI.Nutritions.IngredientNutrition", "Nutrition")
+                        .WithMany()
+                        .HasForeignKey("NutritionId");
+
                     b.HasOne("MealPlannerAPI.Recipes.Recipe", null)
                         .WithMany("Ingredients")
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Nutrition");
                 });
 
             modelBuilder.Entity("MealPlannerAPI.ShoppingLists.ShoppingListItem", b =>
