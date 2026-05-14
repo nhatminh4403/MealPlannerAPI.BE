@@ -65,23 +65,7 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
 
         if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Web") == null)
         {
-            //await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
-            //{
-            //    ClientId = "MealPlannerAPI_Web",
-            //    ClientType = OpenIddictConstants.ClientTypes.Public,
-            //    DisplayName = "MealPlanner API Web",
-            //    Permissions =
-            //    {
-            //        OpenIddictConstants.Permissions.Endpoints.Token,
-            //        OpenIddictConstants.Permissions.Endpoints.Revocation,
-            //        OpenIddictConstants.Permissions.GrantTypes.Password,
-            //        OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-            //        OpenIddictConstants.Permissions.Scopes.Email,
-            //        OpenIddictConstants.Permissions.Scopes.Profile,
-            //        OpenIddictConstants.Permissions.Scopes.Roles,
-            //        OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
-            //    }
-            //});
+            var mealPlannerApiWebRootUrl = configurationSection["MealPlannerAPI_Web:RootUrl"]?.TrimEnd('/');
             await CreateOrUpdateApplicationAsync(
                 applicationType: OpenIddictConstants.ApplicationTypes.Web,
                 name: "MealPlannerAPI_Web",
@@ -99,47 +83,18 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
                     OpenIddictConstants.Permissions.Scopes.Email,
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Roles,
-                    "MealPlannerAPI"
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
                 },
                 redirectUris: new List<string>(),
                 postLogoutRedirectUris: new List<string>(),
-                clientUri: "https://localhost:44338",  
-                logoUri: "/images/clients/meal-planner.svg"         
+                clientUri: mealPlannerApiWebRootUrl,
+                logoUri: "/images/clients/meal-planner.svg"
             );
         }
 
         if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Blazor") == null)
         {
-            //await _openIddictApplicationManager.CreateAsync(new OpenIddictApplicationDescriptor
-            //{
-            //    ClientId = "MealPlannerAPI_Blazor",
-            //    ClientType = OpenIddictConstants.ClientTypes.Public,
-            //    ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
-
-            //    DisplayName = "MealPlanner Blazor Admin",
-            //    //ClientSecret = oidcSection.Value,
-            //    Permissions =
-            //    {
-            //        OpenIddictConstants.Permissions.Endpoints.Authorization,
-            //        OpenIddictConstants.Permissions.Endpoints.Token,
-            //        OpenIddictConstants.Permissions.Endpoints.Revocation,
-            //        OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-            //        OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-            //        OpenIddictConstants.Permissions.Scopes.Email,
-            //        OpenIddictConstants.Permissions.Scopes.Profile,
-            //        OpenIddictConstants.Permissions.Scopes.Roles,
-            //        OpenIddictConstants.Permissions.Prefixes.Scope + "MealPlannerAPI"
-            //    },
-            //    RedirectUris =
-            //            {
-            //                new Uri("https://localhost:58376/signin-oidc")
-            //            },
-            //    PostLogoutRedirectUris =
-            //            {
-            //                new Uri("https://localhost:58376/signout-callback-oidc")
-            //            },
-
-            //});
+            var mealPlannerApiBlazorRootUrl = configurationSection["MealPlannerAPI_Blazor:RootUrl"]?.TrimEnd('/');
             await CreateOrUpdateApplicationAsync(
                   applicationType: OpenIddictConstants.ApplicationTypes.Web,
                   name: "MealPlannerAPI_Blazor",
@@ -152,17 +107,17 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
                       OpenIddictConstants.GrantTypes.AuthorizationCode,
                       OpenIddictConstants.GrantTypes.RefreshToken,
                   },
-                          scopes: new List<string>
+                    scopes: new List<string>
                           {
                               OpenIddictConstants.Permissions.Scopes.Email,
                               OpenIddictConstants.Permissions.Scopes.Profile,
                               OpenIddictConstants.Permissions.Scopes.Roles,
                               "MealPlannerAPI"
                           },
-                          redirectUris: new List<string> { "https://localhost:58376/signin-oidc" },
-                          postLogoutRedirectUris: new List<string> { "https://localhost:58376/signout-callback-oidc" },
-                          clientUri: "https://localhost:58376",
-                          logoUri: "/images/clients/blazor-host.svg"  
+                          redirectUris: new List<string> { $"{mealPlannerApiBlazorRootUrl}/signin-oidc" },
+                          postLogoutRedirectUris: new List<string> { $"{mealPlannerApiBlazorRootUrl}/signout-callback-oidc" },
+                          clientUri: mealPlannerApiBlazorRootUrl,
+                          logoUri: "/images/clients/blazor-host.svg"
               );
         }
 

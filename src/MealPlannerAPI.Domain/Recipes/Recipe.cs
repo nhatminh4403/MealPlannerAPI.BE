@@ -54,7 +54,10 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
     {
         var list = new List<string>(tags);
         if (list.Count > RecipeConsts.MaxTags)
+        {
             throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyTags).WithData("max", RecipeConsts.MaxTags);
+        }
+
         Tags = list.Count > 0 ? string.Join(',', list) : null;
     }
     public List<string> GetInstructions()
@@ -65,21 +68,25 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
     {
         InstructionsJson = JsonSerializer.Serialize(new List<string>(steps));
     }
-    // Domain / Recipes / Recipe.cs
     public RecipeIngredient AddIngredient(Guid id, string name, decimal quantityGrams, string displayQuantity, Guid? nutritionId = null)
     {
         if (Ingredients.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        {
             throw new BusinessException(MealPlannerAPIDomainErrorCodes.DuplicateIngredient);
+
+        }
+
         if (Ingredients.Count >= RecipeConsts.MaxIngredients)
-            throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyIngredients)
-                                        .WithData("max", RecipeConsts.MaxIngredients);
+        {
+            throw new BusinessException(MealPlannerAPIDomainErrorCodes.TooManyIngredients).WithData("max", RecipeConsts.MaxIngredients);
+
+        }
 
         var ingredient = new RecipeIngredient(id, Id, name, (float)quantityGrams, displayQuantity, nutritionId);
         Ingredients.Add(ingredient);
         return ingredient;
     }
-    public void ReplaceIngredients(IEnumerable<(Guid? Id, string Name, decimal Quantity, string DisplayQuantity, Guid? NutritionId)>
-        inputIngredients)
+    public void ReplaceIngredients(IEnumerable<(Guid? Id, string Name, decimal Quantity, string DisplayQuantity, Guid? NutritionId)> inputIngredients)
     {
         var inputIds = inputIngredients.Where(x => x.Id.HasValue).Select(x => x.Id!.Value).ToList();
         var toRemove = Ingredients.Where(x => !inputIds.Contains(x.Id)).ToList();
@@ -89,20 +96,17 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
         {
             if (input.Id.HasValue)
             {
-                // 2. Update existing
                 var existing = Ingredients.FirstOrDefault(x => x.Id == input.Id.Value);
                 existing?.Update(input.Name, (float)input.Quantity, input.DisplayQuantity, input.NutritionId);
             }
             else
             {
-                // 3. Add new
                 AddIngredient(Guid.NewGuid(), input.Name, (decimal)input.Quantity, input.DisplayQuantity, input.NutritionId);
             }
         }
     }
     public int GetTotalTimeMinutes() => CookingTimeMinutes + PrepTimeMinutes;
-    public double CalculateTrendingScore()
-        => Math.Round(Rating * (1 + ReviewCount * 0.001), 1);
+    public double CalculateTrendingScore() => Math.Round(Rating * (1 + ReviewCount * 0.001), 1);
 
     public static Recipe CreateSeed(Guid id,
                                     string name,

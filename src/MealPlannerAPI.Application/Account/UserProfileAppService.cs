@@ -255,6 +255,12 @@ namespace MealPlannerAPI.Users
             return new ProfileDto
             {
                 Id = user.Id,
+                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = user.IsActive,
                 AvatarUrl = user.AvatarUrl,
                 CreationTime = user.CreationTime,
                 CreatorId = user.CreatorId,
@@ -269,7 +275,9 @@ namespace MealPlannerAPI.Users
                 {
                     Privacy = _toPrivacyDtoMapper.Map(user),
                     Notifications = _toNotifPrefDtoMapper.Map(user)
-                }
+                },
+                FollowersCount = user.Followers,
+                FollowingCount = user.Following,
             };
         }
         private async Task<DashboardStatsDto> BuildStatsAsync(UserProfile user)

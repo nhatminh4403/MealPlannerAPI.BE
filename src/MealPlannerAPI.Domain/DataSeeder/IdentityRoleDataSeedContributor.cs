@@ -49,6 +49,7 @@ namespace MealPlannerAPI.DataSeeder
                 MealPlannerAPIPermissions.ShoppingLists.Create,
                 MealPlannerAPIPermissions.ShoppingLists.Update,
                 MealPlannerAPIPermissions.ShoppingLists.Delete,
+                MealPlannerAPIPermissions.ShoppingLists.ManageItems,
                 MealPlannerAPIPermissions.Notifications.Default,
                 MealPlannerAPIPermissions.Notifications.Delete,
                 MealPlannerAPIPermissions.Dashboard.Default,

@@ -28,7 +28,7 @@ namespace MealPlannerAPI.Identity
             var result = await base.CreateAsync(user);
 
             if (result.Succeeded)
-                await AddToRoleAsync(user, ExtendedRoleConsts.CommunityUser);
+                await TryAddToCommunityRoleAsync(user);
 
             return result;
         }
@@ -38,9 +38,19 @@ namespace MealPlannerAPI.Identity
             var result = await base.CreateAsync(user, password);
 
             if (result.Succeeded)
-                await AddToRoleAsync(user, ExtendedRoleConsts.CommunityUser);
+                await TryAddToCommunityRoleAsync(user);
 
             return result;
+        }
+
+        private async Task TryAddToCommunityRoleAsync(IdentityUser user)
+        {
+            var normalizedName = NormalizeName(ExtendedRoleConsts.CommunityUser);
+            var role = await RoleRepository.FindByNormalizedNameAsync(normalizedName);
+
+            if (role == null) return; 
+
+            await AddToRoleAsync(user, ExtendedRoleConsts.CommunityUser);
         }
     }
 }
