@@ -12,7 +12,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-
+using System;
 namespace MealPlannerAPI.EntityFrameworkCore;
 
 [DependsOn(
@@ -57,7 +57,15 @@ public class MealPlannerAPIEntityFrameworkCoreModule : AbpModule
              * See also MealPlannerAPIDbContextFactory for EF Core tooling. */
 
             options.UseSqlServer();
+            //options.UseSqlServer(sqlServerOptions =>
+            //{
 
+            //    sqlServerOptions.EnableRetryOnFailure(
+            //        maxRetryCount: 5,
+            //        maxRetryDelay: TimeSpan.FromSeconds(30),
+            //        errorNumbersToAdd: null
+            //    );
+            //});
         });
 
     }

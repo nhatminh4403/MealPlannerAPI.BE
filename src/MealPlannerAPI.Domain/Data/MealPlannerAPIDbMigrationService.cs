@@ -13,6 +13,7 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.Uow;
 
 namespace MealPlannerAPI.Data;
 
@@ -24,12 +25,14 @@ public class MealPlannerAPIDbMigrationService : ITransientDependency
     private readonly IEnumerable<IMealPlannerAPIDbSchemaMigrator> _dbSchemaMigrators;
     private readonly ITenantRepository _tenantRepository;
     private readonly ICurrentTenant _currentTenant;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     public MealPlannerAPIDbMigrationService(
         IDataSeeder dataSeeder,
         ITenantRepository tenantRepository,
         ICurrentTenant currentTenant,
-        IEnumerable<IMealPlannerAPIDbSchemaMigrator> dbSchemaMigrators)
+        IEnumerable<IMealPlannerAPIDbSchemaMigrator> dbSchemaMigrators,
+        IUnitOfWorkManager unitOfWorkManager)
     {
         _dataSeeder = dataSeeder;
         _tenantRepository = tenantRepository;
@@ -37,6 +40,7 @@ public class MealPlannerAPIDbMigrationService : ITransientDependency
         _dbSchemaMigrators = dbSchemaMigrators;
 
         Logger = NullLogger<MealPlannerAPIDbMigrationService>.Instance;
+        _unitOfWorkManager = unitOfWorkManager;
     }
 
     public async Task MigrateAsync()
@@ -105,12 +109,25 @@ public class MealPlannerAPIDbMigrationService : ITransientDependency
     {
         Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
 
-        await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
-            .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
-                MealPlannerAPIConsts.AdminEmailDefaultValue)
-            .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,
-                MealPlannerAPIConsts.AdminPasswordDefaultValue)
-        );
+        //await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
+        //    .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
+        //        MealPlannerAPIConsts.AdminEmailDefaultValue)
+        //    .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,
+        //        MealPlannerAPIConsts.AdminPasswordDefaultValue)
+        //);
+        using (_currentTenant.Change(tenant?.Id))
+        {
+            using (var uow = _unitOfWorkManager.Begin(requiresNew: true, isTransactional: false))
+            {
+                await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
+                                       .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
+                                           MealPlannerAPIConsts.AdminEmailDefaultValue)
+                                       .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,
+                                           MealPlannerAPIConsts.AdminPasswordDefaultValue)
+                                   );
+                await uow.CompleteAsync();
+            }
+        }
     }
 
     private bool AddInitialMigrationIfNotExist()

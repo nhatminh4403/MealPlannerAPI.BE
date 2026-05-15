@@ -63,7 +63,8 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
         };
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");
 
-        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Web") == null)
+        var webClientId = configurationSection["MealPlannerAPI_Web:ClientId"];
+        if (!webClientId.IsNullOrWhiteSpace())
         {
             var mealPlannerApiWebRootUrl = configurationSection["MealPlannerAPI_Web:RootUrl"]?.TrimEnd('/');
             await CreateOrUpdateApplicationAsync(
@@ -92,7 +93,8 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
             );
         }
 
-        if (await _openIddictApplicationManager.FindByClientIdAsync("MealPlannerAPI_Blazor") == null)
+        var blazorClientId = configurationSection["MealPlannerAPI_Blazor:ClientId"];
+        if (!blazorClientId.IsNullOrWhiteSpace())
         {
             var mealPlannerApiBlazorRootUrl = configurationSection["MealPlannerAPI_Blazor:RootUrl"]?.TrimEnd('/');
             await CreateOrUpdateApplicationAsync(

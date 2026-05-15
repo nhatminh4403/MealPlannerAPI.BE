@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -87,14 +88,35 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
 
         if (!hostingEnvironment.IsDevelopment())
         {
+
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
             {
                 options.AddDevelopmentEncryptionAndSigningCertificate = false;
             });
-
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
+
+                //serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
+                var certificateLoaded = false;
+
+                var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
+                var certPass = configuration["AuthServer:CertificatePassPhrase"];
+                if (File.Exists(certPath) && !string.IsNullOrWhiteSpace(certPass))
+                {
+                    try
+                    {
+                        // Use the file if it exists
+                        serverBuilder.AddEncryptionCertificate(new FileStream(certPath, FileMode.Open, FileAccess.Read), certPass);
+                        serverBuilder.AddSigningCertificate(new FileStream(certPath, FileMode.Open, FileAccess.Read), certPass);
+                        certificateLoaded = true;
+                    }
+                    catch { /* Log failure if needed */ }
+                }
+                if (!certificateLoaded)
+                {
+                    serverBuilder.AddEphemeralEncryptionKey();
+                    serverBuilder.AddEphemeralSigningKey();
+                }
                 serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
             });
         }
@@ -357,25 +379,13 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-        if (hostingEnvironment.IsDevelopment())
+
+        Configure<AbpDistributedCacheOptions>(options =>
         {
-            context.Services.AddDistributedMemoryCache();
-            //context.Services.AddStackExchangeRedisCache(options =>
-            //{
-            //    options.Configuration = configuration.GetConnectionString("Redis");
-            //});
-        }
-        else
-        {
-            Configure<AbpDistributedCacheOptions>(options =>
-            {
-                options.KeyPrefix = "MealPlanner:";
-            });
-            context.Services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = configuration.GetConnectionString("Redis");
-            });
-        }
+            options.KeyPrefix = "MealPlanner:";
+        });
+
+        context.Services.AddDistributedMemoryCache();
 
     }
     private void ConfigureHealthChecks(ServiceConfigurationContext context)

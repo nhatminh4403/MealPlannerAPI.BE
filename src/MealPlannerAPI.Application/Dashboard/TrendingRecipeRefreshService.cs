@@ -40,7 +40,14 @@ namespace MealPlannerAPI.Dashboard
                     .OrderByDescending(r => r.Rating)
                     .ThenByDescending(r => r.ReviewCount)
                     .Take(RecipeConsts.TrendingMaxResults));
-
+            if (recipes.Count == 0)
+            {
+                recipes = await AsyncExecuter.ToListAsync(
+                    query
+                        .OrderByDescending(r => r.Rating)
+                        .ThenByDescending(r => r.ReviewCount)
+                        .Take(RecipeConsts.TrendingMaxResults));
+            }
             return recipes.Select(r =>
             {
                 var dto = _mapper.Map(r);

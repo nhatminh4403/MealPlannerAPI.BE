@@ -2,7 +2,7 @@
 
 public static class RecipeConsts
 {
-    public const int TrendingWindowDays = 7;
+    public const int TrendingWindowDays = 14;
     public const int TrendingMaxResults = 10;
     public const int RecentRecipesMaxResults = 6;
     public const int TrendingRefreshIntervalMs = 60 * 60 * 1000;
