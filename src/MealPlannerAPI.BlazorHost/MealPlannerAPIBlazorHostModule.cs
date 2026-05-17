@@ -4,6 +4,7 @@ using Blazorise.Icons.FontAwesome;
 using MealPlannerAPI.BlazorHost.Components;
 using MealPlannerAPI.BlazorHost.Components.Settings;
 using MealPlannerAPI.BlazorHost.Menus;
+using MealPlannerAPI.BlazorHost.Middlewares;
 using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Localization;
@@ -318,6 +319,7 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
         var app = context.GetApplicationBuilder();
 
         app.UseForwardedHeaders();
+        app.UseAzureSqlFreeTierLimit();
 
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();

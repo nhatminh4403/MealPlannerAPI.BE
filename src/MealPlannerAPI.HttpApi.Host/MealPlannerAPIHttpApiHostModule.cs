@@ -7,6 +7,7 @@ using MealPlannerAPI.MultiTenancy;
 using MealPlannerAPI.Nutritions.ExternalData;
 using MealPlannerAPI.Settings;
 using MealPlannerAPI.SignalR;
+using MealPlannerAPI.HttpApi.Host.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
@@ -407,6 +408,7 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
         BackgroundJobsInitialization(context);
 
         app.UseForwardedHeaders();
+        app.UseAzureSqlFreeTierLimit();
 
         if (env.IsDevelopment())
         {
