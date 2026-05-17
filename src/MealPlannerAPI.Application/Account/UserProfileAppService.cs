@@ -1,5 +1,4 @@
 using MealPlannerAPI.Dashboard;
-using MealPlannerAPI.Enums;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Users;
 using MealPlannerAPI.MealPlans;
@@ -16,7 +15,6 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Entities;
-using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 

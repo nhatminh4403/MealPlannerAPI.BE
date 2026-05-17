@@ -1,5 +1,4 @@
-﻿using MealPlannerAPI.Dashboard;
-using MealPlannerAPI.Recipes.Caching;
+﻿using MealPlannerAPI.Recipes.Caching;
 using MealPlannerAPI.Recipes.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -11,7 +10,7 @@ namespace MealPlannerAPI.Recipes
 {
     public class TrendingRecipeCache : ISingletonDependency
     {
-        private const string CacheKey = "trending-recipes";
+
         private static readonly TimeSpan Ttl = TimeSpan.FromMinutes(30);
 
         private readonly IDistributedCache<TrendingRecipeCacheItem> _cache;
@@ -24,7 +23,7 @@ namespace MealPlannerAPI.Recipes
         public async Task<List<TrendingRecipeDto>> GetOrSetAsync(Func<Task<List<TrendingRecipeDto>>> factory)
         {
             var cached = await _cache.GetOrAddAsync(
-                CacheKey, async () => new TrendingRecipeCacheItem
+                RecipeConsts.CacheKey, async () => new TrendingRecipeCacheItem
                 {
                     Items = await factory()
                 },
@@ -39,12 +38,16 @@ namespace MealPlannerAPI.Recipes
         public Task SetAsync(List<TrendingRecipeDto> items)
         {
             return _cache.SetAsync(
-                        CacheKey,
+                        RecipeConsts.CacheKey,
                         new TrendingRecipeCacheItem { Items = items },
                         new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = Ttl });
         }
-
+        public async Task<List<TrendingRecipeDto>?> GetAsync()
+        {
+            var cached = await _cache.GetAsync(RecipeConsts.CacheKey);
+            return cached?.Items;
+        }
         public Task InvalidateAsync()
-            => _cache.RemoveAsync(CacheKey);
+            => _cache.RemoveAsync(RecipeConsts.CacheKey);
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MealPlannerAPI.Settings
+﻿namespace MealPlannerAPI.Settings
 {
     public class HardDeleteOptions
     {

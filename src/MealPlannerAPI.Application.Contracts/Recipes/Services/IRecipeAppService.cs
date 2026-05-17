@@ -11,7 +11,7 @@ namespace MealPlannerAPI.Recipes.Services
         RecipeSummaryDto,
         Guid,
         GetRecipesInput,
-        CreateUpdateRecipeDto, 
+        CreateUpdateRecipeDto,
         CreateUpdateRecipeDto>
     {
         Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId);

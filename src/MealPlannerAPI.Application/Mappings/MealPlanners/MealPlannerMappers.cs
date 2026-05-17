@@ -103,8 +103,8 @@ public partial class MealPlanEntryToMealPlanEntryDtoMapper : MapperBase<MealPlan
                                  mealName: string.Empty,
                                  mealType: default,
                                  recipeName: null,
-                                 recipeId :null,
-                                 scheduledTime:null);
+                                 recipeId: null,
+                                 scheduledTime: null);
 
         [MapperIgnoreTarget(nameof(MealPlanEntry.Id))]
         [MapperIgnoreTarget(nameof(MealPlanEntry.MealPlanId))]

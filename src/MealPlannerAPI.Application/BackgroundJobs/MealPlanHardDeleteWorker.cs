@@ -3,9 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Auditing;
@@ -54,8 +51,8 @@ namespace MealPlannerAPI.MealPlans.BackgroundJobs
                 .GetRequiredService<IRepository<TEntity, TKey>>();
 
             var toDelete = await repo.GetListAsync(
-                x => x.IsDeleted 
-                && x.DeletionTime != null 
+                x => x.IsDeleted
+                && x.DeletionTime != null
                 && x.DeletionTime < cutoff
             );
 

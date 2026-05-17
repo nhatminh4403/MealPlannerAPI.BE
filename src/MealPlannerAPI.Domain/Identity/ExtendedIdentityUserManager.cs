@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Caching;
 using Volo.Abp.Data;
@@ -48,7 +47,7 @@ namespace MealPlannerAPI.Identity
             var normalizedName = NormalizeName(ExtendedRoleConsts.CommunityUser);
             var role = await RoleRepository.FindByNormalizedNameAsync(normalizedName);
 
-            if (role == null) return; 
+            if (role == null) return;
 
             await AddToRoleAsync(user, ExtendedRoleConsts.CommunityUser);
         }

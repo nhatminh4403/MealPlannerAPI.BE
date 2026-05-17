@@ -55,9 +55,9 @@ public class MealPlannerAPIDomainModule : AbpModule
             options.DefinitionProviders.Add<MealPlannerAPISettingDefinitionProvider>();
         });
 
-        
+
         var services = context.Services;
-        services.AddScoped<IdentityUserManager,ExtendedIdentityUserManager>();
+        services.AddScoped<IdentityUserManager, ExtendedIdentityUserManager>();
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif

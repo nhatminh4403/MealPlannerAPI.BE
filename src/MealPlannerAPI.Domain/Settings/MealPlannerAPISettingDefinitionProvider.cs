@@ -12,12 +12,12 @@ public class MealPlannerAPISettingDefinitionProvider : SettingDefinitionProvider
         context.Add(new SettingDefinition(MealPlannerAPISettings.EnableUI,
                                           defaultValue: bool.TrueString,
                                           description: L("EnableUI"),
-                                          
+
                                           isVisibleToClients: true));
         context.Add(new SettingDefinition(MealPlannerAPISettings.EnableMockData,
                                           defaultValue: bool.FalseString,
                                           description: L("EnableMockData"),
-                                          
+
                                           isVisibleToClients: true));
 
 

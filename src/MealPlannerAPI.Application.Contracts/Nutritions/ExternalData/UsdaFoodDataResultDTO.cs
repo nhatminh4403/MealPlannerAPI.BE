@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MealPlannerAPI.Nutritions.ExternalData
+﻿namespace MealPlannerAPI.Nutritions.ExternalData
 {
     public class UsdaFoodDataResultDTO
     {

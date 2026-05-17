@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MealPlannerAPI.Dashboard
@@ -59,7 +58,9 @@ namespace MealPlannerAPI.Dashboard
 
         public async Task RefreshAsync()
         {
-            await _trendingCache.InvalidateAsync();
+            var existing = await _trendingCache.GetAsync();
+            if (existing != null)
+                return;
             var fresh = await FetchFromDbAsync();
             await _trendingCache.SetAsync(fresh);
             await _hub.NotifyTrendingUpdatedAsync();

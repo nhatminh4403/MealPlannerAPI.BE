@@ -1,14 +1,12 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MealPlannerAPI.Notifications
 {
     public class NotificationFactory
     {
-        public static Task NewFollower(IUserNotificationAppService svc, Guid targetUserId, 
+        public static Task NewFollower(IUserNotificationAppService svc, Guid targetUserId,
             string followerUsername, string? avatarUrl = null)
         => svc.SendAsync(targetUserId, NotificationType.NewFollower,
             title: "New Follower",
@@ -37,7 +35,7 @@ namespace MealPlannerAPI.Notifications
 
         public static Task MealReminder(IUserNotificationAppService svc, Guid targetUserId, string mealName)
             => svc.SendAsync(targetUserId, NotificationType.MealReminder,
-                title: "Meal Reminder",preventDuplicateToday: true,
+                title: "Meal Reminder", preventDuplicateToday: true,
                 message: $"Don't forget to prepare \"{mealName}\" today.");
     }
 }

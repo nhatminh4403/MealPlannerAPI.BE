@@ -6,8 +6,10 @@ using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
 using MealPlannerAPI.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -15,9 +17,6 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
-using System.Linq.Dynamic.Core;
-using Microsoft.Extensions.Logging;
-using MealPlannerAPI.Enums;
 
 namespace MealPlannerAPI.Recipes
 {

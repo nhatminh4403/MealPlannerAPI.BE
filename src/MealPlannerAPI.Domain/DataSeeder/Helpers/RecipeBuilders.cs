@@ -2,13 +2,13 @@
 using MealPlannerAPI.Recipes;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Volo.Abp.Guids;
 
 namespace MealPlannerAPI.DataSeeder.Helpers;
+
 public static class RecipeBuilders
 {
-    public static Recipe BuildGrilledChicken(Dictionary<string, Guid> l, IGuidGenerator guidGenerator,  Guid? userId)
+    public static Recipe BuildGrilledChicken(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
 
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),

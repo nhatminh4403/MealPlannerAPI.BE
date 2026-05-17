@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
@@ -27,7 +26,7 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly IGuidGenerator _guidGenerator;
         private readonly IdentityUserManager _identityUserManager;
-        
+
         public int Order => 3;
 
         public MealPlannerAPIDataSeedContributor(
@@ -175,7 +174,7 @@ namespace MealPlannerAPI.DataSeeder
             foreach (var data in recipeData)
             {
                 var authorId = data.UserIndex < users.Count ? users[data.UserIndex].Id : users[0].Id;
-                
+
                 var recipe = Recipe.CreateSeed(
                     id: _guidGenerator.Create(),
                     name: data.Name,
@@ -210,7 +209,7 @@ namespace MealPlannerAPI.DataSeeder
             {
                 var user = users[i];
                 var userRecipes = recipes.Where(r => r.AuthorId == user.Id).Take(5).ToList();
-                
+
                 if (userRecipes.Count == 0)
                 {
                     userRecipes = recipes.Take(5).ToList();

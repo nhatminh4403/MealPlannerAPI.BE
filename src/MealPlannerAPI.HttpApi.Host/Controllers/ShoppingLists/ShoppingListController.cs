@@ -2,7 +2,6 @@ using MealPlannerAPI.Models;
 using MealPlannerAPI.Routes;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using MealPlannerAPI.ShoppingLists.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;

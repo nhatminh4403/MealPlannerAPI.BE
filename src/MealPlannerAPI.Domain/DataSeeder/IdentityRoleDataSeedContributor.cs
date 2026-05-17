@@ -73,9 +73,9 @@ namespace MealPlannerAPI.DataSeeder
         {
             var normalizedRoleName = _lookupNormalizer.NormalizeName(roleName);
             var existingRole = await _identityRoleRepository.FindByNormalizedNameAsync(normalizedRoleName);
-            if (existingRole != null) 
+            if (existingRole != null)
             {
-                if(existingRole.IsPublic != isPublic || existingRole.IsDefault != isDefault)
+                if (existingRole.IsPublic != isPublic || existingRole.IsDefault != isDefault)
                 {
                     existingRole.IsPublic = isPublic;
                     existingRole.IsDefault = isDefault;

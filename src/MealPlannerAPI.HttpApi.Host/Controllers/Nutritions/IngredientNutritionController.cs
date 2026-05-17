@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
-using Volo.Abp.Domain.Entities;
 
 namespace MealPlannerAPI.Controllers.Nutritions
 {

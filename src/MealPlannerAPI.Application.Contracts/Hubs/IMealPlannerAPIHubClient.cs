@@ -4,11 +4,10 @@ using MealPlannerAPI.Notifications;
 using MealPlannerAPI.ShoppingLists.Dtos;
 using System;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 
 namespace MealPlannerAPI.Hubs
 {
-    public interface IMealPlannerAPIHubClient 
+    public interface IMealPlannerAPIHubClient
     {
         Task TrendingUpdated();
 

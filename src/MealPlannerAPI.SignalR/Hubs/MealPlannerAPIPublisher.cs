@@ -6,7 +6,6 @@ using MealPlannerAPI.ShoppingLists.Dtos;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
-using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.DependencyInjection;
 namespace MealPlannerAPI.Hubs
 {

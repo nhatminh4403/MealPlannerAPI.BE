@@ -1,12 +1,11 @@
 //.SignalR project
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace MealPlannerAPI.Hubs
 {
@@ -51,7 +50,7 @@ namespace MealPlannerAPI.Hubs
                 Console.WriteLine(ex.StackTrace);
                 throw; // still throw so ABP knows the connection failed
             }
-        
+
         }
 
         public async Task SubscribeShoppingList(Guid shoppingListId, bool subscribe = true)

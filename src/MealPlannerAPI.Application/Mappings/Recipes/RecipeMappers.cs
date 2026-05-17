@@ -1,5 +1,4 @@
-﻿using MealPlannerAPI.Dashboard;
-using MealPlannerAPI.Recipes;
+﻿using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using Riok.Mapperly.Abstractions;
 using System;

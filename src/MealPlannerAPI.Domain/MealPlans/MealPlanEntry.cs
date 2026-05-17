@@ -1,6 +1,5 @@
 ﻿using MealPlannerAPI.Enums;
 using System;
-using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace MealPlannerAPI.MealPlans

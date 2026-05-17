@@ -1,22 +1,17 @@
 ﻿using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.MealPlans.BackgroundJobs;
 using MealPlannerAPI.Notifications;
-using MealPlannerAPI.Users;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BackgroundWorkers;
-using Volo.Abp.Identity;
-using Volo.Abp.Linq;
 using Volo.Abp.Threading;
 using Volo.Abp.Uow;
-using Microsoft.EntityFrameworkCore;
 namespace MealPlannerAPI.BackgroundJobs
 {
     public class MealReminderBackgroundWorker : AsyncPeriodicBackgroundWorkerBase
@@ -27,7 +22,7 @@ namespace MealPlannerAPI.BackgroundJobs
                                             IUserNotificationAppService notificationAppService) : base(timer, serviceScopeFactory)
         {
             _notificationAppService = notificationAppService;
-            Timer.Period = 1000 * 60 * 60*24*7;
+            Timer.Period = 1000 * 60 * 60 * 24 * 7;
 
         }
         [UnitOfWork]
@@ -86,5 +81,5 @@ namespace MealPlannerAPI.BackgroundJobs
 
         }
     }
-    
+
 }

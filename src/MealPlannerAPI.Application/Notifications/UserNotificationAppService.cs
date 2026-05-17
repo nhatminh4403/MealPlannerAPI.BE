@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Authorization;
-using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
-using static MealPlannerAPI.Permissions.MealPlannerAPIPermissions;
 
 namespace MealPlannerAPI.Notifications
 {

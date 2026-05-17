@@ -1,8 +1,5 @@
 ﻿using MealPlannerAPI.MealPlans.BackgroundJobs;
 using MealPlannerAPI.Notifications;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;

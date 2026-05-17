@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using Volo.Abp;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -12,7 +16,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using System;
+
 namespace MealPlannerAPI.EntityFrameworkCore;
 
 [DependsOn(
@@ -50,23 +54,28 @@ public class MealPlannerAPIEntityFrameworkCoreModule : AbpModule
         {
             return;
         }
-
+        var env = context.Services.GetAbpHostEnvironment();
         Configure<AbpDbContextOptions>(options =>
         {
-            /* The main point to change your DBMS.
-             * See also MealPlannerAPIDbContextFactory for EF Core tooling. */
+            if (env.IsDevelopment())
+            {
+                options.UseSqlServer();
 
-            options.UseSqlServer();
-            //options.UseSqlServer(sqlServerOptions =>
-            //{
+            }
+            else
+            {
+                options.UseSqlServer(sqlServerOptions =>
+                {
 
-            //    sqlServerOptions.EnableRetryOnFailure(
-            //        maxRetryCount: 5,
-            //        maxRetryDelay: TimeSpan.FromSeconds(30),
-            //        errorNumbersToAdd: null
-            //    );
-            //});
+                    sqlServerOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null
+                    );
+                });
+            }
         });
+
 
     }
 }

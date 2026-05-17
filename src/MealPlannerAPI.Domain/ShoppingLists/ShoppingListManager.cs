@@ -48,9 +48,9 @@ namespace MealPlannerAPI.ShoppingLists
             foreach (var item in aggregatedIngredients)
             {
                 var itemId = GuidGenerator.Create();
-                if(item.Unit != null)
+                if (item.Unit != null)
                 {
-                    shoppingList.AddItem(itemId, item.Name,(decimal)item.Quantity, false, item.Unit, item.Category);
+                    shoppingList.AddItem(itemId, item.Name, (decimal)item.Quantity, false, item.Unit, item.Category);
                 }
             }
 

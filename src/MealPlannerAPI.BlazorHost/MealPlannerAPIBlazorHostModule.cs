@@ -114,16 +114,40 @@ public class MealPlannerAPIBlazorHostModule : AbpModule
 
         if (!hostingEnvironment.IsDevelopment())
         {
+
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
             {
                 options.AddDevelopmentEncryptionAndSigningCertificate = false;
             });
-
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate(
-                    "openiddict.pfx",
-                    configuration["AuthServer:CertificatePassPhrase"]!);
+
+                //serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
+                var certificateLoaded = false;
+
+                var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
+                var certPass = configuration["AuthServer:CertificatePassPhrase"];
+                if (File.Exists(certPath) && !string.IsNullOrWhiteSpace(certPass))
+                {
+                    try
+                    {
+                        // Use the file if it exists
+                        serverBuilder.AddEncryptionCertificate(new FileStream(certPath, FileMode.Open, FileAccess.Read), certPass);
+                        serverBuilder.AddSigningCertificate(new FileStream(certPath, FileMode.Open, FileAccess.Read), certPass);
+                        certificateLoaded = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[OpenIddict] Failed to load certificate: {ex.Message}");
+                    }
+                }
+                if (!certificateLoaded)
+                {
+                    Console.WriteLine("[OpenIddict] Falling back to ephemeral keys.");
+
+                    serverBuilder.AddEphemeralEncryptionKey();
+                    serverBuilder.AddEphemeralSigningKey();
+                }
                 serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
             });
         }

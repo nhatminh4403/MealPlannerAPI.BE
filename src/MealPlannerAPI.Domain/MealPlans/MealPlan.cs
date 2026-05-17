@@ -39,7 +39,7 @@ namespace MealPlannerAPI.MealPlans
                 existing.RecipeId = recipeId;
                 return existing;
             }
-            
+
             var entry = new MealPlanEntry(id: id,
                                           mealPlanId: Id,
                                           dayOfWeek,
@@ -60,7 +60,7 @@ namespace MealPlannerAPI.MealPlans
             Entries.Remove(entry);
         }
         public void ReplaceEntries(
-        IEnumerable<(Guid Id, DayOfWeek DayOfWeek, string MealName,MealType MealType, string? ScheduledTime, Guid? RecipeId, string? RecipeName)> entries)
+        IEnumerable<(Guid Id, DayOfWeek DayOfWeek, string MealName, MealType MealType, string? ScheduledTime, Guid? RecipeId, string? RecipeName)> entries)
         {
             Entries.Clear();
             foreach (var e in entries)
