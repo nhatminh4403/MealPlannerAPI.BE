@@ -13,7 +13,7 @@ public class Program
     {
 
         Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Async(c => c.File("Logs/blazor-ui-logs.txt"))
+                        .WriteTo.Async(c => c.File("Logs/blazor-ui-logs.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7))
                         .WriteTo.Async(c => c.Console())
                         .CreateBootstrapLogger();
         try
