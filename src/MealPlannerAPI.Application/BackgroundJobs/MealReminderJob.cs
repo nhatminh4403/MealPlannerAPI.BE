@@ -13,6 +13,7 @@ namespace MealPlannerAPI.BackgroundJobs
         public MealReminderJob(IUserNotificationAppService notificationAppService)
         {
             _notificationAppService = notificationAppService;
+
         }
 
         public override async Task ExecuteAsync(MealReminderJobArgs args)
