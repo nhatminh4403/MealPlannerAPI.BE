@@ -1,4 +1,34 @@
-# MealPlannerAPI
+# MealPlanner API Backend
+
+MealPlanner Backend is the ASP.NET Core and ABP-based server for the MealPlanner platform. It provides the domain, application, infrastructure, API, SignalR, database migration, and Blazor host projects that support the frontend and admin experience.
+
+### What it includes
+
+- Layered DDD solution structure with domain, application, and infrastructure projects
+- HTTP API host for client applications
+- DbMigrator for applying migrations and seeding the initial data
+- Blazor host for the built-in admin UI
+- SignalR support for real-time features
+
+### Tech Stack
+
+- .NET 10
+- ABP Framework
+- ASP.NET Core
+- Entity Framework Core
+- SignalR
+
+### Local Development
+
+Restore dependencies, apply migrations, and run the host:
+
+```bash
+dotnet restore
+dotnet run --project src/MealPlannerAPI.DbMigrator
+dotnet run --project src/MealPlannerAPI.HttpApi.Host
+```
+
+The solution also contains a Blazor host in `src/MealPlannerAPI.BlazorHost` if you want to run the admin UI separately.
 
 ## About this solution
 
