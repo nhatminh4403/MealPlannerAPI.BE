@@ -17,7 +17,7 @@ public static class RecipeBuilders
             description: "A clean high-protein meal with grilled chicken breast and steamed broccoli.",
             servings: 2, prepMinutes: 10, cookMinutes: 20,
             difficulty: DifficultyLevel.Medium,
-            authorId: userId.Value,
+            authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "Chicken Breast", 300, "300g", l),
@@ -36,7 +36,7 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildSalmonRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildSalmonRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Salmon with Brown Rice",
@@ -44,7 +44,7 @@ public static class RecipeBuilders
             description: "Omega-3 rich salmon fillet served over nutty brown rice.",
             servings: 2, prepMinutes: 10, cookMinutes: 25,
             difficulty: DifficultyLevel.Medium,
-            authorId: null,
+            authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "Salmon",           250, "250g", l),
@@ -64,14 +64,14 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildPastaPomodoro(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildPastaPomodoro(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Pasta Pomodoro",
             cuisine: "Italian",
             description: "Classic Italian pasta with a simple fresh tomato sauce.",
             servings: 4, prepMinutes: 10, cookMinutes: 20,
-            difficulty: DifficultyLevel.Easy, authorId: null,
+            difficulty: DifficultyLevel.Easy, authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "Pasta (Dry)",  320, "320g", l),
@@ -92,14 +92,14 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildSpinachOmelette(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildSpinachOmelette(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Spinach and Cheese Omelette",
             cuisine: "French",
             description: "Fluffy omelette loaded with wilted spinach and melted cheddar.",
             servings: 1, prepMinutes: 5, cookMinutes: 8,
-            difficulty: DifficultyLevel.Easy, authorId: null,
+            difficulty: DifficultyLevel.Easy, authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "Egg",            150, "3 eggs", l),
@@ -119,14 +119,14 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildSweetPotatoBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildSweetPotatoBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Sweet Potato & Black Bean Bowl",
             cuisine: "Mexican",
             description: "Hearty plant-based bowl with roasted sweet potato and spiced black beans.",
             servings: 2, prepMinutes: 10, cookMinutes: 30,
-            difficulty: DifficultyLevel.Medium, authorId: null,
+            difficulty: DifficultyLevel.Medium, authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "Sweet Potato",         300, "2 medium", l),
@@ -147,14 +147,14 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildChickenFriedRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildChickenFriedRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Chicken Fried Rice",
             cuisine: "Chinese",
             description: "Classic homemade fried rice with chicken breast, eggs, and onions.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
-            difficulty: DifficultyLevel.Medium, authorId: null,
+            difficulty: DifficultyLevel.Medium, authorId: userId,
             ingredients: new[]
             {
                     Ing(guidGenerator, "White Rice (Dry)",  100, "100g dry", l),
@@ -175,11 +175,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildBananaOatmeal(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildBananaOatmeal(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Banana Peanut Butter Oatmeal",
-            cuisine: "Breakfast", authorId: null,
+            cuisine: "Breakfast", authorId: userId,
             description: "A hearty breakfast bowl of oats topped with fresh banana and peanut butter.",
             servings: 1, prepMinutes: 5, cookMinutes: 10,
             difficulty: DifficultyLevel.Easy,
@@ -202,11 +202,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildBeefAndPotatoBake(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildBeefAndPotatoBake(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Ground Beef and Potato Bake",
-            cuisine: "Continental", authorId: null,
+            cuisine: "Continental", authorId: userId,
             description: "A comforting casserole with layers of potato, seasoned ground beef, and cheesy goodness.",
             servings: 4, prepMinutes: 15, cookMinutes: 45,
             difficulty: DifficultyLevel.Hard,
@@ -231,10 +231,10 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildYogurtParfait(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildYogurtParfait(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
-            name: "Greek Yogurt Parfait", authorId: null,
+            name: "Greek Yogurt Parfait", authorId: userId,
             cuisine: "Breakfast",
             description: "A quick and healthy snack or breakfast with Greek yogurt and honey.",
             servings: 1, prepMinutes: 5, cookMinutes: 0,
@@ -256,11 +256,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildPeanutButterToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildPeanutButterToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Peanut Butter Banana Toast",
-            cuisine: "Breakfast", authorId: null,
+            cuisine: "Breakfast", authorId: userId,
             description: "Simple and delicious toast topped with peanut butter and sliced bananas.",
             servings: 1, prepMinutes: 5, cookMinutes: 2,
             difficulty: DifficultyLevel.Easy,
@@ -280,11 +280,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildBeefStirFry(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildBeefStirFry(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Beef and Bell Pepper Stir Fry",
-            cuisine: "Asian", authorId: null,
+            cuisine: "Asian", authorId: userId,
             description: "A quick stir fry with ground beef, vibrant bell peppers, and savory garlic.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
             difficulty: DifficultyLevel.Medium,
@@ -309,11 +309,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildChickenSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildChickenSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Chicken and Spinach Salad",
-            cuisine: "American", authorId: null,
+            cuisine: "American", authorId: userId,
             description: "A light salad featuring grilled chicken, fresh spinach, and sweet cherry tomatoes.",
             servings: 2, prepMinutes: 15, cookMinutes: 15,
             difficulty: DifficultyLevel.Easy,
@@ -335,11 +335,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildAvocadoToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildAvocadoToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Avocado Toast",
-            cuisine: "Australian", authorId: null,
+            cuisine: "Australian", authorId: userId,
             description: "Trendy and nutritious avocado squash on toast.",
             servings: 1, prepMinutes: 5, cookMinutes: 0,
             difficulty: DifficultyLevel.Easy,
@@ -361,11 +361,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildMushroomOmelette(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildMushroomOmelette(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Mushroom Omelette",
-            cuisine: "Breakfast", authorId: null,
+            cuisine: "Breakfast", authorId: userId,
             description: "Savory mushroom and cheese omelette.",
             servings: 1, prepMinutes: 5, cookMinutes: 10,
             difficulty: DifficultyLevel.Easy,
@@ -389,11 +389,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildTofuStirFry(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildTofuStirFry(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Tofu Stir Fry",
-            cuisine: "Asian", authorId: null,
+            cuisine: "Asian", authorId: userId,
             description: "Quick and healthy vegetarian stir fry.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
             difficulty: DifficultyLevel.Medium,
@@ -418,11 +418,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildPorkChopSweetPotato(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildPorkChopSweetPotato(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Pork Chop with Sweet Potato",
-            cuisine: "American", authorId: null,
+            cuisine: "American", authorId: userId,
             description: "Pan-seared pork chop with baked sweet potato.",
             servings: 2, prepMinutes: 10, cookMinutes: 30,
             difficulty: DifficultyLevel.Medium,
@@ -444,10 +444,10 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildLentilSoup(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildLentilSoup(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
-            name: "Hearty Lentil Soup", authorId: null,
+            name: "Hearty Lentil Soup", authorId: userId,
             cuisine: "Mediterranean",
             description: "A warm, comforting lentil and veggie soup.",
             servings: 4, prepMinutes: 15, cookMinutes: 45,
@@ -473,11 +473,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildGreekSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildGreekSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Greek Salad",
-            cuisine: "Greek", authorId: null,
+            cuisine: "Greek", authorId: userId,
             description: "Crisp cucumber and tomato salad with cheese.",
             servings: 2, prepMinutes: 10, cookMinutes: 0,
             difficulty: DifficultyLevel.Easy,
@@ -500,11 +500,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildAppleAlmondSnack(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildAppleAlmondSnack(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Apple & Almond Snack",
-            cuisine: "Snack", authorId: null,
+            cuisine: "Snack", authorId: userId,
             description: "Simple raw snack.",
             servings: 1, prepMinutes: 2, cookMinutes: 0,
             difficulty: DifficultyLevel.Easy,
@@ -522,11 +522,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildChickenRiceBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildChickenRiceBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Chicken Rice Bowl",
-            cuisine: "Asian", authorId: null,
+            cuisine: "Asian", authorId: userId,
             description: "Lean chicken and avocado over rice.",
             servings: 2, prepMinutes: 10, cookMinutes: 20,
             difficulty: DifficultyLevel.Medium,
@@ -548,11 +548,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildBeefBurgerSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildBeefBurgerSalad(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Beef Burger Patty Salad",
-            cuisine: "American", authorId: null,
+            cuisine: "American", authorId: userId,
             description: "Keto-friendly burger patties on lettuce.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
             difficulty: DifficultyLevel.Medium,
@@ -574,11 +574,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildPeanutButterAppleToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildPeanutButterAppleToast(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Peanut Butter Apple Toast",
-            cuisine: "Breakfast", authorId: null,
+            cuisine: "Breakfast", authorId: userId,
             description: "Sweet and crunchy toast.",
             servings: 1, prepMinutes: 5, cookMinutes: 2,
             difficulty: DifficultyLevel.Easy,
@@ -598,11 +598,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildVeggieFriedRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildVeggieFriedRice(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Vegetable Fried Rice",
-            cuisine: "Asian", authorId: null,
+            cuisine: "Asian", authorId: userId,
             description: "Quick fried rice loaded with veggies.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
             difficulty: DifficultyLevel.Medium,
@@ -626,10 +626,10 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildMushroomPasta(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildMushroomPasta(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
-            name: "Mushroom Pasta", authorId: null,
+            name: "Mushroom Pasta", authorId: userId,
             cuisine: "Italian",
             description: "Garlicky mushroom pasta with spinach.",
             servings: 2, prepMinutes: 10, cookMinutes: 20,
@@ -654,10 +654,10 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildSpicyTofuScramble(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildSpicyTofuScramble(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
-            name: "Spicy Tofu Scramble", authorId: null,
+            name: "Spicy Tofu Scramble", authorId: userId,
             cuisine: "American",
             description: "Vegan scramble with veggies.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
@@ -682,11 +682,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildGarlicButterPorkChops(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildGarlicButterPorkChops(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Garlic Butter Pork Chops",
-            cuisine: "American", authorId: null,
+            cuisine: "American", authorId: userId,
             description: "Rich and tender pork chops with potatoes.",
             servings: 2, prepMinutes: 10, cookMinutes: 25,
             difficulty: DifficultyLevel.Medium,
@@ -709,11 +709,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildBreakfastBurritoBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildBreakfastBurritoBowl(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Breakfast Burrito Bowl",
-            cuisine: "Mexican", authorId: null,
+            cuisine: "Mexican", authorId: userId,
             description: "Deconstructed burrito for breakfast.",
             servings: 2, prepMinutes: 10, cookMinutes: 15,
             difficulty: DifficultyLevel.Medium,
@@ -737,11 +737,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildChickenMushroomSaute(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildChickenMushroomSaute(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Chicken & Mushroom Sauté",
-            cuisine: "French", authorId: null,
+            cuisine: "French", authorId: userId,
             description: "Simple pan-fried chicken and mushrooms.",
             servings: 2, prepMinutes: 10, cookMinutes: 20,
             difficulty: DifficultyLevel.Medium,
@@ -764,11 +764,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildCarrotLentilMash(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildCarrotLentilMash(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Carrot & Lentil Mash",
-            cuisine: "British", authorId: null,
+            cuisine: "British", authorId: userId,
             description: "Soft comforting mash.",
             servings: 2, prepMinutes: 10, cookMinutes: 30,
             difficulty: DifficultyLevel.Easy,
@@ -789,11 +789,11 @@ public static class RecipeBuilders
         return recipe;
     }
 
-    public static Recipe BuildYogurtAlmonds(Dictionary<string, Guid> l, IGuidGenerator guidGenerator)
+    public static Recipe BuildYogurtAlmonds(Dictionary<string, Guid> l, IGuidGenerator guidGenerator, Guid? userId)
     {
         var recipe = Recipe.CreateSeed(guidGenerator.Create(),
             name: "Yogurt with Almonds",
-            cuisine: "Snack", authorId: null,
+            cuisine: "Snack", authorId: userId,
             description: "Protein-rich yogurt snack.",
             servings: 1, prepMinutes: 2, cookMinutes: 0,
             difficulty: DifficultyLevel.Easy,

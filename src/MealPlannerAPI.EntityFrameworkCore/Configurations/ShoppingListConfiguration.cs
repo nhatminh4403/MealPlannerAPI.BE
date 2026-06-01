@@ -1,6 +1,6 @@
 ﻿namespace MealPlannerAPI.Configurations
 {
-    internal class ShoppingListConfiguration
+    public class ShoppingListConfiguration
     {
     }
 }

@@ -47,14 +47,13 @@ public class MealPlannerAPIDbContext :
     public DbSet<IdentityLinkUser> LinkUsers { get; set; }
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
     public DbSet<IdentitySession> Sessions { get; set; }
-    public DbSet<IngredientNutrition> IngredientNutritions { get; set; }
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
     #endregion
 
-
+    public DbSet<IngredientNutrition> IngredientNutritions { get; set; }
     public DbSet<Recipe> Recipes { get; set; }
     public DbSet<ShoppingList> ShoppingLists { get; set; }
     public DbSet<ShoppingListItem> ShoppingListItems { get; set; }

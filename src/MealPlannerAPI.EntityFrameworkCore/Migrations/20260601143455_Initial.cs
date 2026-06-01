@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -1027,8 +1027,7 @@ namespace MealPlannerAPI.Migrations
                     Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     QuantityGrams = table.Column<float>(type: "real", nullable: false),
                     DisplayQuantity = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    IngredientNutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    NutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IngredientNutritionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1045,11 +1044,6 @@ namespace MealPlannerAPI.Migrations
                         principalTable: "IngredientNutritions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_RecipeIngredients_IngredientNutritions_NutritionId",
-                        column: x => x.NutritionId,
-                        principalTable: "IngredientNutritions",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1481,11 +1475,6 @@ namespace MealPlannerAPI.Migrations
                 name: "IX_RecipeIngredients_IngredientNutritionId",
                 table: "RecipeIngredients",
                 column: "IngredientNutritionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RecipeIngredients_NutritionId",
-                table: "RecipeIngredients",
-                column: "NutritionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecipeIngredients_RecipeId",

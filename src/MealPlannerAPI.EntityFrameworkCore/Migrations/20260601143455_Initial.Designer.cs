@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MealPlannerAPI.Migrations
 {
     [DbContext(typeof(MealPlannerAPIDbContext))]
-    [Migration("20260429142749_Initial")]
+    [Migration("20260601143455_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -390,9 +390,6 @@ namespace MealPlannerAPI.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<Guid?>("NutritionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<float>("QuantityGrams")
                         .HasColumnType("real");
 
@@ -402,8 +399,6 @@ namespace MealPlannerAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IngredientNutritionId");
-
-                    b.HasIndex("NutritionId");
 
                     b.HasIndex("RecipeId");
 
@@ -2647,14 +2642,10 @@ namespace MealPlannerAPI.Migrations
 
             modelBuilder.Entity("MealPlannerAPI.Recipes.RecipeIngredient", b =>
                 {
-                    b.HasOne("MealPlannerAPI.Nutritions.IngredientNutrition", null)
+                    b.HasOne("MealPlannerAPI.Nutritions.IngredientNutrition", "Nutrition")
                         .WithMany()
                         .HasForeignKey("IngredientNutritionId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("MealPlannerAPI.Nutritions.IngredientNutrition", "Nutrition")
-                        .WithMany()
-                        .HasForeignKey("NutritionId");
 
                     b.HasOne("MealPlannerAPI.Recipes.Recipe", null)
                         .WithMany("Ingredients")

@@ -1,6 +1,6 @@
 ﻿namespace MealPlannerAPI.Configurations
 {
-    internal class MealPlanConfiguration
+    public class MealPlanConfiguration
     {
     }
 }

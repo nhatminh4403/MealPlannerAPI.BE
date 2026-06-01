@@ -22,7 +22,8 @@ namespace MealPlannerAPI.DataSeeder
         public async Task SeedAsync(DataSeedContext context)
         {
             if (await _ingredientNutritionRepository.GetCountAsync() > 0) return;
-            await SeedIngredientNutritionsAsync();
+            var lookup = await SeedIngredientNutritionsAsync();
+            context.Properties["IngredientNutritionLookup"] = lookup;
         }
         private async Task<Dictionary<string, Guid>> SeedIngredientNutritionsAsync()
         {
@@ -68,7 +69,7 @@ namespace MealPlannerAPI.DataSeeder
             ("Lettuce",              15,  1.4f,  2.9f,  0.2f,  1.2f),
             };
 
-            var lookup = new Dictionary<string, Guid>();
+            var lookup = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var (name, cal, pro, carb, fat, fib) in ingredients)
             {

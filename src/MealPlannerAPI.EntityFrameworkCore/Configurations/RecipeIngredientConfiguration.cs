@@ -23,12 +23,11 @@ namespace MealPlannerAPI.Configurations
             builder.Property(x => x.DisplayQuantity)
                 .HasMaxLength(64);
 
-            // Optional FK — no cascade delete, nutrition data is shared
-            builder.HasOne<IngredientNutrition>()
-                .WithMany()
-                .HasForeignKey(x => x.IngredientNutritionId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
+            builder.HasOne(x => x.Nutrition)  // <-- Updated from HasOne<IngredientNutrition>()
+              .WithMany()
+              .HasForeignKey(x => x.IngredientNutritionId)
+              .IsRequired(false)
+              .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

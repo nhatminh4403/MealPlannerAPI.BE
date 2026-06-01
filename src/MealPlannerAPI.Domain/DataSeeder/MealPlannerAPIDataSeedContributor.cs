@@ -1,6 +1,8 @@
+using MealPlannerAPI.DataSeeder.Helpers;
 using MealPlannerAPI.Enums;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Notifications;
+using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users;
@@ -26,7 +28,7 @@ namespace MealPlannerAPI.DataSeeder
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly IGuidGenerator _guidGenerator;
         private readonly IdentityUserManager _identityUserManager;
-
+        private readonly IIngredientNutritionRepository _ingredientNutritionRepository;
         public int Order => 3;
 
         public MealPlannerAPIDataSeedContributor(
@@ -37,7 +39,8 @@ namespace MealPlannerAPI.DataSeeder
             IRepository<UserProfile, Guid> userProfileRepository,
             IIdentityUserRepository identityUserRepository,
             IGuidGenerator guidGenerator,
-            IdentityUserManager identityUserManager)
+            IdentityUserManager identityUserManager,
+            IIngredientNutritionRepository ingredientNutritionRepository)
         {
             _mealPlanRepository = mealPlanRepository;
             _shoppingListRepository = shoppingListRepository;
@@ -47,20 +50,29 @@ namespace MealPlannerAPI.DataSeeder
             _identityUserRepository = identityUserRepository;
             _guidGenerator = guidGenerator;
             _identityUserManager = identityUserManager;
+            _ingredientNutritionRepository = ingredientNutritionRepository;
         }
 
         public async Task SeedAsync(DataSeedContext context)
         {
             // Check if data already exists
             // Use a demo user as the idempotency sentinel
-            var alreadySeeded = await _identityUserRepository
-                .FindByNormalizedUserNameAsync("CHEF_MARIA");
-            if (alreadySeeded != null) return;
+            var alreadySeeded = await _identityUserRepository.FindByNormalizedUserNameAsync("CHEF_MARIA");
 
+            if (alreadySeeded != null) return;
+            var lookup = context.Properties.TryGetValue("IngredientNutritionLookup", out var lookupObj)
+                                                ? lookupObj as Dictionary<string, Guid>
+                                                : null;
+
+            if (lookup == null)
+            {
+                var allNutritions = await _ingredientNutritionRepository.GetListAsync();
+                lookup = allNutritions.ToDictionary(x => x.Name, x => x.Id, StringComparer.OrdinalIgnoreCase);
+            }
             var demoUsers = await SeedDemoUsersAsync();
 
             // 2. Seed Recipes for each user
-            var allRecipes = await SeedRecipesAsync(demoUsers);
+            var allRecipes = await SeedRecipesAsync(demoUsers, lookup);
 
             // 3. Seed Meal Plans
             await SeedMealPlansAsync(demoUsers, allRecipes);
@@ -136,7 +148,7 @@ namespace MealPlannerAPI.DataSeeder
             return users;
         }
 
-        private async Task<List<Recipe>> SeedRecipesAsync(List<UserProfile> users)
+        private async Task<List<Recipe>> SeedRecipesAsync(List<UserProfile> users, Dictionary<string, Guid> lookup)
         {
             var recipes = new List<Recipe>();
 
@@ -175,28 +187,338 @@ namespace MealPlannerAPI.DataSeeder
             {
                 var authorId = data.UserIndex < users.Count ? users[data.UserIndex].Id : users[0].Id;
 
-                var recipe = Recipe.CreateSeed(
-                    id: _guidGenerator.Create(),
-                    name: data.Name,
-                    cuisine: data.Cuisine,
-                    description: data.Description,
-                    servings: data.Servings,
-                    prepMinutes: data.PrepTime,
-                    cookMinutes: data.CookTime,
-                    authorId: authorId,
-                    difficulty: data.Difficulty,
-                    ingredients: GetSampleIngredients(data.Name),
-                    instructions: GetSampleInstructions(data.Name)
-                );
+                var recipe = Recipe.CreateSeed(id: _guidGenerator.Create(),
+                                               name: data.Name,
+                                               cuisine: data.Cuisine,
+                                               description: data.Description,
+                                               servings: data.Servings,
+                                               prepMinutes: data.PrepTime,
+                                               cookMinutes: data.CookTime,
+                                               authorId: authorId,
+                                               difficulty: data.Difficulty,
+                                               ingredients: GetSampleIngredients(data.Name, lookup),
+                                               instructions: GetSampleInstructions(data.Name));
 
                 recipe.Rating = data.Rating;
                 recipe.ReviewCount = data.Reviews;
+                recipe.ImageUrl = RecipeSeedImages.TryGet(data.Name);
 
                 await _recipeRepository.InsertAsync(recipe, autoSave: true);
                 recipes.Add(recipe);
             }
 
             return recipes;
+        }
+
+        private List<(string Name, float Grams, string Display, Guid? NutritionId)> GetSampleIngredients(string recipeName, Dictionary<string, Guid> lookup)
+        {
+            Guid? GetId(string name)
+            {
+                if (lookup.TryGetValue(name, out var id)) return id;
+                if (name == "Eggs" && lookup.TryGetValue("Egg", out id)) return id;
+                if (name == "Spaghetti" && lookup.TryGetValue("Pasta (Dry)", out id)) return id;
+                if (name == "Rice Noodles" && lookup.TryGetValue("Pasta (Dry)", out id)) return id;
+                if (name == "Mozzarella" && lookup.TryGetValue("Cheddar Cheese", out id)) return id;
+                if (name == "Chickpeas" && lookup.TryGetValue("Black Beans (Cooked)", out id)) return id;
+                if (name == "Asparagus" && lookup.TryGetValue("Broccoli", out id)) return id;
+                if (name == "Quinoa" && lookup.TryGetValue("Brown Rice (Dry)", out id)) return id;
+                if (name == "Kale" && lookup.TryGetValue("Spinach", out id)) return id;
+                if (name == "Tahini" && lookup.TryGetValue("Peanut Butter", out id)) return id;
+                if (name == "All-Purpose Flour" && lookup.TryGetValue("Oats (Dry)", out id)) return id;
+                if (name == "Brown Sugar" && lookup.TryGetValue("Honey", out id)) return id;
+                if (name == "Chocolate Chips" && lookup.TryGetValue("Almonds", out id)) return id;
+                return null;
+            }
+
+            return recipeName switch
+            {
+
+                "Classic Spaghetti Carbonara" => new List<(string, float, string, Guid?)>
+                {
+                    ("Spaghetti", 400, "400g", GetId("Spaghetti")),
+                    ("Eggs", 150, "3 large", GetId("Eggs")),
+                    ("Pecorino Romano", 100, "100g grated", null),
+                    ("Guanciale", 150, "150g diced", null),
+                    ("Black Pepper", 5, "to taste", null),
+                    ("Salt", 5, "for pasta water", null),
+                },
+                "Margherita Pizza" => new List<(string, float, string, Guid?)>
+                {
+                    ("Bread (White)", 300, "pizza dough", GetId("Bread (White)")),
+                    ("Tomato", 400, "1 can crushed", GetId("Tomato")),
+                    ("Mozzarella", 250, "250g fresh", GetId("Mozzarella")),
+                    ("Olive Oil", 20, "2 tbsp", GetId("Olive Oil")),
+                    ("Garlic", 5, "2 cloves minced", GetId("Garlic")),
+                    ("Salt", 3, "to taste", null),
+                },
+                "Tiramisu" => new List<(string, float, string, Guid?)>
+                {
+                    ("Eggs", 100, "2 large yolks", GetId("Eggs")),
+                    ("Cheddar Cheese", 250, "mascarpone substitute", GetId("Cheddar Cheese")),
+                    ("Honey", 80, "1/3 cup sugar substitute", GetId("Honey")),
+                    ("Bread (White)", 200, "ladyfinger substitute", GetId("Bread (White)")),
+                    ("Whole Milk", 120, "1/2 cup brewed coffee", GetId("Whole Milk")),
+                    ("Cocoa Powder", 10, "for dusting", null),
+                },
+                "Quinoa Buddha Bowl" => new List<(string, float, string, Guid?)>
+                {
+                    ("Quinoa", 180, "1 cup dry", GetId("Quinoa")),
+                    ("Sweet Potato", 300, "1 large cubed", GetId("Sweet Potato")),
+                    ("Chickpeas", 240, "1 can drained", GetId("Chickpeas")),
+                    ("Kale", 80, "2 cups chopped", GetId("Kale")),
+                    ("Tahini", 30, "2 tbsp dressing", GetId("Tahini")),
+                    ("Olive Oil", 15, "1 tbsp", GetId("Olive Oil")),
+                    ("Lemon Juice", 15, "1 tbsp", null),
+                },
+                "Grilled Salmon with Asparagus" => new List<(string, float, string, Guid?)>
+                {
+                    ("Salmon", 400, "2 fillets", GetId("Salmon")),
+                    ("Asparagus", 250, "1 bunch", GetId("Asparagus")),
+                    ("Olive Oil", 20, "2 tbsp", GetId("Olive Oil")),
+                    ("Garlic", 5, "2 cloves", GetId("Garlic")),
+                    ("Lemon Juice", 15, "1 tbsp", null),
+                    ("Salt", 3, "to taste", null),
+                    ("Black Pepper", 3, "to taste", null),
+                },
+                "Green Smoothie Bowl" => new List<(string, float, string, Guid?)>
+                {
+                    ("Spinach", 60, "2 cups", GetId("Spinach")),
+                    ("Banana", 120, "1 frozen", GetId("Banana")),
+                    ("Greek Yogurt", 150, "2/3 cup", GetId("Greek Yogurt")),
+                    ("Apple", 100, "1 small", GetId("Apple")),
+                    ("Honey", 15, "1 tbsp", GetId("Honey")),
+                    ("Almonds", 20, "for topping", GetId("Almonds")),
+                },
+                "Chocolate Chip Cookies" => new List<(string, float, string, Guid?)>
+                {
+                    ("All-Purpose Flour", 280, "2 1/4 cups", GetId("All-Purpose Flour")),
+                    ("Butter", 225, "1 cup softened", GetId("Butter")),
+                    ("Brown Sugar", 200, "1 cup packed", GetId("Brown Sugar")),
+                    ("Eggs", 100, "2 large", GetId("Eggs")),
+                    ("Chocolate Chips", 340, "2 cups", GetId("Chocolate Chips")),
+                    ("Vanilla Extract", 5, "1 tsp", null),
+                    ("Baking Soda", 5, "1 tsp", null),
+                    ("Salt", 5, "1/2 tsp", null),
+                },
+                "New York Cheesecake" => new List<(string, float, string, Guid?)>
+                {
+                    ("Cheddar Cheese", 900, "cream cheese substitute", GetId("Cheddar Cheese")),
+                    ("Eggs", 150, "3 large", GetId("Eggs")),
+                    ("Honey", 150, "3/4 cup sugar substitute", GetId("Honey")),
+                    ("Butter", 120, "1/2 cup melted", GetId("Butter")),
+                    ("Bread (White)", 200, "graham cracker substitute", GetId("Bread (White)")),
+                    ("Whole Milk", 60, "1/4 cup sour cream substitute", GetId("Whole Milk")),
+                    ("Vanilla Extract", 5, "1 tsp", null),
+                },
+                "Sourdough Bread" => new List<(string, float, string, Guid?)>
+                {
+                    ("Bread (White)", 500, "500g flour substitute", GetId("Bread (White)")),
+                    ("Whole Milk", 350, "warm water substitute", GetId("Whole Milk")),
+                    ("Salt", 10, "2 tsp", null),
+                    ("Oats (Dry)", 100, "starter feed", GetId("Oats (Dry)")),
+                },
+                "Pad Thai" => new List<(string, float, string, Guid?)>
+                {
+                    ("Rice Noodles", 200, "200g flat", GetId("Rice Noodles")),
+                    ("Egg", 100, "2 eggs", GetId("Egg")),
+                    ("Tofu", 150, "150g firm", GetId("Tofu")),
+                    ("Peanut Butter", 30, "2 tbsp sauce", GetId("Peanut Butter")),
+                    ("Soy Sauce", 30, "2 tbsp", GetId("Soy Sauce")),
+                    ("Bell Pepper", 100, "1 sliced", GetId("Bell Pepper")),
+                    ("Garlic", 5, "2 cloves", GetId("Garlic")),
+                    ("Lime Juice", 15, "1 tbsp", null),
+                },
+                "Korean Bibimbap" => new List<(string, float, string, Guid?)>
+                {
+                    ("White Rice (Dry)", 200, "1 cup dry", GetId("White Rice (Dry)")),
+                    ("Ground Beef", 250, "250g", GetId("Ground Beef")),
+                    ("Spinach", 100, "2 cups blanched", GetId("Spinach")),
+                    ("Carrot", 80, "1 julienned", GetId("Carrot")),
+                    ("Egg", 50, "1 fried", GetId("Egg")),
+                    ("Soy Sauce", 30, "2 tbsp", GetId("Soy Sauce")),
+                    ("Sesame Oil", 10, "2 tsp", null),
+                    ("Gochujang", 20, "1 tbsp", null),
+                },
+                "Japanese Ramen" => new List<(string, float, string, Guid?)>
+                {
+                    ("Pasta (Dry)", 400, "4 servings noodles", GetId("Pasta (Dry)")),
+                    ("Pork Chop", 300, "chashu substitute", GetId("Pork Chop")),
+                    ("Egg", 100, "2 soft-boiled", GetId("Egg")),
+                    ("Spinach", 80, "1 cup", GetId("Spinach")),
+                    ("Mushrooms", 100, "1 cup sliced", GetId("Mushrooms")),
+                    ("Soy Sauce", 40, "broth seasoning", GetId("Soy Sauce")),
+                    ("Garlic", 10, "4 cloves", GetId("Garlic")),
+                    ("Green Onion", 20, "2 stalks", null),
+                },
+                "Vegan Lentil Curry" => new List<(string, float, string, Guid?)>
+                {
+                    ("Lentils (Dry)", 200, "1 cup", GetId("Lentils (Dry)")),
+                    ("Tomato", 400, "1 can", GetId("Tomato")),
+                    ("Onion", 120, "1 large", GetId("Onion")),
+                    ("Garlic", 10, "3 cloves", GetId("Garlic")),
+                    ("Spinach", 100, "2 cups", GetId("Spinach")),
+                    ("Olive Oil", 20, "2 tbsp", GetId("Olive Oil")),
+                    ("Curry Powder", 10, "2 tbsp", null),
+                    ("Coconut Milk", 200, "1 can", null),
+                },
+                "Chickpea Tacos" => new List<(string, float, string, Guid?)>
+                {
+                    ("Chickpeas", 240, "1 can drained", GetId("Chickpeas")),
+                    ("Avocado", 150, "1 ripe", GetId("Avocado")),
+                    ("Tomato", 150, "2 diced", GetId("Tomato")),
+                    ("Lettuce", 80, "shredded", GetId("Lettuce")),
+                    ("Bell Pepper", 100, "1 sliced", GetId("Bell Pepper")),
+                    ("Olive Oil", 15, "1 tbsp", GetId("Olive Oil")),
+                    ("Taco Seasoning", 10, "1 packet", null),
+                    ("Corn Tortillas", 200, "8 small", null),
+                },
+                "Vegan Chocolate Cake" => new List<(string, float, string, Guid?)>
+                {
+                    ("Oats (Dry)", 250, "2 cups flour substitute", GetId("Oats (Dry)")),
+                    ("Honey", 200, "1 cup sugar substitute", GetId("Honey")),
+                    ("Olive Oil", 80, "1/3 cup", GetId("Olive Oil")),
+                    ("Banana", 120, "2 mashed", GetId("Banana")),
+                    ("Almonds", 50, "cocoa substitute", GetId("Almonds")),
+                    ("Baking Powder", 10, "2 tsp", null),
+                    ("Salt", 3, "pinch", null),
+                    ("Vanilla Extract", 5, "1 tsp", null),
+                },
+                _ => new List<(string, float, string, Guid?)>
+                {
+                    ("Salt", 5, "to taste", null),
+                    ("Black Pepper", 3, "to taste", null),
+                    ("Olive Oil", 30, "2 tbsp", GetId("Olive Oil")),
+                }
+            };
+        }
+
+        private List<string> GetSampleInstructions(string recipeName)
+        {
+            return recipeName switch
+            {
+                "Classic Spaghetti Carbonara" => new List<string>
+                {
+                    "Bring a large pot of salted water to boil and cook spaghetti according to package directions",
+                    "While pasta cooks, dice guanciale and cook in a large pan until crispy",
+                    "Beat eggs with grated pecorino and black pepper in a bowl",
+                    "Drain pasta, reserving 1 cup pasta water",
+                    "Add hot pasta to the pan with guanciale, remove from heat",
+                    "Quickly stir in egg mixture, adding pasta water to create a creamy sauce",
+                    "Serve immediately with extra pecorino and black pepper"
+                },
+                "Margherita Pizza" => new List<string>
+                {
+                    "Stretch dough into two rounds on a floured surface.",
+                    "Spread crushed tomato, garlic, and olive oil over each base.",
+                    "Top with mozzarella and bake at 250°C (480°F) for 10-12 minutes until bubbly.",
+                    "Finish with fresh basil and a drizzle of olive oil.",
+                },
+                "Tiramisu" => new List<string>
+                {
+                    "Whisk egg yolks with honey until pale; fold in mascarpone.",
+                    "Briefly dip ladyfingers in coffee and layer in a dish.",
+                    "Spread half the cream, repeat layers, and chill 4 hours.",
+                    "Dust with cocoa before serving.",
+                },
+                "Quinoa Buddha Bowl" => new List<string>
+                {
+                     "Rinse quinoa and cook according to package directions",
+                    "Cube sweet potato and roast at 400°F for 25 minutes",
+                    "Drain and rinse chickpeas, season and roast for 20 minutes",
+                    "Massage kale with a bit of olive oil and lemon juice",
+                    "Assemble bowl with quinoa, roasted vegetables, chickpeas, and kale",
+                    "Drizzle with tahini dressing and serve"
+                },
+                "Grilled Salmon with Asparagus" => new List<string>
+                {
+                    "Season salmon with salt, pepper, and lemon juice.",
+                    "Toss asparagus with olive oil and garlic.",
+                    "Grill salmon 4 minutes per side over medium-high heat.",
+                    "Grill asparagus until tender-crisp, about 6 minutes.",
+                    "Serve salmon over asparagus with lemon wedges.",
+                },
+                "Green Smoothie Bowl" => new List<string>
+                {
+                    "Blend spinach, banana, yogurt, apple, and honey until smooth.",
+                    "Pour into a bowl and top with sliced fruit and almonds.",
+                    "Serve immediately while cold.",
+                },
+                "Chocolate Chip Cookies" => new List<string>
+                {
+                    "Preheat oven to 375°F (190°C)",
+                    "Cream together butter and sugars until fluffy",
+                    "Beat in eggs one at a time",
+                    "Mix in flour, baking soda, and salt",
+                    "Fold in chocolate chips",
+                    "Drop rounded tablespoons onto baking sheets",
+                    "Bake for 10-12 minutes until golden brown",
+                    "Cool on baking sheet for 5 minutes before transferring"
+                },
+                "New York Cheesecake" => new List<string>
+                {
+                    "Mix crushed crackers with melted butter; press into a springform pan.",
+                    "Beat cream cheese, honey, eggs, and vanilla until smooth.",
+                    "Pour over crust and bake in a water bath at 160°C (325°F) for 55 minutes.",
+                    "Cool completely, then chill at least 4 hours before slicing.",
+                },
+                "Sourdough Bread" => new List<string>
+                {
+                    "Feed starter with flour and water; let rise until bubbly.",
+                    "Mix dough, autolyse 30 minutes, then add salt.",
+                    "Stretch and fold every 30 minutes for 2 hours.",
+                    "Shape, proof overnight, then bake in a Dutch oven at 230°C (450°F) for 45 minutes.",
+                },
+                "Pad Thai" => new List<string>
+                {
+                    "Soak rice noodles until pliable; drain well.",
+                    "Stir-fry tofu and garlic; push aside and scramble eggs in the pan.",
+                    "Add noodles, soy sauce, and peanut butter; toss to coat.",
+                    "Finish with bell pepper and lime juice; serve hot.",
+                },
+                "Korean Bibimbap" => new List<string>
+                {
+                    "Cook rice and keep warm.",
+                    "Sauté seasoned ground beef until browned.",
+                    "Blanch spinach and sauté carrot separately.",
+                    "Fry an egg sunny-side up.",
+                    "Arrange rice in bowls with vegetables, beef, egg, soy sauce, and gochujang.",
+                },
+                "Japanese Ramen" => new List<string>
+                {
+                    "Simmer broth with garlic, soy sauce, and mushrooms for 30 minutes.",
+                    "Cook noodles separately until al dente.",
+                    "Slice pork and soft-boil eggs.",
+                    "Divide noodles into bowls, ladle hot broth, and top with pork, egg, spinach, and green onion.",
+                },
+                "Vegan Lentil Curry" => new List<string>
+                {
+                    "Sauté onion and garlic in olive oil until fragrant.",
+                    "Stir in curry powder, then lentils, tomato, and coconut milk.",
+                    "Simmer 25-30 minutes until lentils are tender.",
+                    "Fold in spinach; season and serve with rice.",
+                },
+                "Chickpea Tacos" => new List<string>
+                {
+                    "Warm tortillas in a dry pan.",
+                    "Sauté chickpeas with taco seasoning until heated through.",
+                    "Fill tortillas with chickpeas, lettuce, tomato, and bell pepper.",
+                    "Top with sliced avocado and serve.",
+                },
+                "Vegan Chocolate Cake" => new List<string>
+                {
+                    "Preheat oven to 180°C (350°F) and grease a cake pan.",
+                    "Whisk dry ingredients; stir in mashed banana, oil, honey, and vanilla.",
+                    "Bake 30-35 minutes until a toothpick comes out clean.",
+                    "Cool completely before slicing.",
+                },
+                _ => new List<string>
+                {
+                    "Prepare and measure all ingredients.",
+                    "Cook using the method suited to the dish.",
+                    "Season with salt and pepper to taste.",
+                    "Serve warm and enjoy.",
+                }
+            };
         }
 
         private async Task SeedMealPlansAsync(List<UserProfile> users, List<Recipe> recipes)
@@ -348,86 +670,5 @@ namespace MealPlannerAPI.DataSeeder
             }
         }
 
-        private List<(string Name, float Grams, string Display, Guid? NutritionId)> GetSampleIngredients(string recipeName)
-        {
-            // Return sample ingredients based on recipe type
-            return recipeName switch
-            {
-                "Classic Spaghetti Carbonara" => new List<(string, float, string, Guid?)>
-                {
-                    ("Spaghetti", 400, "400g", null),
-                    ("Eggs", 150, "3 large", null),
-                    ("Pecorino Romano", 100, "100g grated", null),
-                    ("Guanciale", 150, "150g diced", null),
-                    ("Black Pepper", 5, "to taste", null)
-                },
-                "Quinoa Buddha Bowl" => new List<(string, float, string, Guid?)>
-                {
-                    ("Quinoa", 200, "1 cup", null),
-                    ("Sweet Potato", 300, "1 large", null),
-                    ("Chickpeas", 240, "1 can", null),
-                    ("Kale", 100, "2 cups", null),
-                    ("Tahini", 30, "2 tbsp", null)
-                },
-                "Chocolate Chip Cookies" => new List<(string, float, string, Guid?)>
-                {
-                    ("All-Purpose Flour", 280, "2 1/4 cups", null),
-                    ("Butter", 225, "1 cup", null),
-                    ("Brown Sugar", 200, "1 cup", null),
-                    ("Chocolate Chips", 340, "2 cups", null),
-                    ("Eggs", 100, "2 large", null)
-                },
-                _ => new List<(string, float, string, Guid?)>
-                {
-                    ("Main Ingredient", 500, "500g", null),
-                    ("Seasoning", 10, "to taste", null),
-                    ("Oil", 30, "2 tbsp", null)
-                }
-            };
-        }
-
-        private List<string> GetSampleInstructions(string recipeName)
-        {
-            return recipeName switch
-            {
-                "Classic Spaghetti Carbonara" => new List<string>
-                {
-                    "Bring a large pot of salted water to boil and cook spaghetti according to package directions",
-                    "While pasta cooks, dice guanciale and cook in a large pan until crispy",
-                    "Beat eggs with grated pecorino and black pepper in a bowl",
-                    "Drain pasta, reserving 1 cup pasta water",
-                    "Add hot pasta to the pan with guanciale, remove from heat",
-                    "Quickly stir in egg mixture, adding pasta water to create a creamy sauce",
-                    "Serve immediately with extra pecorino and black pepper"
-                },
-                "Quinoa Buddha Bowl" => new List<string>
-                {
-                    "Rinse quinoa and cook according to package directions",
-                    "Cube sweet potato and roast at 400°F for 25 minutes",
-                    "Drain and rinse chickpeas, season and roast for 20 minutes",
-                    "Massage kale with a bit of olive oil and lemon juice",
-                    "Assemble bowl with quinoa, roasted vegetables, chickpeas, and kale",
-                    "Drizzle with tahini dressing and serve"
-                },
-                "Chocolate Chip Cookies" => new List<string>
-                {
-                    "Preheat oven to 375°F (190°C)",
-                    "Cream together butter and sugars until fluffy",
-                    "Beat in eggs one at a time",
-                    "Mix in flour, baking soda, and salt",
-                    "Fold in chocolate chips",
-                    "Drop rounded tablespoons onto baking sheets",
-                    "Bake for 10-12 minutes until golden brown",
-                    "Cool on baking sheet for 5 minutes before transferring"
-                },
-                _ => new List<string>
-                {
-                    "Prepare all ingredients",
-                    "Follow cooking method appropriate for the dish",
-                    "Season to taste",
-                    "Serve and enjoy"
-                }
-            };
-        }
     }
 }
