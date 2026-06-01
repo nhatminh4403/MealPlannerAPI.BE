@@ -22,7 +22,7 @@ namespace MealPlannerAPI.BackgroundJobs
                                             IUserNotificationAppService notificationAppService) : base(timer, serviceScopeFactory)
         {
             _notificationAppService = notificationAppService;
-            Timer.Period = 1000 * 60 * 60 * 24 * 7;
+            Timer.Period = 1000 * 60 * 60 * 24 * 8;
 
         }
         [UnitOfWork]

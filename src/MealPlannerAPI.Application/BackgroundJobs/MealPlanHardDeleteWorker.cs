@@ -27,7 +27,7 @@ namespace MealPlannerAPI.MealPlans.BackgroundJobs
         {
             _mealPlanRepository = mealPlanRepository;
             _options = options.Value;
-            Timer.Period = _options.PeriodHours * 60 * 60 * 1000 *7;
+            Timer.Period = _options.PeriodHours * 60 * 60 * 1000 *   8;
 
         }
         [UnitOfWork]

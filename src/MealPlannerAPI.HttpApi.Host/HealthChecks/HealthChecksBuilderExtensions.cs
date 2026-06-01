@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace MealPlannerAPI.HealthChecks;
@@ -26,7 +27,7 @@ public static class HealthChecksBuilderExtensions
             healthCheckUrl = "/health-status";
         }
         //var alternateHealthUICheckUrl = configuration["App:AlternateHealthUiCheckUrl"];
-
+        var environment = services.GetHostingEnvironment();
         var healthChecksUiBuilder = services.AddHealthChecksUI(settings =>
         {
 
@@ -34,7 +35,8 @@ public static class HealthChecksBuilderExtensions
                     configuration["App:HealthUiCheckUrl"]
                     ?? healthCheckUrl);
 
-            settings.SetEvaluationTimeInSeconds(30);
+            settings.SetEvaluationTimeInSeconds(
+                environment.IsDevelopment() ? 30 : 24 * 60 * 60);
             settings.SetMinimumSecondsBetweenFailureNotifications(180);
         });
 
