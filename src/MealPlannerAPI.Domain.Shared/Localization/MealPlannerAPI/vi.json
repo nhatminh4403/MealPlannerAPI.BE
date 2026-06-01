@@ -61,6 +61,7 @@
     "Auth:RememberMe": "Ghi nhớ đăng nhập",
     "Auth:SignIn": "Đăng nhập",
     "Auth:SigningIn": "Đang đăng nhập...",
+    "Auth:UserName":"Tên đăng nhập",
     "Auth:NoAccount": "Chưa có tài khoản?",
     "Auth:CreateAccount": "Tạo tài khoản",
     "Auth:SuccessfullyLoggedIn": "Đăng nhập thành công!",

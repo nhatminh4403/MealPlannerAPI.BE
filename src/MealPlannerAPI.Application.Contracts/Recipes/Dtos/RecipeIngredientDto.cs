@@ -11,10 +11,6 @@ namespace MealPlannerAPI.Recipes.Dtos
         public float QuantityGrams { get; set; }
         public string? DisplayQuantity { get; set; }
 
-        /// <summary>
-        /// Nutritional contribution of this ingredient (already scaled to QuantityGrams).
-        /// Null if no nutrition data is linked.
-        /// </summary>
         public NutritionalInfoDto? Nutrition { get; set; }
     }
 }

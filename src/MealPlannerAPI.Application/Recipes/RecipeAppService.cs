@@ -130,7 +130,6 @@ namespace MealPlannerAPI.Recipes
             }
 
             var dto = await MapToRecipeDtoAsync(recipe);
-            await _nutritionCalculator.EnrichAsync(recipe, dto);
             return dto;
         }
         [AllowAnonymous]
@@ -247,8 +246,8 @@ namespace MealPlannerAPI.Recipes
         {
             var dto = _toRecipeDtoMapper.Map(recipe);
 
-            dto.Tags = recipe.GetTags();
-            dto.Instructions = recipe.GetInstructions();
+            //dto.Tags = recipe.GetTags();
+            //dto.Instructions = recipe.GetInstructions();
             dto.Ingredients = _toIngredientDtoMapper.MapList(recipe.Ingredients);
 
             var author = await _identityUserRepository.FindAsync(recipe.AuthorId);
@@ -258,6 +257,7 @@ namespace MealPlannerAPI.Recipes
                 Name = author?.Name ?? L["Common:Unknown"],
                 AvatarUrl = (author as UserProfile)?.AvatarUrl
             };
+            await _nutritionCalculator.EnrichAsync(recipe, dto);
 
             return dto;
         }

@@ -31,16 +31,23 @@ namespace MealPlannerAPI.Nutritions
                 .Select(i => i.IngredientNutritionId!.Value)
                 .Distinct()
                 .ToList();
+            var allNames = pairs
+              .SelectMany(p => p.Recipe.Ingredients)
+              .Select(i => i.Name.Trim().ToLowerInvariant())
+              .Distinct()
+              .ToList();
+            var nutritionRecords = await _nutritionRepo.GetListAsync(n =>
+                allNutritionIds.Contains(n.Id) || allNames.Contains(n.NormalizedName));
 
-            if (allNutritionIds.Count == 0) return;
+            var idLookup = nutritionRecords.ToDictionary(n => n.Id);
+            var nameLookup = nutritionRecords
+                .GroupBy(n => n.NormalizedName)
+                .ToDictionary(g => g.Key, g => g.First());
 
-            // Single batch query
-            var nutritionLookup = (await _nutritionRepo.GetByIdsAsync(allNutritionIds))
-                .ToDictionary(n => n.Id);
 
             foreach (var (recipe, dto) in pairs)
             {
-                EnrichRecipe(recipe, dto, nutritionLookup);
+                EnrichRecipe(recipe, dto, idLookup, nameLookup);
             }
         }
 
@@ -53,12 +60,21 @@ namespace MealPlannerAPI.Nutritions
                 .Distinct()
                 .ToList();
 
-            if (ids.Count == 0) return;
+            var names = recipe.Ingredients
+                .Select(i => i.Name.Trim().ToLowerInvariant())
+                .Distinct()
+                .ToList();
 
-            var nutritionLookup = (await _nutritionRepo.GetByIdsAsync(ids))
-                .ToDictionary(n => n.Id);
+            // Single query matching either ID or NormalizedName
+            var nutritionRecords = await _nutritionRepo.GetListAsync(n =>
+                ids.Contains(n.Id) || names.Contains(n.NormalizedName));
 
-            EnrichRecipe(recipe, dto, nutritionLookup);
+            var idLookup = nutritionRecords.ToDictionary(n => n.Id);
+            var nameLookup = nutritionRecords
+                .GroupBy(n => n.NormalizedName)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            EnrichRecipe(recipe, dto, idLookup, nameLookup);
         }
 
         // ── Private ───────────────────────────────────────────────────────────────
@@ -66,7 +82,7 @@ namespace MealPlannerAPI.Nutritions
         private static void EnrichRecipe(
             Recipe recipe,
             RecipeDto dto,
-            Dictionary<Guid, IngredientNutrition> lookup)
+            Dictionary<Guid, IngredientNutrition> lookup, Dictionary<string, IngredientNutrition> nameLookup)
         {
             var ingredientNutritions = new List<NutritionalInfo>();
 

@@ -1,4 +1,5 @@
 using MealPlannerAPI.Enums;
+using MealPlannerAPI.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;

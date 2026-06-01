@@ -13,7 +13,7 @@ namespace MealPlannerAPI.Recipes.Dtos
         public DifficultyLevel Difficulty { get; set; }
         public int CookingTimeMinutes { get; set; }
         public int PrepTimeMinutes { get; set; }
-        public int TotalTimeMinutes => CookingTimeMinutes + PrepTimeMinutes;
+        public int TotalTimeMinutes { get; set; }
         public int Servings { get; set; }
         public double Rating { get; set; }
         public int ReviewCount { get; set; }

@@ -1,4 +1,5 @@
-﻿using MealPlannerAPI.Recipes;
+﻿using MealPlannerAPI.Nutritions;
+using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using Riok.Mapperly.Abstractions;
 using System;
@@ -18,14 +19,30 @@ public partial class RecipeToRecipeDtoMapper : MapperBase<Recipe, RecipeDto>
     [MapperIgnoreTarget(nameof(RecipeDto.Instructions))]
     [MapperIgnoreTarget(nameof(RecipeDto.Ingredients))]
     [MapperIgnoreTarget(nameof(RecipeDto.TotalTimeMinutes))]
-    public override partial RecipeDto Map(Recipe source);
+    [MapperIgnoreTarget(nameof(RecipeDto.NutritionPerServing))]
+    public override  RecipeDto Map(Recipe source)
+    {
+        var dest = new RecipeDto();
+        Map(source, dest);
+        AfterMap(source, dest);
+        return dest;
+    }
+
 
     [MapperIgnoreTarget(nameof(RecipeDto.Author))]
     [MapperIgnoreTarget(nameof(RecipeDto.Tags))]
     [MapperIgnoreTarget(nameof(RecipeDto.Instructions))]
     [MapperIgnoreTarget(nameof(RecipeDto.Ingredients))]
     [MapperIgnoreTarget(nameof(RecipeDto.TotalTimeMinutes))]
+    [MapperIgnoreTarget(nameof(RecipeDto.NutritionPerServing))]
     public override partial void Map(Recipe source, RecipeDto destination);
+    public override void AfterMap(Recipe source, RecipeDto destination)
+    {
+        destination.Tags = source.GetTags();
+        destination.Instructions = source.GetInstructions();
+        destination.TotalTimeMinutes = source.CookingTimeMinutes + source.PrepTimeMinutes;
+        
+    }
 }
 
 // ── Recipe → RecipeSummaryDto ─────────────────────────────────────────────────
@@ -62,11 +79,38 @@ public partial class RecipeToTrendingRecipeDtoMapper : MapperBase<Recipe, Trendi
 public partial class RecipeIngredientToRecipeIngredientDtoMapper
     : MapperBase<RecipeIngredient, RecipeIngredientDto>
 {
-    [MapperIgnoreTarget(nameof(RecipeIngredientDto.Nutrition))] // ← add this
-    public override partial RecipeIngredientDto Map(RecipeIngredient source);
+    public override RecipeIngredientDto Map(RecipeIngredient source)
+    {
+        var dest = new RecipeIngredientDto();
+        Map(source, dest);
+        AfterMap(source, dest);
+        return dest;
+    }
 
-    [MapperIgnoreTarget(nameof(RecipeIngredientDto.Nutrition))] // ← add this
+    [MapperIgnoreTarget(nameof(RecipeIngredientDto.Nutrition))] // ← Keep ignored to suppress Mapperly compilation conflict 
     public override partial void Map(RecipeIngredient source, RecipeIngredientDto destination);
+
+    // 2. Compute explicit data fields directly post-initialisation during Mapper cycle
+    public override void AfterMap(RecipeIngredient source, RecipeIngredientDto destination)
+    {
+        // Dynamically parse navigation Nutrition field if database inclusion exists 
+        if (source.Nutrition != null)
+        {
+            var raw = source.Nutrition.ToNutritionalInfoPer100g();
+
+            // Multiply your per-100g nutrition profile alongside scale by your Grams scalar dynamically  
+            var scaleFactor = source.QuantityGrams / 100f;
+
+            destination.Nutrition = new NutritionalInfoDto
+            {
+                Calories = MathF.Round(raw.Calories * scaleFactor, 1),
+                ProteinGrams = MathF.Round(raw.ProteinGrams * scaleFactor, 1),
+                CarbsGrams = MathF.Round(raw.CarbsGrams * scaleFactor, 1),
+                FatGrams = MathF.Round(raw.FatGrams * scaleFactor, 1),
+                FiberGrams = MathF.Round(raw.FiberGrams * scaleFactor, 1)
+            };
+        }
+    }
 
     public List<RecipeIngredientDto> MapList(ICollection<RecipeIngredient> source)
         => source.Select(Map).ToList();
