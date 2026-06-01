@@ -279,3 +279,4 @@ src/MealPlannerAPI.BlazorHost/Logs/blazor-ui-logs.txt
 /.kiro/
 /.cursor/
 /src/MealPlannerAPI.DbMigrator/appsettings.Production.json
+/src/MealPlannerAPI.BlazorHost/Logs
