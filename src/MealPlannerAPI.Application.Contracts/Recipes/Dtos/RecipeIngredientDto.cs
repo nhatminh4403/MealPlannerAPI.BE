@@ -6,7 +6,6 @@ namespace MealPlannerAPI.Recipes.Dtos
 {
     public class RecipeIngredientDto : EntityDto<Guid>
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = default!;
         public float QuantityGrams { get; set; }
         public string? DisplayQuantity { get; set; }

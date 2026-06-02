@@ -48,7 +48,7 @@ public partial class CreateUpdateShoppingListDtoToShoppingListMapper
 
     [ObjectFactory]
     private ShoppingList CreateShoppingList()
-        => new ShoppingList(_guidGenerator.Create(), Guid.Empty, null);
+        => new ShoppingList(_guidGenerator.Create(), Guid.Empty, string.Empty);
 
     [MapperIgnoreTarget(nameof(ShoppingList.Id))]
     [MapperIgnoreTarget(nameof(ShoppingList.UserId))]
@@ -100,12 +100,14 @@ public partial class CreateUpdateShoppingItemDtoToShoppingItemMapper
             default(Enums.ShoppingItemCategory) // category
         );
 
+    
     [MapperIgnoreTarget(nameof(ShoppingListItem.Id))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.ShoppingListId))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.CreationTime))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.CreatorId))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.LastModificationTime))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.LastModifierId))]
+    [MapperIgnoreTarget(nameof(ShoppingListItem.IsCompleted))]
     public override partial ShoppingListItem Map(CreateUpdateShoppingListItemDto source);
 
     [MapperIgnoreTarget(nameof(ShoppingListItem.Id))]
@@ -114,6 +116,7 @@ public partial class CreateUpdateShoppingItemDtoToShoppingItemMapper
     [MapperIgnoreTarget(nameof(ShoppingListItem.CreatorId))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.LastModificationTime))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.LastModifierId))]
+    [MapperIgnoreTarget(nameof(ShoppingListItem.IsCompleted))]
     public override partial void Map(CreateUpdateShoppingListItemDto source, ShoppingListItem destination);
 }
 
