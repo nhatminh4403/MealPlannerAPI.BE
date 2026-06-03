@@ -60,19 +60,12 @@ namespace MealPlannerAPI.DataSeeder
             var alreadySeeded = await _identityUserRepository.FindByNormalizedUserNameAsync("CHEF_MARIA");
 
             if (alreadySeeded != null) return;
-            var lookup = context.Properties.TryGetValue("IngredientNutritionLookup", out var lookupObj)
-                                                ? lookupObj as Dictionary<string, Guid>
-                                                : null;
-
-            if (lookup == null)
-            {
-                var allNutritions = await _ingredientNutritionRepository.GetListAsync();
-                lookup = allNutritions.ToDictionary(x => x.Name, x => x.Id, StringComparer.OrdinalIgnoreCase);
-            }
+            var ingredients = await _ingredientNutritionRepository.GetListAsync();
+            var ingredientLookup = ingredients.ToDictionary(x => x.Name, x => x.Id, StringComparer.OrdinalIgnoreCase);
             var demoUsers = await SeedDemoUsersAsync();
 
             // 2. Seed Recipes for each user
-            var allRecipes = await SeedRecipesAsync(demoUsers, lookup);
+            var allRecipes = await SeedRecipesAsync(demoUsers, ingredientLookup);
 
             // 3. Seed Meal Plans
             await SeedMealPlansAsync(demoUsers, allRecipes);
