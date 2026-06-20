@@ -1,5 +1,6 @@
 using MealPlannerAPI.Enums;
 using MealPlannerAPI.Users;
+using MealPlannerAPI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
     public string? Tags { get; set; }
     /// <summary>JSON-serialised list of step strings</summary>
     public string InstructionsJson { get; set; } = "[]";
+    public string UrlSlug { get; set; }
     public Guid AuthorId { get; set; }
     public ICollection<RecipeIngredient> Ingredients { get; set; } = new List<RecipeIngredient>();
     protected Recipe() { }
@@ -36,6 +38,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                   int prepTimeMinutes,
                   int servings,
                   string description,
+                  string urlSlug,
                   Guid authorId) : base(id)
     {
         Name = name;
@@ -46,6 +49,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
         Servings = servings;
         Description = description;
         AuthorId = authorId;
+        UrlSlug = urlSlug;
     }
     public List<string> GetTags()
     {
@@ -115,7 +119,9 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
                                     string description,
                                     int servings,
                                     int prepMinutes,
-                                    int cookMinutes, Guid? authorId,
+                                    int cookMinutes,
+                                    Guid? authorId,
+                                    string? authorUsername,
                                     DifficultyLevel difficulty,
                                     IEnumerable<(string Name, float Grams, string Display, Guid? NutritionId)> ingredients,
                                     IEnumerable<string>? instructions = null)
@@ -134,6 +140,9 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
         if (authorId.HasValue)
         {
             recipe.AuthorId = authorId.Value;
+
+            //recipe.UrlSlug = UrlSlugGenerator.GenerateRecipeSlug(name, id);
+            recipe.UrlSlug = authorUsername is not null    ? UrlSlugGenerator.GenerateRecipeSlug(name, authorUsername)    : UrlSlugGenerator.GenerateRecipeSlug(name, id.ToString());
         }
 
 
