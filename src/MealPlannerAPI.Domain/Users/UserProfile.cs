@@ -101,10 +101,16 @@ namespace MealPlannerAPI.Users
 
         // ── Private helpers ───────────────────────────────────────────────────────
 
+        //private static List<string> SplitComma(string? value)
+        //    => string.IsNullOrWhiteSpace(value)
+        //        ? new List<string>()
+        //        : new List<string>(value.Split(',', StringSplitOptions.RemoveEmptyEntries));
         private static List<string> SplitComma(string? value)
-            => string.IsNullOrWhiteSpace(value)
-                ? new List<string>()
-                : new List<string>(value.Split(',', StringSplitOptions.RemoveEmptyEntries));
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? []
+                : [.. value.Split(',', StringSplitOptions.RemoveEmptyEntries)];
+        }
 
         private static string? JoinComma(IEnumerable<string> values)
         {

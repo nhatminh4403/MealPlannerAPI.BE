@@ -1,5 +1,4 @@
 using MealPlannerAPI.DataSeeder.Helpers;
-using static MealPlannerAPI.DataSeeder.Helpers.SeedDemoUserDefs;
 using MealPlannerAPI.Enums;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Notifications;

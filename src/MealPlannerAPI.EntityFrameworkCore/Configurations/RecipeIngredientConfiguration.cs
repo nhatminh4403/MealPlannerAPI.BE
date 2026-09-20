@@ -1,5 +1,4 @@
-﻿using MealPlannerAPI.Nutritions;
-using MealPlannerAPI.Recipes;
+﻿using MealPlannerAPI.Recipes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

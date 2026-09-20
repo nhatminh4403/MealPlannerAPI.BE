@@ -32,7 +32,7 @@ public class MealPlannerAPIApplicationModule : AbpModule
     {
         context.Services.AddTransient<IMealReminderTracker, MealReminderTracker>();
         context.Services.AddTransient<MealPlanHardDeleteWorker>();
-
+        //context.Services.AddTransient<MealPlannerAccountAppService>();
     }
 
     public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)

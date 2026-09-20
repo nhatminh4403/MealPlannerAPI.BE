@@ -20,7 +20,7 @@ public partial class RecipeToRecipeDtoMapper : MapperBase<Recipe, RecipeDto>
     [MapperIgnoreTarget(nameof(RecipeDto.Ingredients))]
     [MapperIgnoreTarget(nameof(RecipeDto.TotalTimeMinutes))]
     [MapperIgnoreTarget(nameof(RecipeDto.NutritionPerServing))]
-    public override  RecipeDto Map(Recipe source)
+    public override RecipeDto Map(Recipe source)
     {
         var dest = new RecipeDto();
         Map(source, dest);
@@ -41,7 +41,7 @@ public partial class RecipeToRecipeDtoMapper : MapperBase<Recipe, RecipeDto>
         destination.Tags = source.GetTags();
         destination.Instructions = source.GetInstructions();
         destination.TotalTimeMinutes = source.CookingTimeMinutes + source.PrepTimeMinutes;
-        
+
     }
 }
 
@@ -131,7 +131,7 @@ public partial class CreateUpdateRecipeDtoToRecipeMapper
 
     [ObjectFactory]
     private Recipe CreateRecipe()
-         => new Recipe(_guidGenerator.Create(), string.Empty, string.Empty, default, 0, 0, 1, string.Empty, Guid.Empty);
+         => new(_guidGenerator.Create(), string.Empty, string.Empty, default, 0, 0, 1, string.Empty, string.Empty, Guid.Empty);
 
 
     [MapperIgnoreTarget(nameof(Recipe.Id))]

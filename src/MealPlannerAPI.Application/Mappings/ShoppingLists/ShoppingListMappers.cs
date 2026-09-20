@@ -100,7 +100,7 @@ public partial class CreateUpdateShoppingItemDtoToShoppingItemMapper
             default(Enums.ShoppingItemCategory) // category
         );
 
-    
+
     [MapperIgnoreTarget(nameof(ShoppingListItem.Id))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.ShoppingListId))]
     [MapperIgnoreTarget(nameof(ShoppingListItem.CreationTime))]

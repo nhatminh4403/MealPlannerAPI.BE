@@ -1,5 +1,4 @@
 using MealPlannerAPI.Enums;
-using MealPlannerAPI.Users;
 using MealPlannerAPI.Utilities;
 using System;
 using System.Collections.Generic;
@@ -142,7 +141,7 @@ public class Recipe : FullAuditedAggregateRoot<Guid>
             recipe.AuthorId = authorId.Value;
 
             //recipe.UrlSlug = UrlSlugGenerator.GenerateRecipeSlug(name, id);
-            recipe.UrlSlug = authorUsername is not null    ? UrlSlugGenerator.GenerateRecipeSlug(name, authorUsername)    : UrlSlugGenerator.GenerateRecipeSlug(name, id.ToString());
+            recipe.UrlSlug = authorUsername is not null ? UrlSlugGenerator.GenerateRecipeSlug(name, authorUsername) : UrlSlugGenerator.GenerateRecipeSlug(name, id.ToString());
         }
 
 

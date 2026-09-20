@@ -22,7 +22,7 @@ namespace MealPlannerAPI.Recipes
             var dbSet = await GetDbSetAsync();
 
             return await dbSet?
-                .Include(r => r.Ingredients).ThenInclude(i=> i.Nutrition)
+                .Include(r => r.Ingredients).ThenInclude(i => i.Nutrition)
                 .FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken);
         }
 

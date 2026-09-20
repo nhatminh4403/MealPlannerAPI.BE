@@ -1,13 +1,14 @@
 using MealPlannerAPI.BackgroundJobs;
 using MealPlannerAPI.EntityFrameworkCore;
 using MealPlannerAPI.HealthChecks;
+using MealPlannerAPI.HttpApi.Host.Middlewares;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.MealPlans.BackgroundJobs;
 using MealPlannerAPI.MultiTenancy;
 using MealPlannerAPI.Nutritions.ExternalData;
 using MealPlannerAPI.Settings;
 using MealPlannerAPI.SignalR;
-using MealPlannerAPI.HttpApi.Host.Middlewares;
+using MealPlannerAPI.SwaggerFilters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
@@ -328,7 +329,9 @@ public class MealPlannerAPIHttpApiHostModule : AbpModule
                 {
                     [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 });
+                options.SchemaFilter<RegisterExampleFilter>();
             });
+
     }
 
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)

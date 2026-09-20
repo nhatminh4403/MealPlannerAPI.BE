@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,7 +8,7 @@ namespace MealPlannerAPI.Utilities
     public static class UrlSlugGenerator
     {
 
-        public static string GenerateRecipeSlug(string recipeName,string authorName)
+        public static string GenerateRecipeSlug(string recipeName, string authorName)
         {
             string text = $"{authorName}-{recipeName}";
             return text.RemoveDiacritics();

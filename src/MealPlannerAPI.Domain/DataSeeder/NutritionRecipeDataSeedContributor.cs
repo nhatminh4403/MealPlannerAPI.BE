@@ -1,5 +1,4 @@
 using MealPlannerAPI.DataSeeder.Helpers;
-using static MealPlannerAPI.DataSeeder.Helpers.SeedDemoUserDefs;
 using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Recipes;
 using System;

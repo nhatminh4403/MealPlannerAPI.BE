@@ -5,6 +5,7 @@ using MealPlannerAPI.Permissions;
 using MealPlannerAPI.Recipes.Dtos;
 using MealPlannerAPI.Recipes.Services;
 using MealPlannerAPI.Users;
+using MealPlannerAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System;
@@ -73,15 +74,16 @@ namespace MealPlannerAPI.Recipes
         public async override Task<RecipeDto> CreateAsync(CreateUpdateRecipeDto input)
         {
             var recipe = new Recipe(
-            GuidGenerator.Create(),
-            input.Name,
-            input.Cuisine,
-            input.Difficulty,
-            input.CookingTimeMinutes,
-            input.PrepTimeMinutes,
-            input.Servings,
-            input.Description,
-            CurrentUser.GetId());
+                id: GuidGenerator.Create(),
+                name: input.Name,
+                cuisine: input.Cuisine,
+                difficulty: input.Difficulty,
+                cookingTimeMinutes: input.CookingTimeMinutes,
+                prepTimeMinutes: input.PrepTimeMinutes,
+                servings: input.Servings,
+                description: input.Description,
+                urlSlug: UrlSlugGenerator.GenerateRecipeSlug(input.Name, CurrentUser.SurName + CurrentUser.Name),
+                authorId: CurrentUser.GetId());
 
             recipe.ImageUrl = input.ImageUrl;
             recipe.SetTags(input.Tags);
