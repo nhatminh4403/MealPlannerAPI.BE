@@ -13,12 +13,53 @@ using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Settings;
 using Volo.Abp.Threading;
-
+using Volo.Abp.Uow;
 namespace MealPlannerAPI.Identity
 {
     public class ExtendedIdentityUserManager : IdentityUserManager
     {
-        public ExtendedIdentityUserManager(IdentityUserStore store, IIdentityRoleRepository roleRepository, IIdentityUserRepository userRepository, IOptions<IdentityOptions> optionsAccessor, IPasswordHasher<IdentityUser> passwordHasher, IEnumerable<IUserValidator<IdentityUser>> userValidators, IEnumerable<IPasswordValidator<IdentityUser>> passwordValidators, ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors, IServiceProvider services, ILogger<IdentityUserManager> logger, ICancellationTokenProvider cancellationTokenProvider, IOrganizationUnitRepository organizationUnitRepository, ISettingProvider settingProvider, IDistributedEventBus distributedEventBus, IIdentityLinkUserRepository identityLinkUserRepository, IDistributedCache<AbpDynamicClaimCacheItem> dynamicClaimCache, IOptions<AbpMultiTenancyOptions> multiTenancyOptions, ICurrentTenant currentTenant, IDataFilter dataFilter) : base(store, roleRepository, userRepository, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger, cancellationTokenProvider, organizationUnitRepository, settingProvider, distributedEventBus, identityLinkUserRepository, dynamicClaimCache, multiTenancyOptions, currentTenant, dataFilter)
+        public ExtendedIdentityUserManager(IdentityUserStore store,
+                                           IIdentityRoleRepository roleRepository,
+                                           IIdentityUserRepository userRepository,
+                                           IOptions<IdentityOptions> optionsAccessor,
+                                           IPasswordHasher<IdentityUser> passwordHasher,
+                                           IEnumerable<IUserValidator<IdentityUser>> userValidators,
+                                           IEnumerable<IPasswordValidator<IdentityUser>> passwordValidators,
+                                           ILookupNormalizer keyNormalizer,
+                                           IdentityErrorDescriber errors,
+                                           IServiceProvider services,
+                                           ILogger<IdentityUserManager> logger,
+                                           ICancellationTokenProvider cancellationTokenProvider,
+                                           IOrganizationUnitRepository organizationUnitRepository,
+                                           ISettingProvider settingProvider,
+                                           IDistributedEventBus distributedEventBus,
+                                           IIdentityLinkUserRepository identityLinkUserRepository,
+                                           IDistributedCache<AbpDynamicClaimCacheItem> dynamicClaimCache,
+                                           IOptions<AbpMultiTenancyOptions> multiTenancyOptions,
+                                           ICurrentTenant currentTenant,
+                                           IDataFilter dataFilter,
+                                           IUnitOfWorkManager unitOfWorkManager)
+            : base(store,
+                   roleRepository,
+                   userRepository,
+                   optionsAccessor,
+                   passwordHasher,
+                   userValidators,
+                   passwordValidators,
+                   keyNormalizer,
+                   errors,
+                   services,
+                   logger,
+                   cancellationTokenProvider,
+                   organizationUnitRepository,
+                   settingProvider,
+                   distributedEventBus,
+                   identityLinkUserRepository,
+                   dynamicClaimCache,
+                   multiTenancyOptions,
+                   currentTenant,
+                   dataFilter,
+                   unitOfWorkManager)
         {
         }
 
