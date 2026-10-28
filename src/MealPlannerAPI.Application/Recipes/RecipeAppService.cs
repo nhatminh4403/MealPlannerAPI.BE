@@ -1,3 +1,4 @@
+using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.Nutritions;
@@ -22,11 +23,16 @@ using Volo.Abp.Users;
 namespace MealPlannerAPI.Recipes
 {
     [RemoteService(false)]
-    public class RecipeAppService :
-        CrudAppService<Recipe, RecipeDto, RecipeSummaryDto, Guid, GetRecipesInput, CreateUpdateRecipeDto, CreateUpdateRecipeDto>,
-        IRecipeAppService
-    {
+    public class RecipeAppService : CrudAppService<Recipe,
+                                                    RecipeDto,
+                                                    RecipeSummaryDto,
+                                                    Guid,
+                                                    GetRecipesInput,
+                                                    CreateUpdateRecipeDto,
+                                                    CreateUpdateRecipeDto>, IRecipeAppService
 
+    {
+        #region D.Injections
         private readonly IRecipeRepository _recipeRepository;
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly RecipeToRecipeDtoMapper _toRecipeDtoMapper;
@@ -37,6 +43,10 @@ namespace MealPlannerAPI.Recipes
         private readonly IMealPlannerHubPublisher _hub;
         private readonly NutritionCalculator _nutritionCalculator;
         private readonly ILogger<RecipeAppService> _logger;
+        private readonly ITrendingRecipeRefreshService _trendingRefresh;
+        #endregion
+
+        #region Contructor & Policy Configuration
         public RecipeAppService(IRecipeRepository recipeRepository,
                                 IIdentityUserRepository identityUserRepository,
                                 RecipeToRecipeDtoMapper toRecipeDtoMapper,
@@ -46,7 +56,8 @@ namespace MealPlannerAPI.Recipes
                                 TrendingRecipeCache trendingCache,
                                 IMealPlannerHubPublisher hub,
                                 NutritionCalculator nutritionCalculator,
-                                ILogger<RecipeAppService> logger) : base(recipeRepository)
+                                ILogger<RecipeAppService> logger,
+                                ITrendingRecipeRefreshService trendingRefresh) : base(recipeRepository)
         {
             _recipeRepository = recipeRepository;
             _identityUserRepository = identityUserRepository;
@@ -59,6 +70,7 @@ namespace MealPlannerAPI.Recipes
             ConfigurePolicies();
             _nutritionCalculator = nutritionCalculator;
             _logger = logger;
+            _trendingRefresh = trendingRefresh;
         }
 
         private void ConfigurePolicies()
@@ -69,7 +81,9 @@ namespace MealPlannerAPI.Recipes
             UpdatePolicyName = MealPlannerAPIPermissions.Recipes.Update;
             DeletePolicyName = MealPlannerAPIPermissions.Recipes.Delete;
         }
+        #endregion
 
+        #region ABP's CrudAppService Overrides
         [Authorize(MealPlannerAPIPermissions.Recipes.Create)]
         public async override Task<RecipeDto> CreateAsync(CreateUpdateRecipeDto input)
         {
@@ -223,6 +237,8 @@ namespace MealPlannerAPI.Recipes
 
             return await MapToRecipeDtoAsync(recipe);
         }
+        #endregion
+
         [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId)
         {
@@ -236,14 +252,28 @@ namespace MealPlannerAPI.Recipes
             var recipe = await _recipeRepository.GetListByCuisineAsync(cuisine);
             return new ListResultDto<RecipeSummaryDto>(recipe.Select(MapToSummaryDto).ToList());
         }
-
         [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetTopRatedAsync(int count)
         {
             var recipe = await _recipeRepository.GetTopRatedAsync(count);
             return new ListResultDto<RecipeSummaryDto>(recipe.Select(MapToSummaryDto).ToList());
         }
+        #region Trending Recipes
+        [AllowAnonymous]
+        public async Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync()
+        {
+            var items = await _trendingCache.GetOrSetAsync(
+            _trendingRefresh.FetchFromDbAsync);
 
+            return new ListResultDto<TrendingRecipeDto>(items);
+        }
+        public Task InvalidateTrendingCacheAsync()
+        {
+            return _trendingRefresh.RefreshAsync();
+        }
+
+        #endregion
+        #region Private Helper Methods
         private async Task<RecipeDto> MapToRecipeDtoAsync(Recipe recipe)
         {
             var dto = _toRecipeDtoMapper.Map(recipe);
@@ -276,5 +306,6 @@ namespace MealPlannerAPI.Recipes
             dto.Tags = recipe.GetTags();
             return dto;
         }
+        #endregion
     }
 }

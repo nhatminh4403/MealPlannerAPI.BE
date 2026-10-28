@@ -57,7 +57,7 @@ public class MealPlannerAPIDbContext :
     public DbSet<Recipe> Recipes { get; set; }
     public DbSet<ShoppingList> ShoppingLists { get; set; }
     public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
-
+    public DbSet<UserFollow> UserFollows { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<MealPlanEntry> MealPlanEntries { get; set; }
     public MealPlannerAPIDbContext(DbContextOptions<MealPlannerAPIDbContext> options)
@@ -379,6 +379,15 @@ public class MealPlannerAPIDbContext :
             b.Property(x => x.NotifyShoppingListAlerts)
                 .HasDefaultValue(true)
                 .HasColumnName(nameof(UserProfile.NotifyShoppingListAlerts));
+        });
+
+        builder.Entity<UserFollow>(b =>
+        {
+            b.ToTable("UserFollows");
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => new { x.FollowerId, x.FolloweeId }).IsUnique();
+            b.HasIndex(x => x.FolloweeId);
         });
     }
 }

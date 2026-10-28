@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -73,6 +73,7 @@ namespace MealPlannerAPI.Migrations
                     NextTryTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastTryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsAbandoned = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CompletionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Priority = table.Column<byte>(type: "tinyint", nullable: false, defaultValue: (byte)15),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
@@ -526,6 +527,7 @@ namespace MealPlannerAPI.Migrations
                     Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     Tags = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
                     InstructionsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UrlSlug = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
@@ -663,6 +665,21 @@ namespace MealPlannerAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OpenIddictScopes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFollows",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FollowerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FolloweeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFollows", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1149,9 +1166,9 @@ namespace MealPlannerAPI.Migrations
                 columns: new[] { "TenantId", "UserId", "ExecutionTime" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpBackgroundJobs_IsAbandoned_NextTryTime",
+                name: "IX_AbpBackgroundJobs_ApplicationName_CompletionTime_IsAbandoned_NextTryTime",
                 table: "AbpBackgroundJobs",
-                columns: new[] { "IsAbandoned", "NextTryTime" });
+                columns: new[] { "ApplicationName", "CompletionTime", "IsAbandoned", "NextTryTime" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AbpBlobContainers_TenantId_Name",
@@ -1480,6 +1497,17 @@ namespace MealPlannerAPI.Migrations
                 name: "IX_RecipeIngredients_RecipeId",
                 table: "RecipeIngredients",
                 column: "RecipeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFollows_FolloweeId",
+                table: "UserFollows",
+                column: "FolloweeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFollows_FollowerId_FolloweeId",
+                table: "UserFollows",
+                columns: new[] { "FollowerId", "FolloweeId" },
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -1589,6 +1617,9 @@ namespace MealPlannerAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "RecipeIngredients");
+
+            migrationBuilder.DropTable(
+                name: "UserFollows");
 
             migrationBuilder.DropTable(
                 name: "AbpBlobContainers");

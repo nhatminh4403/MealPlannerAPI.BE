@@ -17,5 +17,8 @@ namespace MealPlannerAPI.Recipes.Services
         Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId);
         Task<ListResultDto<RecipeSummaryDto>> GetTopRatedAsync(int count);
         Task<ListResultDto<RecipeSummaryDto>> GetByCuisineAsync(string cuisine);
+
+        Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync();
+        Task InvalidateTrendingCacheAsync();
     }
 }

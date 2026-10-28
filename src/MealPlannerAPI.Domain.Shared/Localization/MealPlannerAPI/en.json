@@ -61,6 +61,7 @@
     "Auth:Password": "Password",
     "Auth:ForgotPassword": "Forgot password?",
     "Auth:RememberMe": "Remember me",
+   " Auth:Logout": "Logout" ,
     "Auth:SignIn": "Sign In",
     "Auth:SigningIn": "Signing In...",
     "Auth:NoAccount": "Don't have an account?",

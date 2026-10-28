@@ -20,10 +20,12 @@ namespace MealPlannerAPI.Controllers.Users
     public class UserProfileController : AbpControllerBase
     {
         private readonly IUserProfileAppService _userProfileAppService;
+        private readonly IUserFollowAppService _userFollowAppService;
 
-        public UserProfileController(IUserProfileAppService userProfileAppService)
+        public UserProfileController(IUserProfileAppService userProfileAppService, IUserFollowAppService userFollowAppService)
         {
             _userProfileAppService = userProfileAppService;
+            _userFollowAppService = userFollowAppService;
         }
 
         // ── Own profile ───────────────────────────────────────────────────────────
@@ -226,23 +228,23 @@ namespace MealPlannerAPI.Controllers.Users
 
         // ── Social ────────────────────────────────────────────────────────────────
 
-        /// <summary>Follow a user.</summary>
-        [HttpPost("{targetUserId:guid}/follow")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        /// <summary>Get the users who follow the given user.</summary>
+        [HttpGet("{userId:guid}/followers")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<PagedResultDto<FollowUserDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> FollowAsync(Guid targetUserId)
+        public async Task<IActionResult> GetFollowersAsync(Guid userId, [FromQuery] PagedResultRequestDto paging)
         {
             try
             {
-                await _userProfileAppService.FollowAsync(targetUserId);
-                return Ok(new ApiResponse(true, "User followed successfully"));
-            }
-            catch (EntityNotFoundException)
-            {
-                return NotFound(new ApiResponse(false, "User not found"));
+                var input = new GetFollowListInput
+                {
+                    UserId = userId,
+                    SkipCount = paging.SkipCount,
+                    MaxResultCount = paging.MaxResultCount
+                };
+                var result = await _userFollowAppService.GetFollowersAsync(input);
+                return Ok(new ApiResponse<PagedResultDto<FollowUserDto>>(true, "Success", result));
             }
             catch (Exception ex)
             {
@@ -251,29 +253,38 @@ namespace MealPlannerAPI.Controllers.Users
             }
         }
 
-        /// <summary>Unfollow a user.</summary>
-        [HttpDelete("{targetUserId:guid}/follow")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        /// <summary>Get the users the given user follows.</summary>
+        [HttpGet("{userId:guid}/following")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<PagedResultDto<FollowUserDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UnfollowAsync(Guid targetUserId)
+        public async Task<IActionResult> GetFollowingAsync(Guid userId, [FromQuery] PagedResultRequestDto paging)
         {
             try
             {
-                await _userProfileAppService.UnfollowAsync(targetUserId);
-                return Ok(new ApiResponse(true, "User unfollowed successfully"));
-            }
-            catch (EntityNotFoundException)
-            {
-                return NotFound(new ApiResponse(false, "User not found"));
+                var input = new GetFollowListInput
+                {
+                    UserId = userId,
+                    SkipCount = paging.SkipCount,
+                    MaxResultCount = paging.MaxResultCount
+                };
+                var result = await _userFollowAppService.GetFollowingAsync(input);
+                return Ok(new ApiResponse<PagedResultDto<FollowUserDto>>(true, "Success", result));
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     new ApiResponse(false, ex.Message));
             }
+        }
+
+
+        [HttpGet("{targetUserId:guid}/is-following")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> IsFollowingAsync(Guid targetUserId)
+        {
+            var result = await _userFollowAppService.IsFollowingAsync(targetUserId);
+            return Ok(new ApiResponse<bool>(true, "Success", result));
         }
     }
 }

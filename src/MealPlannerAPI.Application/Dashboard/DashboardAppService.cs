@@ -1,15 +1,18 @@
-﻿using MealPlannerAPI.Hubs;
-using MealPlannerAPI.Mappings.Recipes;
+﻿using MealPlannerAPI.Mappings.Recipes;
 using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
+using MealPlannerAPI.Recipes.Services;
 using MealPlannerAPI.ShoppingLists;
+using MealPlannerAPI.Users;
 using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
 namespace MealPlannerAPI.Dashboard
@@ -22,34 +25,32 @@ namespace MealPlannerAPI.Dashboard
         private readonly IMealPlanRepository _mealPlanRepository;
         private readonly IShoppingListRepository _shoppingListRepository;
         private readonly RecipeToRecipeSummaryDtoMapper _toSummaryDtoMapper;
-        private readonly RecipeToTrendingRecipeDtoMapper _toTrendingDtoMapper;
-        private readonly IMealPlannerHubPublisher _hub;
-        private readonly TrendingRecipeCache _trendingCache;
-        private readonly ITrendingRecipeRefreshService _trendingRefresh;
+        private readonly IRecipeAppService _recipeAppService;
+        private readonly IRepository<UserProfile, Guid> _userProfileRepository;
+        private readonly IIdentityUserRepository _identityUserRepository;
         public DashboardAppService(IRecipeRepository recipeRepository,
                                    IMealPlanRepository mealPlanRepository,
                                    IShoppingListRepository shoppingListRepository,
                                    RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
-                                   RecipeToTrendingRecipeDtoMapper toTrendingDtoMapper,
-                                   IMealPlannerHubPublisher hub,
-                                   TrendingRecipeCache trendingCache,
-                                   ITrendingRecipeRefreshService trendingRefresh)
+                                   IRecipeAppService recipeAppService,
+                                   IRepository<UserProfile, Guid> userProfileRepository,
+
+                                   IIdentityUserRepository identityUserRepository)
         {
             _recipeRepository = recipeRepository;
             _mealPlanRepository = mealPlanRepository;
             _shoppingListRepository = shoppingListRepository;
             _toSummaryDtoMapper = toSummaryDtoMapper;
-            _toTrendingDtoMapper = toTrendingDtoMapper;
-            _hub = hub;
-            _trendingCache = trendingCache;
-            _trendingRefresh = trendingRefresh;
+            _userProfileRepository = userProfileRepository;
+            _recipeAppService = recipeAppService;
+            _identityUserRepository = identityUserRepository;
         }
 
         public async Task<DashboardDto> GetAsync()
         {
             var stats = await GetStatsAsync();
             var recentRecipes = await GetRecentRecipesAsync();
-            var trendingRecipes = await GetTrendingAsync();
+            var trendingRecipes = await _recipeAppService.GetTrendingAsync();
             return new DashboardDto
             {
                 Stats = stats,
@@ -99,6 +100,8 @@ namespace MealPlannerAPI.Dashboard
                         .Select(r => r.CookingTimeMinutes + r.PrepTimeMinutes));
             }
 
+            var followerCount = await GetCurrentUserFollower(userId);
+            var followingCount = await GetCurrentUserFollowing(userId);
             return new DashboardStatsDto
             {
                 ThisWeekMeals = thisWeekMeals,
@@ -106,19 +109,11 @@ namespace MealPlannerAPI.Dashboard
                 TotalCookingMinutes = totalCookingMinutes,
                 TotalRecipes = totalRecipes,
                 MealPlans = mealPlansTotal,
-                ShoppingLists = shoppingListsCount
+                ShoppingLists = shoppingListsCount,
+                FollowerCount = followerCount,
+                FollowingCount = followingCount,
             };
         }
-
-
-        public async Task<ListResultDto<TrendingRecipeDto>> GetTrendingAsync()
-        {
-            var items = await _trendingCache.GetOrSetAsync(
-            _trendingRefresh.FetchFromDbAsync);
-
-            return new ListResultDto<TrendingRecipeDto>(items);
-        }
-
 
         private async Task<ListResultDto<RecipeSummaryDto>> GetRecentRecipesAsync()
         {
@@ -138,23 +133,26 @@ namespace MealPlannerAPI.Dashboard
 
             return new ListResultDto<RecipeSummaryDto>(summaries);
         }
-        public Task InvalidateTrendingCacheAsync()
-        {
-            return _trendingRefresh.RefreshAsync();
 
-        }
-        private static string FormatTrendingSince(DateTime since)
+        private async Task<int> GetCurrentUserFollower(Guid id)
         {
-            var diff = DateTime.UtcNow - since;
-            return diff.TotalDays switch
-            {
-                < 1 => "today",
-                < 2 => "yesterday",
-                < 7 => $"{(int)diff.TotalDays} days ago",
-                < 14 => "1 week ago",
-                < 30 => $"{(int)(diff.TotalDays / 7)} weeks ago",
-                _ => $"{(int)(diff.TotalDays / 30)} months ago"
-            };
+            var queryable = await _userProfileRepository.GetQueryableAsync();
+            var result = await AsyncExecuter.FirstOrDefaultAsync(
+                queryable.Where(u => u.Id == id)
+                         .Select(u => u.Followers)
+                );
+
+            return result;
+        }
+        private async Task<int> GetCurrentUserFollowing(Guid id)
+        {
+            var queryable = await _userProfileRepository.GetQueryableAsync();
+            var result = await AsyncExecuter.FirstOrDefaultAsync(
+                queryable.Where(u => u.Id == id)
+                         .Select(u => u.Followers)
+                );
+
+            return result;
         }
     }
 }

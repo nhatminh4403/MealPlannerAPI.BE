@@ -6,6 +6,7 @@ using MealPlannerAPI.Nutritions;
 using MealPlannerAPI.Recipes;
 using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users;
+using MealPlannerAPI.Users.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ public class MealPlannerAPIDataSeedContributor : IDataSeedContributor, ITransien
     private readonly IShoppingListRepository _shoppingListRepository;
     private readonly IRecipeRepository _recipeRepository;
     private readonly IUserNotificationRepository _notificationRepository;
-    private readonly IRepository<UserProfile, Guid> _userProfileRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IdentityUserManager _identityUserManager;
@@ -37,7 +38,7 @@ public class MealPlannerAPIDataSeedContributor : IDataSeedContributor, ITransien
         IShoppingListRepository shoppingListRepository,
         IRecipeRepository recipeRepository,
         IUserNotificationRepository notificationRepository,
-        IRepository<UserProfile, Guid> userProfileRepository,
+        IUserProfileRepository userProfileRepository,
         IIdentityUserRepository identityUserRepository,
         IGuidGenerator guidGenerator,
         IdentityUserManager identityUserManager,
@@ -100,8 +101,6 @@ public class MealPlannerAPIDataSeedContributor : IDataSeedContributor, ITransien
                 Name = data.Name,
                 Surname = data.Surname,
                 Specialty = data.Specialty,
-                Followers = data.Followers,
-                Following = data.Following,
                 ProfileVisibility = VisibilityLevel.Public,
                 RecipesVisibility = VisibilityLevel.Public,
             };

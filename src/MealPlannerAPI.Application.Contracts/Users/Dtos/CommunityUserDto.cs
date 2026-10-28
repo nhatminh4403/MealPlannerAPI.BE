@@ -12,5 +12,8 @@ namespace MealPlannerAPI.Users.Dtos
         public int Followers { get; set; }
         public int Following { get; set; }
         public string? Specialty { get; set; }
+        public bool IsFollowedByCurrentUser { get; set; }
+        public bool FollowsCurrentUser { get; set; }
+
     }
 }

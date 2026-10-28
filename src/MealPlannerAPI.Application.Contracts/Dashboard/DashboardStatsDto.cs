@@ -12,6 +12,8 @@ namespace MealPlannerAPI.Dashboard
         public int MealPlans { get; set; }
         public int RecipesShared { get; set; }
         public int ShoppingLists { get; set; }
+        public int FollowerCount { get; set; }
+        public int FollowingCount { get; set; }
 
     }
     public class DashboardDto

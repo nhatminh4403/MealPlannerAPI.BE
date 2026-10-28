@@ -12,8 +12,6 @@ namespace MealPlannerAPI.Users.Services
     public interface IUserProfileAppService : IApplicationService
     {
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default);
-
-        /// <param name="input">Extends ABP's UpdateProfileDto (UserName, Name, Surname, PhoneNumber).</param>
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default);
 
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input, CancellationToken cancellationToken = default);
@@ -29,7 +27,10 @@ namespace MealPlannerAPI.Users.Services
         Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input, CancellationToken cancellationToken = default);
 
         // ── Social ────────────────────────────────────────────────────────────────
-        Task FollowAsync(Guid targetUserId);
-        Task UnfollowAsync(Guid targetUserId);
+        //Task FollowAsync(Guid targetUserId);
+        //Task UnfollowAsync(Guid targetUserId);
+        //Task<bool> IsFollowingAsync(Guid targetUserId);
+        //Task<PagedResultDto<FollowUserDto>> GetFollowersAsync(GetFollowListInput input);
+        //Task<PagedResultDto<FollowUserDto>> GetFollowingAsync(GetFollowListInput input);
     }
 }

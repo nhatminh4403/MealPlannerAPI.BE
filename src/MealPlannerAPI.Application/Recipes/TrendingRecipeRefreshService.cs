@@ -1,6 +1,6 @@
-﻿using MealPlannerAPI.Hubs;
+﻿using MealPlannerAPI.Dashboard;
+using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Recipes;
-using MealPlannerAPI.Recipes;
 using MealPlannerAPI.Recipes.Dtos;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 
-namespace MealPlannerAPI.Dashboard
+namespace MealPlannerAPI.Recipes
 {
     public class TrendingRecipeRefreshService : MealPlannerAPIAppService, ITrendingRecipeRefreshService
     {

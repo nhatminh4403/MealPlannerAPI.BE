@@ -66,22 +66,6 @@ namespace MealPlannerAPI.Controllers.Dashboard
         }
 
         /// <summary>Get trending recipes (public).</summary>
-        [HttpGet("trending")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(ApiResponse<ListResultDto<TrendingRecipeDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetTrendingAsync()
-        {
-            try
-            {
-                var result = await _dashboardAppService.GetTrendingAsync();
-                return Ok(new ApiResponse<ListResultDto<TrendingRecipeDto>>(true, "Success", result));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new ApiResponse(false, ex.Message));
-            }
-        }
+
     }
 }

@@ -313,3 +313,19 @@ public partial class CreateUpdateUserSettingsDtoToUserProfileMapper
     [MapperIgnoreTarget(nameof(UserProfile.DeleterId))]
     public override partial void Map(CreateUpdateUserSettingsDto source, UserProfile destination);
 }
+
+
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class UserProfileToFollowUserDtoMapper : MapperBase<UserProfile, FollowUserDto>
+{
+    [MapperIgnoreTarget(nameof(CommunityUserDto.IsFollowedByCurrentUser))]
+    [MapperIgnoreTarget(nameof(CommunityUserDto.FollowsCurrentUser))]
+    [MapperIgnoreTarget(nameof(FollowUserDto.FollowedAt))]
+    public override partial FollowUserDto Map(UserProfile source);
+
+    [MapperIgnoreTarget(nameof(CommunityUserDto.IsFollowedByCurrentUser))]
+    [MapperIgnoreTarget(nameof(CommunityUserDto.FollowsCurrentUser))]
+    [MapperIgnoreTarget(nameof(FollowUserDto.FollowedAt))]
+    public override partial void Map(UserProfile source, FollowUserDto destination);
+}

@@ -1,3 +1,4 @@
+using MealPlannerAPI.Account;
 using MealPlannerAPI.Dashboard;
 using MealPlannerAPI.Hubs;
 using MealPlannerAPI.Mappings.Users;
@@ -5,16 +6,19 @@ using MealPlannerAPI.MealPlans;
 using MealPlannerAPI.Notifications;
 using MealPlannerAPI.ShoppingLists;
 using MealPlannerAPI.Users.Dtos;
+using MealPlannerAPI.Users.Interfaces;
 using MealPlannerAPI.Users.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
@@ -22,12 +26,18 @@ namespace MealPlannerAPI.Users
 {
     [Authorize]
     [RemoteService(false)]
-    public class UserProfileAppService : MealPlannerAPIAppService, IUserProfileAppService
+    public class UserProfileAppService : UserAppServiceBase, IUserProfileAppService
     {
-        private readonly IIdentityUserRepository _identityUserRepository;
+        #region Dependency Injections
+
+        #region Interfaces & ABP Services
+        private readonly IIdentityUserRepository _identityUserRepository;  
         private readonly IdentityUserManager _userManager;
-        private readonly IMealPlanRepository _mealPlanRepository;
-        private readonly IShoppingListRepository _shoppingListRepository;
+        private readonly IUserFollowAppService _userFollowAppService;
+        #endregion
+        #region Mapperly Mapper Classes
+        private readonly UserProfileToFollowUserDtoMapper _toFollowDtoMapper;
+
         private readonly UserProfileToCommunityUserDtoMapper _toCommunityDtoMapper;
         private readonly UserProfileToUserPreferencesDtoMapper _toPreferencesDtoMapper;
         private readonly UserProfileToUserStatsDtoMapper _toStatsDtoMapper;
@@ -35,11 +45,12 @@ namespace MealPlannerAPI.Users
         private readonly UserProfileToUserNotificationPreferencesDtoMapper _toNotifPrefDtoMapper;
         private readonly CreateUpdateUserPreferencesDtoToUserProfileMapper _toUserProfilePreferencesMapper;
         private readonly CreateUpdateUserSettingsDtoToUserProfileMapper _toUserProfileSettingsMapper;
-        private readonly IMealPlannerHubPublisher _hub;
-        private readonly IUserNotificationAppService _notificationService;
+        #endregion
+
+        #endregion
+
+        #region Constructor
         public UserProfileAppService(IIdentityUserRepository identityUserRepository,
-                                     IMealPlanRepository mealPlanRepository,
-                                     IShoppingListRepository shoppingListRepository,
                                      UserProfileToCommunityUserDtoMapper toCommunityDtoMapper,
                                      UserProfileToUserPreferencesDtoMapper toPreferencesDtoMapper,
                                      UserProfileToUserStatsDtoMapper toStatsDtoMapper,
@@ -47,25 +58,24 @@ namespace MealPlannerAPI.Users
                                      UserProfileToUserNotificationPreferencesDtoMapper toNotifPrefDtoMapper,
                                      CreateUpdateUserPreferencesDtoToUserProfileMapper toUserProfilePreferencesMapper,
                                      CreateUpdateUserSettingsDtoToUserProfileMapper toUserProfileSettingsMapper,
-                                     IMealPlannerHubPublisher hub,
                                      IdentityUserManager userManager,
-                                     IUserNotificationAppService notificationService)
+                                     UserProfileToFollowUserDtoMapper toFollowDtoMapper,
+                                     IUserFollowAppService userFollowAppService) : base(identityUserRepository)
+
         {
             _identityUserRepository = identityUserRepository;
-            _mealPlanRepository = mealPlanRepository;
-            _shoppingListRepository = shoppingListRepository;
-            _toCommunityDtoMapper = toCommunityDtoMapper;
+           _toCommunityDtoMapper = toCommunityDtoMapper;
             _toPreferencesDtoMapper = toPreferencesDtoMapper;
             _toStatsDtoMapper = toStatsDtoMapper;
             _toPrivacyDtoMapper = toPrivacyDtoMapper;
             _toNotifPrefDtoMapper = toNotifPrefDtoMapper;
             _toUserProfilePreferencesMapper = toUserProfilePreferencesMapper;
             _toUserProfileSettingsMapper = toUserProfileSettingsMapper;
-            _hub = hub;
             _userManager = userManager;
-            _notificationService = notificationService;
+            _toFollowDtoMapper = toFollowDtoMapper;
+            _userFollowAppService = userFollowAppService;
         }
-
+        #endregion
         public async Task<ProfileDto> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default)
         {
             try
@@ -84,7 +94,9 @@ namespace MealPlannerAPI.Users
         public async Task<CommunityUserDto> GetCommunityProfileAsync(Guid userId)
         {
             var user = await GetUserProfileAsync(userId);
-            return _toCommunityDtoMapper.Map(user);
+            var dto = _toCommunityDtoMapper.Map(user);
+            await _userFollowAppService.FillFollowStateAsync(new[] { dto });
+            return dto;
         }
 
         [AllowAnonymous]
@@ -99,14 +111,11 @@ namespace MealPlannerAPI.Users
                 skipCount: input.SkipCount);
 
             var profiles = users.OfType<UserProfile>().ToList();
-
-            return new PagedResultDto<CommunityUserDto>(
-                totalCount,
-                _toCommunityDtoMapper.MapList(profiles));
+            var dtos = _toCommunityDtoMapper.MapList(profiles);
+            await _userFollowAppService.FillFollowStateAsync(dtos);
+            return new PagedResultDto<CommunityUserDto>(totalCount, dtos);
         }
-
         // ── Write ─────────────────────────────────────────────────────────────────
-
         public async Task<ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input,
                                                              CancellationToken cancellationToken = default)
         {
@@ -119,7 +128,6 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-
         public async Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
@@ -128,7 +136,6 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-
         public async Task<ProfileDto> UpdateAvatarAsync(string avatarUrl)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
@@ -137,48 +144,6 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-
-        public async Task FollowAsync(Guid targetUserId)
-        {
-            var currentUser = await GetUserProfileAsync(CurrentUser.GetId());
-            var targetUser = await GetUserProfileAsync(targetUserId);
-
-            currentUser.Follow();
-            targetUser.GainFollower();
-
-            await _identityUserRepository.UpdateAsync(currentUser);
-            await _identityUserRepository.UpdateAsync(targetUser, autoSave: true);
-
-            // Push updated stats to both users
-            var currentStats = await BuildStatsAsync(currentUser);
-            var targetStats = await BuildStatsAsync(targetUser);
-
-            await _hub.NotifyStatsUpdatedAsync(currentUser.Id, currentStats);
-            await _hub.NotifyStatsUpdatedAsync(targetUser.Id, targetStats);
-
-            await NotificationFactory.NewFollower(_notificationService, targetUserId, currentUser.UserName, currentUser.AvatarUrl);
-
-        }
-
-        public async Task UnfollowAsync(Guid targetUserId)
-        {
-            var currentUser = await GetUserProfileAsync(CurrentUser.GetId());
-            var targetUser = await GetUserProfileAsync(targetUserId);
-
-            currentUser.Unfollow();
-            targetUser.LoseFollower();
-
-            await _identityUserRepository.UpdateAsync(currentUser);
-            await _identityUserRepository.UpdateAsync(targetUser, autoSave: true);
-
-            var currentStats = await BuildStatsAsync(currentUser);
-            var targetStats = await BuildStatsAsync(targetUser);
-
-            await _hub.NotifyStatsUpdatedAsync(currentUser.Id, currentStats);
-            await _hub.NotifyStatsUpdatedAsync(targetUser.Id, targetStats);
-        }
-
-
         public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
@@ -193,7 +158,6 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-
         public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input, CancellationToken cancellation = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
@@ -203,7 +167,6 @@ namespace MealPlannerAPI.Users
                 input.CurrentPassword,
                 input.NewPassword)).CheckErrors();
         }
-
         public async Task ChangeEmailAsync(ChangeEmailDto input, CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
@@ -215,35 +178,7 @@ namespace MealPlannerAPI.Users
 
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
         }
-
-
         // ── Helpers ───────────────────────────────────────────────────────────────
-
-        private async Task<UserProfile> GetUserProfileAsync(Guid userId, CancellationToken cancellationToken = default)
-        {
-            var identityUser = await _identityUserRepository.GetAsync(
-                userId,
-                includeDetails: true,
-                cancellationToken: cancellationToken);
-            Console.WriteLine(identityUser);
-            if (identityUser is UserProfile profile)
-            {
-                return profile;
-            }
-
-            if (identityUser != null)
-            {
-                // Return a "virtual" profile derived from the identity user
-                return new UserProfile(identityUser.Id, identityUser.UserName, identityUser.Email, identityUser.TenantId)
-                {
-                    Name = identityUser.Name,
-                    Surname = identityUser.Surname
-                };
-            }
-
-            throw new EntityNotFoundException(typeof(UserProfile), userId);
-        }
-
         private ProfileDto BuildUserProfileDto(UserProfile user)
         {
             var preferences = _toPreferencesDtoMapper.Map(user);
@@ -278,35 +213,5 @@ namespace MealPlannerAPI.Users
                 FollowingCount = user.Following,
             };
         }
-        private async Task<DashboardStatsDto> BuildStatsAsync(UserProfile user)
-        {
-            var weekStart = MealPlan.GetWeekStart(DateTime.UtcNow);
-
-            var mealPlanQuery = await _mealPlanRepository.GetQueryableAsync();
-            var shoppingQuery = await _shoppingListRepository.GetQueryableAsync();
-
-            var thisWeekMeals = await AsyncExecuter.CountAsync(
-                mealPlanQuery
-                    .Where(mp => mp.UserId == user.Id && mp.WeekStartDate == weekStart)
-                    .SelectMany(mp => mp.Entries));
-
-            var mealPlansTotal = await AsyncExecuter.CountAsync(
-                mealPlanQuery.Where(mp => mp.UserId == user.Id));
-
-            var shoppingListsCount = await AsyncExecuter.CountAsync(
-                shoppingQuery.Where(sl => sl.UserId == user.Id));
-
-            return new DashboardStatsDto
-            {
-                ThisWeekMeals = thisWeekMeals,
-                RecipesSaved = user.RecipesCreated,
-                TotalCookingMinutes = 0, // not relevant for a follow/unfollow push
-                TotalRecipes = user.RecipesCreated,
-                MealPlans = mealPlansTotal,
-                ShoppingLists = shoppingListsCount
-            };
-        }
-
-
     }
 }
