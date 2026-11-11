@@ -30,7 +30,11 @@ file static class UserProfileFactory
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserProfileToCommunityUserDtoMapper : MapperBase<UserProfile, CommunityUserDto>
 {
+    [MapperIgnoreTarget(nameof(CommunityUserDto.IsFollowedByCurrentUser))]
+    [MapperIgnoreTarget(nameof(CommunityUserDto.FollowsCurrentUser))]
     public override partial CommunityUserDto Map(UserProfile source);
+    [MapperIgnoreTarget(nameof(CommunityUserDto.IsFollowedByCurrentUser))]
+    [MapperIgnoreTarget(nameof(CommunityUserDto.FollowsCurrentUser))]
     public override partial void Map(UserProfile source, CommunityUserDto destination);
 
     public List<CommunityUserDto> MapList(IEnumerable<UserProfile> source)

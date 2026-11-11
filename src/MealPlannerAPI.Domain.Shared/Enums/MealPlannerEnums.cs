@@ -40,3 +40,6 @@ public enum ShoppingItemCategory
     Beverages = 6,
     Other = 7
 }
+
+public enum FollowEventType { Followed = 0, Unfollowed = 1 }
+public enum StatGranularity { Monthly = 0, Yearly = 1 }

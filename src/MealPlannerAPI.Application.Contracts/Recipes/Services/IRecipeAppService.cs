@@ -14,7 +14,7 @@ namespace MealPlannerAPI.Recipes.Services
         CreateUpdateRecipeDto,
         CreateUpdateRecipeDto>
     {
-        Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId);
+        Task<PagedResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId, GetRecipesInput input);
         Task<ListResultDto<RecipeSummaryDto>> GetTopRatedAsync(int count);
         Task<ListResultDto<RecipeSummaryDto>> GetByCuisineAsync(string cuisine);
 

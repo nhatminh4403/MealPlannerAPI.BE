@@ -555,6 +555,38 @@ namespace MealPlannerAPI.Migrations
                     b.ToTable("UserFollows", (string)null);
                 });
 
+            modelBuilder.Entity("MealPlannerAPI.Users.UserFollowEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid>("FolloweeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FollowerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolloweeId", "CreationTime");
+
+                    b.HasIndex("FollowerId", "CreationTime");
+
+                    b.ToTable("UserFollowEvents", (string)null);
+                });
+
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")

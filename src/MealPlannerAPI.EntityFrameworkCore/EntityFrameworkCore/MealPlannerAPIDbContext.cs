@@ -389,6 +389,14 @@ public class MealPlannerAPIDbContext :
             b.HasIndex(x => new { x.FollowerId, x.FolloweeId }).IsUnique();
             b.HasIndex(x => x.FolloweeId);
         });
+
+        builder.Entity<UserFollowEvent>(b =>
+        {
+            b.ToTable("UserFollowEvents");
+            b.ConfigureByConvention();
+            b.HasIndex(x => new { x.FolloweeId, x.CreationTime });  // follower analytics
+            b.HasIndex(x => new { x.FollowerId, x.CreationTime });  // following analytics
+        });
     }
 }
 

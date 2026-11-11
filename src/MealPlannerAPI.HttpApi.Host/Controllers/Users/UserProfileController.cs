@@ -5,7 +5,9 @@ using MealPlannerAPI.Users.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Account;
 using Volo.Abp.Application.Dtos;
@@ -21,11 +23,14 @@ namespace MealPlannerAPI.Controllers.Users
     {
         private readonly IUserProfileAppService _userProfileAppService;
         private readonly IUserFollowAppService _userFollowAppService;
+        private readonly IUserFollowAnalyticsAppService _userFollowAnalyticsAppService;
 
-        public UserProfileController(IUserProfileAppService userProfileAppService, IUserFollowAppService userFollowAppService)
+
+        public UserProfileController(IUserProfileAppService userProfileAppService, IUserFollowAppService userFollowAppService, IUserFollowAnalyticsAppService userFollowAnalyticsAppService)
         {
             _userProfileAppService = userProfileAppService;
             _userFollowAppService = userFollowAppService;
+            _userFollowAnalyticsAppService = userFollowAnalyticsAppService;
         }
 
         // ── Own profile ───────────────────────────────────────────────────────────
@@ -83,12 +88,32 @@ namespace MealPlannerAPI.Controllers.Users
             try
             {
                 var result = await _userProfileAppService.UpdatePreferencesAsync(input);
-                return Ok(new ApiResponse<MealPlannerAPI.Users.Dtos.ProfileDto>(true, "Preferences updated successfully", result));
+                return Ok(new ApiResponse<MealPlannerAPI.Users.Dtos.ProfileDto>(true,
+                                                                                "Preferences updated successfully",
+                                                                                result));
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new ApiResponse(false, ex.Message));
+                                  new ApiResponse(false, ex.Message));
+            }
+        }
+
+
+
+        [HttpGet("me/settings")]
+        [ProducesResponseType(typeof(ApiResponse<UserSettingsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSettingsAsync([FromBody] CreateUpdateUserSettingsDto input)
+        {
+            try
+            {
+                var result = await _userProfileAppService.GetProfileSettingsAsync();
+                return Ok(new ApiResponse<UserSettingsDto>(true, "Success", result));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse(false, ex.Message));
             }
         }
 
@@ -208,7 +233,7 @@ namespace MealPlannerAPI.Controllers.Users
         }
 
         /// <summary>Get a paged list of community users.</summary>
-        [HttpGet]
+        [HttpGet("community-users")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<PagedResultDto<CommunityUserDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -285,6 +310,15 @@ namespace MealPlannerAPI.Controllers.Users
         {
             var result = await _userFollowAppService.IsFollowingAsync(targetUserId);
             return Ok(new ApiResponse<bool>(true, "Success", result));
+        }
+
+
+        [HttpGet("me/follow-stats")]
+        [ProducesResponseType(typeof(ApiResponse<List<FollowStatPointDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMyFollowStatsAsync([FromQuery] GetFollowStatsInput input)
+        {
+            var result = await _userFollowAnalyticsAppService.GetMyStatsAsync(input);
+            return Ok(new ApiResponse<List<FollowStatPointDto>>(true, "Success", result));
         }
     }
 }

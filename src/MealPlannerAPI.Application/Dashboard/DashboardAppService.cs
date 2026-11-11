@@ -34,7 +34,6 @@ namespace MealPlannerAPI.Dashboard
                                    RecipeToRecipeSummaryDtoMapper toSummaryDtoMapper,
                                    IRecipeAppService recipeAppService,
                                    IRepository<UserProfile, Guid> userProfileRepository,
-
                                    IIdentityUserRepository identityUserRepository)
         {
             _recipeRepository = recipeRepository;

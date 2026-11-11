@@ -7,8 +7,9 @@
 @using Volo.Abp.Users
 @using Volo.Abp.AspNetCore.Mvc.UI.Theming
 @using Volo.Abp.Ui.Branding
+@using Microsoft.Extensions.Localization
 @model IndexModel
-@inject IHtmlLocalizer<MealPlannerAPIResource> L
+@inject IStringLocalizer<MealPlannerAPIResource> L
 @inject IHtmlLocalizer<AccountResource> AccountLocalizer
 @inject ICurrentUser CurrentUser
 @inject IBrandingProvider BrandingProvider

@@ -13,24 +13,17 @@ namespace MealPlannerAPI.Users.Services
     {
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default);
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default);
-
+        
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdatePreferencesAsync(CreateUpdateUserPreferencesDto input, CancellationToken cancellationToken = default);
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input, CancellationToken cancellationToken = default);
         Task<MealPlannerAPI.Users.Dtos.ProfileDto> UpdateAvatarAsync(string avatarUrl);
 
         Task ChangePasswordAsync(ChangePasswordInput input, CancellationToken cancellationToken = default);
-
+        Task<UserSettingsDto> GetProfileSettingsAsync();
         Task ChangeEmailAsync(ChangeEmailDto input, CancellationToken cancellationToken = default);
 
         // ── Community ─────────────────────────────────────────────────────────────
         Task<CommunityUserDto> GetCommunityProfileAsync(Guid userId);
         Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input, CancellationToken cancellationToken = default);
-
-        // ── Social ────────────────────────────────────────────────────────────────
-        //Task FollowAsync(Guid targetUserId);
-        //Task UnfollowAsync(Guid targetUserId);
-        //Task<bool> IsFollowingAsync(Guid targetUserId);
-        //Task<PagedResultDto<FollowUserDto>> GetFollowersAsync(GetFollowListInput input);
-        //Task<PagedResultDto<FollowUserDto>> GetFollowingAsync(GetFollowListInput input);
     }
 }

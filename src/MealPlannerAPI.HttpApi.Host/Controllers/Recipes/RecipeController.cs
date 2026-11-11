@@ -73,11 +73,11 @@ namespace MealPlannerAPI.Controllers.Recipes
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<ListResultDto<RecipeSummaryDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByAuthorAsync(Guid authorId)
+        public async Task<IActionResult> GetByAuthorAsync([FromQuery] GetRecipesInput input, Guid authorId)
         {
             try
             {
-                var result = await _recipeAppService.GetByAuthorAsync(authorId);
+                var result = await _recipeAppService.GetByAuthorAsync(authorId, input: input);
                 return Ok(new ApiResponse<ListResultDto<RecipeSummaryDto>>(true, "Success", result));
             }
             catch (Exception ex)
@@ -216,6 +216,5 @@ namespace MealPlannerAPI.Controllers.Recipes
                     new ApiResponse(false, ex.Message));
             }
         }
-
     }
 }

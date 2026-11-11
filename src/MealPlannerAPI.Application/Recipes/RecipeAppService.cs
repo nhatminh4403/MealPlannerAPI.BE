@@ -176,12 +176,10 @@ namespace MealPlannerAPI.Recipes
 
                 if (sorting.Contains(nameof(RecipeSummaryDto.TotalTimeMinutes)))
                 {
-                    sorting = sorting.Replace(
-                        nameof(RecipeSummaryDto.TotalTimeMinutes),
-                        "(CookingTimeMinutes + PrepTimeMinutes)"
-                    );
+                    NormalizeSorting(sorting);
                 }
-
+                
+        
                 if (sorting.Contains("Difficulty DESC"))
                 {
                     query = query.OrderBy("Difficulty DESC");
@@ -240,11 +238,32 @@ namespace MealPlannerAPI.Recipes
         #endregion
 
         [AllowAnonymous]
-        public async Task<ListResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId)
+        public async Task<PagedResultDto<RecipeSummaryDto>> GetByAuthorAsync(Guid authorId, GetRecipesInput input)
         {
-            var recipe = await _recipeRepository.GetListByAuthorAsync(authorId);
-            return new ListResultDto<RecipeSummaryDto>(recipe.Select(MapToSummaryDto).ToList());
+            var sorting = NormalizeSorting(input.Sorting);
 
+            var totalCount = await _recipeRepository.GetCountByAuthorAsync(
+                authorId,
+                input.SearchTerm,
+                input.Cuisine,
+                input.Difficulty,
+                input.MaxTotalTimeMinutes,
+                input.Vegetarian);
+
+            var recipes = await _recipeRepository.GetListByAuthorAsync(
+                authorId,
+                sorting,
+                input.SkipCount,
+                input.MaxResultCount,
+                input.SearchTerm,
+                input.Cuisine,
+                input.Difficulty,
+                input.MaxTotalTimeMinutes,
+                input.Vegetarian);
+
+            return new PagedResultDto<RecipeSummaryDto>(
+                totalCount,
+                recipes.Select(MapToSummaryDto).ToList());
         }
         [AllowAnonymous]
         public async Task<ListResultDto<RecipeSummaryDto>> GetByCuisineAsync(string cuisine)
@@ -293,7 +312,15 @@ namespace MealPlannerAPI.Recipes
 
             return dto;
         }
+        private static string? NormalizeSorting(string? sorting)
+        {
+            if (string.IsNullOrWhiteSpace(sorting))
+                return null;
 
+            return sorting.Replace(
+                nameof(RecipeSummaryDto.TotalTimeMinutes),
+                "(CookingTimeMinutes + PrepTimeMinutes)");
+        }
         private async Task InvalidateTrendingAsync()
         {
             await _trendingCache.InvalidateAsync();
@@ -304,6 +331,7 @@ namespace MealPlannerAPI.Recipes
             var dto = _toSummaryDtoMapper.Map(recipe);
             dto.TotalTimeMinutes = recipe.GetTotalTimeMinutes();
             dto.Tags = recipe.GetTags();
+            
             return dto;
         }
         #endregion

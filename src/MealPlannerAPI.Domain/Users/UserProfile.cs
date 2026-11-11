@@ -35,7 +35,6 @@ namespace MealPlannerAPI.Users
 
         public string? Specialty { get; set; }
 
-
         public VisibilityLevel ProfileVisibility { get; set; } = VisibilityLevel.Public;
 
         public VisibilityLevel RecipesVisibility { get; set; } = VisibilityLevel.Public;

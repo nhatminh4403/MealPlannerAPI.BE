@@ -31,13 +31,11 @@ namespace MealPlannerAPI.Users
         #region Dependency Injections
 
         #region Interfaces & ABP Services
-        private readonly IIdentityUserRepository _identityUserRepository;  
+        private readonly IIdentityUserRepository _identityUserRepository;
         private readonly IdentityUserManager _userManager;
         private readonly IUserFollowAppService _userFollowAppService;
         #endregion
         #region Mapperly Mapper Classes
-        private readonly UserProfileToFollowUserDtoMapper _toFollowDtoMapper;
-
         private readonly UserProfileToCommunityUserDtoMapper _toCommunityDtoMapper;
         private readonly UserProfileToUserPreferencesDtoMapper _toPreferencesDtoMapper;
         private readonly UserProfileToUserStatsDtoMapper _toStatsDtoMapper;
@@ -59,12 +57,11 @@ namespace MealPlannerAPI.Users
                                      CreateUpdateUserPreferencesDtoToUserProfileMapper toUserProfilePreferencesMapper,
                                      CreateUpdateUserSettingsDtoToUserProfileMapper toUserProfileSettingsMapper,
                                      IdentityUserManager userManager,
-                                     UserProfileToFollowUserDtoMapper toFollowDtoMapper,
                                      IUserFollowAppService userFollowAppService) : base(identityUserRepository)
 
         {
             _identityUserRepository = identityUserRepository;
-           _toCommunityDtoMapper = toCommunityDtoMapper;
+            _toCommunityDtoMapper = toCommunityDtoMapper;
             _toPreferencesDtoMapper = toPreferencesDtoMapper;
             _toStatsDtoMapper = toStatsDtoMapper;
             _toPrivacyDtoMapper = toPrivacyDtoMapper;
@@ -72,7 +69,6 @@ namespace MealPlannerAPI.Users
             _toUserProfilePreferencesMapper = toUserProfilePreferencesMapper;
             _toUserProfileSettingsMapper = toUserProfileSettingsMapper;
             _userManager = userManager;
-            _toFollowDtoMapper = toFollowDtoMapper;
             _userFollowAppService = userFollowAppService;
         }
         #endregion
@@ -89,7 +85,6 @@ namespace MealPlannerAPI.Users
                 throw new UserFriendlyException("Request was cancelled.");
             }
         }
-
         [AllowAnonymous]
         public async Task<CommunityUserDto> GetCommunityProfileAsync(Guid userId)
         {
@@ -98,7 +93,6 @@ namespace MealPlannerAPI.Users
             await _userFollowAppService.FillFollowStateAsync(new[] { dto });
             return dto;
         }
-
         [AllowAnonymous]
         public async Task<PagedResultDto<CommunityUserDto>> GetCommunityListAsync(PagedAndSortedResultRequestDto input,
                                                                                   CancellationToken cancellationToken = default)
@@ -128,7 +122,8 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-        public async Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input, CancellationToken cancellationToken = default)
+        public async Task<ProfileDto> UpdateSettingsAsync(CreateUpdateUserSettingsDto input,
+                                                          CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
             _toUserProfileSettingsMapper.Map(input, user);
@@ -144,7 +139,8 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-        public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input, CancellationToken cancellationToken = default)
+        public async Task<ProfileDto> UpdateProfileInfoAsync(UpdateProfileInfoDto input,
+                                                             CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -158,7 +154,8 @@ namespace MealPlannerAPI.Users
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
             return BuildUserProfileDto(user);
         }
-        public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input, CancellationToken cancellation = default)
+        public async Task ChangePasswordAsync(Volo.Abp.Account.ChangePasswordInput input,
+                                              CancellationToken cancellation = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -167,7 +164,8 @@ namespace MealPlannerAPI.Users
                 input.CurrentPassword,
                 input.NewPassword)).CheckErrors();
         }
-        public async Task ChangeEmailAsync(ChangeEmailDto input, CancellationToken cancellationToken = default)
+        public async Task ChangeEmailAsync(ChangeEmailDto input,
+                                           CancellationToken cancellationToken = default)
         {
             var user = await GetUserProfileAsync(CurrentUser.GetId());
 
@@ -177,6 +175,11 @@ namespace MealPlannerAPI.Users
             (await _userManager.SetEmailAsync(user, input.NewEmail)).CheckErrors();
 
             await _identityUserRepository.UpdateAsync(user, autoSave: true);
+        }
+        public async Task<UserSettingsDto> GetProfileSettingsAsync()
+        {
+            var user = await GetUserProfileAsync(CurrentUser.GetId());
+            return BuildSettingsDto(user);
         }
         // ── Helpers ───────────────────────────────────────────────────────────────
         private ProfileDto BuildUserProfileDto(UserProfile user)
@@ -213,5 +216,12 @@ namespace MealPlannerAPI.Users
                 FollowingCount = user.Following,
             };
         }
+
+        private UserSettingsDto BuildSettingsDto(UserProfile user) => new()
+        {
+            Privacy = _toPrivacyDtoMapper.Map(user),
+            Notifications = _toNotifPrefDtoMapper.Map(user)
+        };
+
     }
 }
